@@ -36,17 +36,17 @@ For detailed information, see example configurations [below](#transport-implemen
 
 Install the package from [Rubygems](https://rubygems.org):
 
-    gem install elasticsearch-transport
+    gem install elastic-transport
 
 To use an unreleased version, either add it to your `Gemfile` for [Bundler](http://gembundler.com):
 
-    gem 'elasticsearch-transport', git: 'git://github.com/elasticsearch/elasticsearch-ruby.git'
+    gem 'elastic-transport', git: 'git://github.com/elastic/elastic-transport-ruby.git'
 
 or install it from a source code checkout:
 
 ```bash
-git clone https://github.com/elasticsearch/elasticsearch-ruby.git
-cd elasticsearch-ruby/elasticsearch-transport
+git clone https://github.com/elastic/elastic-transport-ruby.git
+cd elastic-transport-ruby
 bundle install
 rake install
 ```
@@ -57,11 +57,11 @@ In the simplest form, connect to Elasticsearch running on <http://localhost:9200
 without any configuration:
 
 ```ruby
-require 'elasticsearch/transport'
+require 'elastic/transport'
 
 client = Elastic::Transport::Client.new
 response = client.perform_request('GET', '_cluster/health')
-# => #<Elasticsearch::Transport::Transport::Response:0x007fc5d506ce38 @status=200, @body={ ... } >
+# => #<Elastic::Transport::Transport::Response:0x007fc5d506ce38 @status=200, @body={ ... } >
 ```
 
 Full documentation is available at <http://rubydoc.info/gems/elastic-transport>.
@@ -143,7 +143,7 @@ Please see below for an exception to this when connecting using an Elastic Cloud
 You can pass the authentication credentials, scheme and port in the host configuration hash:
 
 ```ruby
-Elasticsearch::Transport::Client.new(
+Elastic::Transport::Client.new(
     hosts: [
            { host: 'my-protected-host',
     port: '443',
@@ -156,7 +156,7 @@ Elasticsearch::Transport::Client.new(
 ... or simply use the common URL format:
 
 ```ruby
-Elasticsearch::Transport::Client.new(url: 'https://username:password@example.com:9200')
+Elastic::Transport::Client.new(url: 'https://username:password@example.com:9200')
 ```
 
 To pass a custom certificate for SSL peer verification to Faraday-based clients,
@@ -371,7 +371,7 @@ Elastic::Transport::Client.new host: 'localhost:9200',
 ### Connection Selector
 
 By default, the client will rotate the connections in a round-robin fashion, using the
-{Elasticsearch::Transport::Transport::Connections::Selector::RoundRobin} strategy.
+{Elastic::Transport::Transport::Connections::Selector::RoundRobin} strategy.
 
 You can implement your own strategy to customize the behaviour. For example,
 let's have a "rack aware" strategy, which will prefer the nodes with a specific
@@ -380,7 +380,7 @@ Only when these would be unavailable, the strategy will use the other nodes:
 
 ```ruby
 class RackIdSelector
-  include Elasticsearch::Transport::Transport::Connections::Selector::Base
+  include Elastic::Transport::Transport::Connections::Selector::Base
 
   def select(options={})
     connections.select do |c|
@@ -470,7 +470,7 @@ transport_configuration = lambda do |f|
   f.adapter  :patron
 end
 
-transport = Elasticsearch::Transport::Transport::HTTP::Faraday.new \
+transport = Elastic::Transport::Transport::HTTP::Faraday.new \
   hosts: [ { host: 'localhost', port: '9200' } ],
   &transport_configuration
 
@@ -489,7 +489,7 @@ faraday_configuration = lambda do |f|
   f.adapter :excon
 end
 
-faraday_client = Elasticsearch::Transport::Transport::HTTP::Faraday.new \
+faraday_client = Elastic::Transport::Transport::HTTP::Faraday.new \
   hosts: [ { host: 'my-protected-host',
              port: '443',
              user: 'USERNAME',
@@ -513,7 +513,7 @@ You can also use a bundled [_Curb_](https://rubygems.org/gems/curb) based transp
 require 'curb'
 require 'elastic/transport/transport/http/curb'
 
-client = Elastic::Transport::Client.new transport_class: Elasticsearch::Transport::Transport::HTTP::Curb
+client = Elastic::Transport::Client.new transport_class: Elastic::Transport::Transport::HTTP::Curb
 
 client.transport.connections.first.connection
 # => #<Curl::Easy http://localhost:9200/>
@@ -523,7 +523,7 @@ It's possible to customize the _Curb_ instance by passing a block to the constru
 (in this case, as an inline block):
 
 ```ruby
-transport = Elasticsearch::Transport::Transport::HTTP::Curb.new \
+transport = Elastic::Transport::Transport::HTTP::Curb.new \
   hosts: [ { host: 'localhost', port: '9200' } ],
   & lambda { |c| c.verbose = true }
 
@@ -531,7 +531,7 @@ client = Elastic::Transport::Client.new transport: transport
 ```
 
 You can write your own transport implementation easily, by including the
-{Elasticsearch::Transport::Transport::Base} module, implementing the required contract,
+{Elastic::Transport::Transport::Base} module, implementing the required contract,
 and passing it to the client as the `transport_class` parameter -- or injecting it directly.
 
 ### Serializer Implementations
@@ -540,7 +540,7 @@ By default, the [MultiJSON](http://rubygems.org/gems/multi_json) library is used
 serializer implementation, and it will pick up the "right" adapter based on gems available.
 
 The serialization component is pluggable, though, so you can write your own by including the
-{Elasticsearch::Transport::Transport::Serializer::Base} module, implementing the required contract,
+{Elastic::Transport::Transport::Serializer::Base} module, implementing the required contract,
 and passing it to the client as the `serializer_class` or `serializer` parameter.
 
 ### Exception Handling
@@ -549,15 +549,15 @@ The library defines a [number of exception classes](https://github.com/elasticse
 for various client and server errors, as well as unsuccessful HTTP responses,
 making it possible to `rescue` specific exceptions with desired granularity.
 
-The highest-level exception is {Elasticsearch::Transport::Transport::Error}
+The highest-level exception is {Elastic::Transport::Transport::Error}
 and will be raised for any generic client *or* server errors.
 
-{Elasticsearch::Transport::Transport::ServerError} will be raised for server errors only.
+{Elastic::Transport::Transport::ServerError} will be raised for server errors only.
 
 As an example for response-specific errors, a `404` response status will raise
-an {Elasticsearch::Transport::Transport::Errors::NotFound} exception.
+an {Elastic::Transport::Transport::Errors::NotFound} exception.
 
-Finally, {Elasticsearch::Transport::Transport::SnifferTimeoutError} will be raised
+Finally, {Elastic::Transport::Transport::SnifferTimeoutError} will be raised
 when connection reloading ("sniffing") times out.
 
 ## Development and Community
@@ -571,27 +571,27 @@ Github's pull requests and issues are used to communicate, send bug reports and 
 
 ## The Architecture
 
-* {Elasticsearch::Transport::Client} is composed of {Elasticsearch::Transport::Transport}
+* {Elastic::Transport::Client} is composed of {Elastic::Transport::Transport}
 
-* {Elasticsearch::Transport::Transport} is composed of {Elasticsearch::Transport::Transport::Connections},
+* {Elastic::Transport::Transport} is composed of {Elastic::Transport::Transport::Connections},
   and an instance of logger, tracer, serializer and sniffer.
 
 * Logger and tracer can be any object conforming to Ruby logging interface,
   ie. an instance of [`Logger`](http://www.ruby-doc.org/stdlib-1.9.3/libdoc/logger/rdoc/Logger.html),
   [_log4r_](https://rubygems.org/gems/log4r), [_logging_](https://github.com/TwP/logging/), etc.
 
-* The {Elasticsearch::Transport::Transport::Serializer::Base} implementations handle converting data for Elasticsearch
+* The {Elastic::Transport::Transport::Serializer::Base} implementations handle converting data for Elasticsearch
   (eg. to JSON). You can implement your own serializer.
 
-* {Elasticsearch::Transport::Transport::Sniffer} allows to discover nodes in the cluster and use them as connections.
+* {Elastic::Transport::Transport::Sniffer} allows to discover nodes in the cluster and use them as connections.
 
-* {Elasticsearch::Transport::Transport::Connections::Collection} is composed of
-  {Elasticsearch::Transport::Transport::Connections::Connection} instances and a selector instance.
+* {Elastic::Transport::Transport::Connections::Collection} is composed of
+  {Elastic::Transport::Transport::Connections::Connection} instances and a selector instance.
 
-* {Elasticsearch::Transport::Transport::Connections::Connection} contains the connection attributes such as hostname and port,
+* {Elastic::Transport::Transport::Connections::Connection} contains the connection attributes such as hostname and port,
   as well as the concrete persistent "session" connected to a specific node.
 
-* The {Elasticsearch::Transport::Transport::Connections::Selector::Base} implementations allow to choose connections
+* The {Elastic::Transport::Transport::Connections::Selector::Base} implementations allow to choose connections
   from the pool, eg. in a round-robin or random fashion. You can implement your own selector strategy.
 
 ## Development
