@@ -24,10 +24,6 @@ describe Elasticsearch::Transport::Client do
     end
   end
 
-  it 'is aliased as Elasticsearch::Client' do
-    expect(Elasticsearch::Client.new).to be_a(described_class)
-  end
-
   it 'has a default transport' do
     expect(client.transport).to be_a(Elasticsearch::Transport::Client::DEFAULT_TRANSPORT_CLASS)
   end
@@ -1220,39 +1216,6 @@ describe Elasticsearch::Transport::Client do
         end
       end
     end
-
-    context 'when a header is set on an endpoint request' do
-      let(:client) { described_class.new(host: hosts) }
-      let(:headers) { { 'user-agent' => 'my ruby app' } }
-
-      it 'performs the request with the header' do
-        allow(client).to receive(:perform_request) { OpenStruct.new(body: '') }
-        expect { client.search(headers: headers) }.not_to raise_error
-        expect(client).to have_received(:perform_request)
-                            .with('GET', '_search', {}, nil, headers)
-      end
-    end
-
-    context 'when a header is set on an endpoint request and on initialization' do
-      let!(:client) do
-        described_class.new(
-          host: hosts,
-          transport_options: { headers: instance_headers }
-        )
-      end
-      let(:instance_headers) { { set_in_instantiation: 'header value' } }
-      let(:param_headers) {{'user-agent' => 'My Ruby Tests', 'set-on-method-call' => 'header value'}}
-
-      it 'performs the request with the header' do
-        expected_headers = client.transport.connections.connections.first.connection.headers.merge(param_headers)
-
-        expect_any_instance_of(Faraday::Connection)
-          .to receive(:run_request)
-                .with(:get, "http://#{hosts[0]}/_search", nil, expected_headers) { OpenStruct.new(body: '')}
-
-        client.search(headers: param_headers)
-      end
-    end
   end
 
   context 'when the client connects to Elasticsearch' do
@@ -1314,7 +1277,7 @@ describe Elasticsearch::Transport::Client do
 
       context 'when a block is provided' do
         let(:client) do
-          Elasticsearch::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
+          Elasticsearch::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
             client.headers['Accept'] = 'application/yaml'
           end
         end
@@ -1330,7 +1293,7 @@ describe Elasticsearch::Transport::Client do
 
         context 'when the Faraday adapter is set in the block' do
           let(:client) do
-            Elasticsearch::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
+            Elasticsearch::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
               client.adapter(:net_http_persistent)
             end
           end

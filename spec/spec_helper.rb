@@ -61,7 +61,7 @@ end
 #
 # @since 7.0.0
 def node_names
-  $node_names ||= default_client.nodes.stats['nodes'].collect do |name, stats|
+  $node_names ||= default_client.perform_request('GET', '_nodes/stats').body['nodes'].collect do |name, stats|
     stats['name']
   end
 end
@@ -72,7 +72,7 @@ end
 #
 # @since 7.0.0
 def default_client
-  $client ||= Elasticsearch::Client.new(hosts: ELASTICSEARCH_HOSTS)
+  $client ||= Elasticsearch::Transport::Client.new(hosts: ELASTICSEARCH_HOSTS)
 end
 
 module Config

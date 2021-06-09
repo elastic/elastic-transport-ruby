@@ -47,7 +47,7 @@ describe Elasticsearch::Transport::Client do
     # We are testing this method in the previous block, so now using it inside the test to make the
     # Elasticsearch version in the meta header string dynamic
     def meta_version
-      client.send(:client_meta_version, Elasticsearch::VERSION)
+      client.send(:client_meta_version, Elasticsearch::Transport::VERSION)
     end
 
     context 'single use of meta header' do
@@ -215,7 +215,7 @@ describe Elasticsearch::Transport::Client do
     if defined?(JRUBY_VERSION)
       context 'when using manticore' do
         let(:client) do
-          Elasticsearch::Client.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore)
+          Elasticsearch::Transport::Client.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore)
         end
         let(:subject) { client.transport.connections.first.connection.instance_variable_get("@options")[:headers]}
 
@@ -227,7 +227,7 @@ describe Elasticsearch::Transport::Client do
     else
       context 'when using curb' do
         let(:client) do
-          Elasticsearch::Client.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Curb)
+          Elasticsearch::Transport::Client.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Curb)
         end
 
         it 'sets curb in the metaheader' do
@@ -242,8 +242,8 @@ describe Elasticsearch::Transport::Client do
         include Elasticsearch::Transport::Transport::Base
         def initialize(args); end
       end
-      let(:client) { Elasticsearch::Client.new(transport_class: MyTransport) }
-      let(:subject){ client.instance_variable_get("@arguments")[:transport_options][:headers] }
+      let(:client) { Elasticsearch::Transport::Client.new(transport_class: MyTransport) }
+      let(:subject) { client.instance_variable_get('@arguments')[:transport_options][:headers] }
       let(:meta_header) do
         if jruby?
           "es=#{meta_version},rb=#{RUBY_VERSION},t=#{Elasticsearch::Transport::VERSION},jv=#{ENV_JAVA['java.version']},jr=#{JRUBY_VERSION}"
@@ -263,7 +263,7 @@ describe Elasticsearch::Transport::Client do
         stub_const('Elastic::ELASTICSEARCH_SERVICE_VERSION', [:ent, '8.0.0'])
       end
 
-      let(:client) { Elasticsearch::Client.new }
+      let(:client) { Elasticsearch::Transport::Client.new }
 
       it 'sets the service version in the metaheader' do
         expect(subject['x-elastic-client-meta']).to match(regexp)
