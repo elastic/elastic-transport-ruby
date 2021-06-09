@@ -1,21 +1,13 @@
 # Elasticsearch::Transport
 
-**This library is part of the [`elasticsearch-ruby`](https://github.com/elasticsearch/elasticsearch-ruby/) package; please refer to it, unless you want to use this library standalone.**
+This gem provides a low-level Ruby client for connecting to an [Elastic](http://elastic.co) cluster. It powers both the [Elasticsearch client](https://github.com/elasticsearch/elasticsearch-ruby/) and the [Elastic Enterprise Search](https://github.com/elastic/enterprise-search-ruby/) client.
 
 ----
 
-The `elasticsearch-transport` library provides a low-level Ruby client for connecting
-to an [Elasticsearch](http://elasticsearch.com) cluster.
-
-It handles connecting to multiple nodes in the cluster, rotating across connections,
-logging and tracing requests and responses, maintaining failed connections,
-discovering nodes in the cluster, and provides an abstraction for
+It handles connecting to multiple nodes in the cluster, rotating across connections, logging and tracing requests and responses, maintaining failed connections, discovering nodes in the cluster, and provides an abstraction for
 data serialization and transport.
 
-It does not handle calling the Elasticsearch API;
-see the [`elasticsearch-api`](https://github.com/elasticsearch/elasticsearch-ruby/tree/master/elasticsearch-api) library.
-
-The library is compatible with Ruby 1.9 or higher and with all versions of Elasticsearch since 0.90.
+It does not handle calling the Elasticsearch API; see the [`elasticsearch`](https://github.com/elasticsearch/elasticsearch-ruby) library for that.
 
 Features overview:
 
@@ -26,8 +18,7 @@ Features overview:
 * Request retries and dead connections handling
 * Node reloading (based on cluster state) on errors or on demand
 
-For optimal performance, use a HTTP library which supports persistent ("keep-alive") connections,
-such as [patron](https://github.com/toland/patron) or [Typhoeus](https://github.com/typhoeus/typhoeus).
+For optimal performance, use a HTTP library which supports persistent ("keep-alive") connections, such as [patron](https://github.com/toland/patron) or [Typhoeus](https://github.com/typhoeus/typhoeus).
 Just require the library (`require 'patron'`) in your code, and it will be automatically used.
 
 Currently these libraries will be automatically detected and used:
@@ -68,12 +59,11 @@ without any configuration:
 require 'elasticsearch/transport'
 
 client = Elasticsearch::Client.new
-response = client.perform_request 'GET', '_cluster/health'
+response = client.perform_request('GET', '_cluster/health')
 # => #<Elasticsearch::Transport::Transport::Response:0x007fc5d506ce38 @status=200, @body={ ... } >
 ```
 
-
-Full documentation is available at <http://rubydoc.info/gems/elasticsearch-transport>.
+Full documentation is available at <http://rubydoc.info/gems/elastic-transport>.
 
 ## Configuration
 
