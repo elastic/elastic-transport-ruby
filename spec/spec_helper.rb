@@ -19,7 +19,6 @@ if ENV['COVERAGE'] && ENV['CI'].nil?
   SimpleCov.start { add_filter %r{^/test|spec/} }
 end
 
-require 'elasticsearch'
 require 'elasticsearch-transport'
 require 'logger'
 require 'ansi/code'
