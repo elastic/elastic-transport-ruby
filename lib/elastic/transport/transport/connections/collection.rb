@@ -15,11 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
       module Connections
-
         # Wraps the collection of connections for the transport object as an Enumerable object.
         #
         # @see Base#connections

@@ -17,11 +17,10 @@
 
 require 'spec_helper'
 
-describe Elasticsearch::Transport::Transport::Connections::Selector do
-
+describe Elastic::Transport::Transport::Connections::Selector do
   before do
     class BackupStrategySelector
-      include Elasticsearch::Transport::Transport::Connections::Selector::Base
+      include Elastic::Transport::Transport::Connections::Selector::Base
 
       def select(options={})
         connections.reject do |c|
@@ -40,7 +39,6 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
   end
 
   describe 'the Random selector' do
-
     let(:connections) do
       [1, 2]
     end
@@ -54,7 +52,6 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
     end
 
     describe '#select' do
-
       let(:connections) do
         (0..19).to_a
       end
@@ -64,7 +61,6 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
       end
 
       context 'when multiple threads are used' do
-
         it 'allows threads to select connections in parallel' do
           expect(10.times.collect do
             threads = []
@@ -82,7 +78,6 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
   end
 
   describe 'the RoundRobin selector' do
-
     let(:connections) do
       ['A', 'B', 'C']
     end
@@ -96,7 +91,6 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
     end
 
     describe '#select' do
-
       it 'rotates over the connections' do
         expect(selector.select).to eq('A')
         expect(selector.select).to eq('B')
@@ -105,7 +99,6 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
       end
 
       context 'when multiple threads are used' do
-
         let(:connections) do
           (0..19).to_a
         end
@@ -131,10 +124,11 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
   end
 
   describe 'a custom selector' do
-
     let(:connections) do
-      [ double(host: { hostname: 'host1' }),
-        double(host: { hostname: 'host2', attributes: { backup: true } }) ]
+      [
+        double(host: { hostname: 'host1' }),
+        double(host: { hostname: 'host2', attributes: { backup: true } })
+      ]
     end
 
     let(:selector) do
@@ -146,7 +140,6 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
     end
 
     describe '#select' do
-
       it 'applies the custom strategy' do
         10.times { expect(selector.select.host[:hostname]).to eq('host1') }
       end
@@ -154,10 +147,9 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
   end
 
   context 'when the Base module is included in a class' do
-
     before do
       class ExampleSelector
-        include Elasticsearch::Transport::Transport::Connections::Selector::Base
+        include Elastic::Transport::Transport::Connections::Selector::Base
       end
     end
 
@@ -166,9 +158,9 @@ describe Elasticsearch::Transport::Transport::Connections::Selector do
     end
 
     it 'requires the #select method to be redefined' do
-      expect {
+      expect do
         ExampleSelector.new.select
-      }.to raise_exception(NoMethodError)
+      end.to raise_exception(NoMethodError)
     end
   end
 end

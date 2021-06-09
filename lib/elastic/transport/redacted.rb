@@ -15,15 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
+module Elastic
   module Transport
-
     # Class for wrapping a hash that could have sensitive data.
     # When printed, the sensitive values will be redacted.
     #
     # @since 6.1.1
     class Redacted < ::Hash
-
       def initialize(elements = nil)
         super()
         (elements || {}).each_pair{ |key, value| self[key] = value }

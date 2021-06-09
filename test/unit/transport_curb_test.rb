@@ -20,11 +20,11 @@ require 'test_helper'
 if JRUBY
   puts "'#{File.basename(__FILE__)}' not supported on JRuby #{RUBY_VERSION}"
 else
-  require 'elasticsearch/transport/transport/http/curb'
+  require 'elastic/transport/transport/http/curb'
   require 'curb'
 
-  class Elasticsearch::Transport::Transport::HTTP::FaradayTest < Minitest::Test
-    include Elasticsearch::Transport::Transport::HTTP
+  class Elastic::Transport::Transport::HTTP::FaradayTest < Minitest::Test
+    include Elastic::Transport::Transport::HTTP
 
     context "Curb transport" do
       setup do

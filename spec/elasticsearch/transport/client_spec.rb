@@ -17,7 +17,7 @@
 
 require 'spec_helper'
 
-describe Elasticsearch::Transport::Client do
+describe Elastic::Transport::Client do
   let(:client) do
     described_class.new.tap do |_client|
       allow(_client).to receive(:__build_connections)
@@ -25,7 +25,7 @@ describe Elasticsearch::Transport::Client do
   end
 
   it 'has a default transport' do
-    expect(client.transport).to be_a(Elasticsearch::Transport::Client::DEFAULT_TRANSPORT_CLASS)
+    expect(client.transport).to be_a(Elastic::Transport::Client::DEFAULT_TRANSPORT_CLASS)
   end
 
   it 'preserves the Faraday default user agent header' do
@@ -33,7 +33,7 @@ describe Elasticsearch::Transport::Client do
   end
 
   it 'identifies the Ruby client in the User-Agent header' do
-    expect(client.transport.connections.first.connection.headers['User-Agent']).to match(/elasticsearch-ruby\/#{Elasticsearch::Transport::VERSION}/)
+    expect(client.transport.connections.first.connection.headers['User-Agent']).to match(/elastic-transport-ruby\/#{Elastic::Transport::VERSION}/)
   end
 
   it 'identifies the Ruby version in the User-Agent header' do
@@ -102,7 +102,7 @@ describe Elasticsearch::Transport::Client do
   context 'when the Curb transport class is used', unless: jruby? do
 
     let(:client) do
-      described_class.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Curb)
+      described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb)
     end
 
     it 'preserves the Curb default user agent header' do
@@ -110,7 +110,7 @@ describe Elasticsearch::Transport::Client do
     end
 
     it 'identifies the Ruby client in the User-Agent header' do
-      expect(client.transport.connections.first.connection.headers['User-Agent']).to match(/elasticsearch-ruby\/#{Elasticsearch::Transport::VERSION}/)
+      expect(client.transport.connections.first.connection.headers['User-Agent']).to match(/elastic-transport-ruby\/#{Elastic::Transport::VERSION}/)
     end
 
     it 'identifies the Ruby version in the User-Agent header' do
@@ -136,7 +136,7 @@ describe Elasticsearch::Transport::Client do
     context 'when a User-Agent header is specified as a client option' do
 
       let(:client) do
-        described_class.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Curb,
+        described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'User-Agent' => 'testing' } })
       end
 
@@ -148,7 +148,7 @@ describe Elasticsearch::Transport::Client do
     context 'when a user-agent header is specified as a client option as lower-case' do
 
       let(:client) do
-        described_class.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Curb,
+        described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'user-agent' => 'testing' } })
       end
 
@@ -160,7 +160,7 @@ describe Elasticsearch::Transport::Client do
     context 'when a Content-Type header is specified as client option' do
 
       let(:client) do
-        described_class.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Curb,
+        described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'Content-Type' => 'testing' } })
       end
 
@@ -172,7 +172,7 @@ describe Elasticsearch::Transport::Client do
     context 'when a content-type header is specified as client option in lower-case' do
 
       let(:client) do
-        described_class.new(transport_class: Elasticsearch::Transport::Transport::HTTP::Curb,
+        described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'content-type' => 'testing' } })
       end
 
@@ -737,7 +737,6 @@ describe Elasticsearch::Transport::Client do
       end
 
       context 'when there is one host with a protocol and no port' do
-
         let(:host) do
           ['https://myhost']
         end
@@ -756,7 +755,6 @@ describe Elasticsearch::Transport::Client do
       end
 
       context 'when there is one host with a protocol, path, and no port' do
-
         let(:host) do
           ['http://myhost/foo/bar']
         end
@@ -779,7 +777,6 @@ describe Elasticsearch::Transport::Client do
       end
 
       context 'when there is more than one host' do
-
         let(:host) do
           ['host1', 'host2']
         end
@@ -795,7 +792,6 @@ describe Elasticsearch::Transport::Client do
       end
 
       context 'when ports are also specified' do
-
         let(:host) do
           ['host1:1000', 'host2:2000']
         end
@@ -812,7 +808,6 @@ describe Elasticsearch::Transport::Client do
     end
 
     context 'when the hosts is an instance of URI' do
-
       let(:host) do
         URI.parse('https://USERNAME:PASSWORD@myhost:4430')
       end
@@ -827,7 +822,6 @@ describe Elasticsearch::Transport::Client do
     end
 
     context 'when the hosts is invalid' do
-
       let(:host) do
         123
       end
@@ -841,7 +835,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'host\' key' do
-
     let(:client) do
       described_class.new(host: ['host1', 'host2', 'host3', 'host4'], randomize_hosts: true)
     end
@@ -856,7 +849,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'host\' key as a String' do
-
     let(:client) do
       described_class.new('host' => ['host1', 'host2', 'host3', 'host4'], 'randomize_hosts' => true)
     end
@@ -871,7 +863,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'hosts\' key' do
-
     let(:client) do
       described_class.new(hosts: host)
     end
@@ -884,7 +875,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'hosts\' key as a String' do
-
     let(:client) do
       described_class.new('hosts' => host)
     end
@@ -897,7 +887,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'url\' key' do
-
     let(:client) do
       described_class.new(url: host)
     end
@@ -910,7 +899,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'url\' key as a String' do
-
     let(:client) do
       described_class.new('url' => host)
     end
@@ -923,7 +911,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'urls\' key' do
-
     let(:client) do
       described_class.new(urls: host)
     end
@@ -936,7 +923,6 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when hosts are specified with the \'urls\' key as a String' do
-
     let(:client) do
       described_class.new('urls' => host)
     end
@@ -949,9 +935,7 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when the URL is set in the ELASTICSEARCH_URL environment variable' do
-
     context 'when there is only one host specified' do
-
       around do |example|
         before_url = ENV['ELASTICSEARCH_URL']
         ENV['ELASTICSEARCH_URL'] = 'example.com'
@@ -966,7 +950,6 @@ describe Elasticsearch::Transport::Client do
     end
 
     context 'when mutliple hosts are specified as a comma-separated String list' do
-
       around do |example|
         before_url = ENV['ELASTICSEARCH_URL']
         ENV['ELASTICSEARCH_URL'] = 'example.com, other.com'
@@ -1193,13 +1176,13 @@ describe Elasticsearch::Transport::Client do
 
     context 'when Elasticsearch response includes a warning header' do
       let(:client) do
-        Elasticsearch::Transport::Client.new(hosts: hosts)
+        Elastic::Transport::Client.new(hosts: hosts)
       end
 
       let(:warning) { 'Elasticsearch warning: "deprecation warning"' }
 
       it 'prints a warning' do
-        allow_any_instance_of(Elasticsearch::Transport::Transport::Response).to receive(:headers) do
+        allow_any_instance_of(Elastic::Transport::Transport::Response).to receive(:headers) do
           { 'warning' => warning }
         end
 
@@ -1277,7 +1260,7 @@ describe Elasticsearch::Transport::Client do
 
       context 'when a block is provided' do
         let(:client) do
-          Elasticsearch::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
+          Elastic::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
             client.headers['Accept'] = 'application/yaml'
           end
         end
@@ -1293,7 +1276,7 @@ describe Elasticsearch::Transport::Client do
 
         context 'when the Faraday adapter is set in the block' do
           let(:client) do
-            Elasticsearch::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
+            Elastic::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
               client.adapter(:net_http_persistent)
             end
           end
@@ -1341,7 +1324,6 @@ describe Elasticsearch::Transport::Client do
       end
 
       context 'when retry_on_failure is an integer' do
-
         let(:hosts) do
           [ELASTICSEARCH_HOSTS.first, 'foobar1', 'foobar2', 'foobar3']
         end
@@ -1359,7 +1341,6 @@ describe Elasticsearch::Transport::Client do
       end
 
       context 'when reload_on_failure is true' do
-
         let(:hosts) do
           [ELASTICSEARCH_HOSTS.first, 'foobar1', 'foobar2']
         end
@@ -1382,7 +1363,6 @@ describe Elasticsearch::Transport::Client do
       end
 
       context 'when retry_on_status is specified' do
-
         let(:options) do
           { retry_on_status: 400 }
         end
@@ -1398,16 +1378,13 @@ describe Elasticsearch::Transport::Client do
         it 'retries when the status matches' do
           expect {
             client.perform_request('PUT', '_foobar')
-          }.to raise_exception(Elasticsearch::Transport::Transport::Errors::BadRequest)
+          }.to raise_exception(Elastic::Transport::Transport::Errors::BadRequest)
         end
       end
 
       context 'when the \'compression\' option is set to true' do
-
         context 'when using Faraday as the transport' do
-
           context 'when using the Net::HTTP adapter' do
-
             let(:client) do
               described_class.new(hosts: ELASTICSEARCH_HOSTS, compression: true, adapter: :net_http)
             end
@@ -1426,7 +1403,6 @@ describe Elasticsearch::Transport::Client do
           end
 
           context 'when using the HTTPClient adapter' do
-
             let(:client) do
               described_class.new(hosts: ELASTICSEARCH_HOSTS, compression: true, adapter: :httpclient, enable_meta_header: false)
             end
@@ -1504,7 +1480,7 @@ describe Elasticsearch::Transport::Client do
         let(:client) do
           described_class.new(hosts: ELASTICSEARCH_HOSTS,
                               compression: true,
-                              transport_class: Elasticsearch::Transport::Transport::HTTP::Curb)
+                              transport_class: Elastic::Transport::Transport::HTTP::Curb)
         end
 
         it 'compresses the request and decompresses the response' do
@@ -1524,7 +1500,7 @@ describe Elasticsearch::Transport::Client do
         let(:client) do
           described_class.new(hosts: ELASTICSEARCH_HOSTS,
                               compression: true,
-                              transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore)
+                              transport_class: Elastic::Transport::Transport::HTTP::Manticore)
         end
 
         it 'compresses the request and decompresses the response' do
@@ -1560,7 +1536,7 @@ describe Elasticsearch::Transport::Client do
         it 'raises an exception' do
           expect {
             client.perform_request('GET', 'myindex/_doc/1?routing=FOOBARBAZ')
-          }.to raise_exception(Elasticsearch::Transport::Transport::Errors::NotFound)
+          }.to raise_exception(Elastic::Transport::Transport::Errors::NotFound)
         end
       end
 

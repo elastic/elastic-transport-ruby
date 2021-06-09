@@ -15,10 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
-
       # Handles node discovery ("sniffing")
       #
       class Sniffer

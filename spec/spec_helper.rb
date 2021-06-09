@@ -19,16 +19,16 @@ if ENV['COVERAGE'] && ENV['CI'].nil?
   SimpleCov.start { add_filter %r{^/test|spec/} }
 end
 
-require 'elasticsearch-transport'
+require 'elastic-transport'
 require 'logger'
 require 'ansi/code'
 require 'hashie/mash'
 if defined?(JRUBY_VERSION)
-  require 'elasticsearch/transport/transport/http/manticore'
+  require 'elastic/transport/transport/http/manticore'
   require 'pry-nav'
 else
   require 'pry-byebug'
-  require 'elasticsearch/transport/transport/http/curb'
+  require 'elastic/transport/transport/http/curb'
   require 'curb'
 end
 
@@ -67,11 +67,11 @@ end
 
 # The default client.
 #
-# @return [ Elasticsearch::Client ] The default client.
+# @return [ Elastic::Transport::Client ] The default client.
 #
 # @since 7.0.0
 def default_client
-  $client ||= Elasticsearch::Transport::Client.new(hosts: ELASTICSEARCH_HOSTS)
+  $client ||= Elastic::Transport::Client.new(hosts: ELASTICSEARCH_HOSTS)
 end
 
 module Config

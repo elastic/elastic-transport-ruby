@@ -16,11 +16,11 @@
 # under the License.
 
 require 'base64'
-require 'elasticsearch/transport/meta_header'
+require 'elastic/transport/meta_header'
 
-module Elasticsearch
+module Elastic
   module Transport
-    # Handles communication with an Elasticsearch cluster.
+    # Handles communication with an Elastic cluster.
     #
     # See {file:README.md README} for usage and code examples.
     #
@@ -31,7 +31,7 @@ module Elasticsearch
       DEFAULT_LOGGER = lambda do
         require 'logger'
         logger = Logger.new(STDERR)
-        logger.progname = 'elasticsearch'
+        logger.progname = 'elastic'
         logger.formatter = proc { |severity, datetime, progname, msg| "#{datetime}: #{msg}\n" }
         logger
       end
@@ -39,7 +39,7 @@ module Elasticsearch
       DEFAULT_TRACER = lambda do
         require 'logger'
         logger = Logger.new(STDERR)
-        logger.progname = 'elasticsearch.tracer'
+        logger.progname = 'elastic.tracer'
         logger.formatter = proc { |severity, datetime, progname, msg| "#{msg}\n" }
         logger
       end
@@ -56,12 +56,12 @@ module Elasticsearch
 
       # Returns the transport object.
       #
-      # @see Elasticsearch::Transport::Transport::Base
-      # @see Elasticsearch::Transport::Transport::HTTP::Faraday
+      # @see Elastic::Transport::Transport::Base
+      # @see Elastic::Transport::Transport::HTTP::Faraday
       #
       attr_accessor :transport
 
-      # Create a client connected to an Elasticsearch cluster.
+      # Create a client connected to an Elastic cluster.
       #
       # Specify the URL via arguments or set the `ELASTICSEARCH_URL` environment variable.
       #
@@ -105,7 +105,7 @@ module Elasticsearch
       #                                               the transport and passed the transport instance
       #
       # @option arguments [Constant] :selector An instance of selector strategy implemented with
-      #                                        {Elasticsearch::Transport::Transport::Connections::Selector::Base}.
+      #                                        {Elastic::Transport::Transport::Connections::Selector::Base}.
       #
       # @option arguments [String] :send_get_body_as Specify the HTTP method to use for GET requests with a body.
       #                                              (Default: GET)

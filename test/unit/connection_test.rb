@@ -17,8 +17,8 @@
 
 require 'test_helper'
 
-class Elasticsearch::Transport::Transport::Connections::ConnectionTest < Minitest::Test
-  include Elasticsearch::Transport::Transport::Connections
+class Elastic::Transport::Transport::Connections::ConnectionTest < Minitest::Test
+  include Elastic::Transport::Transport::Connections
 
   context "Connection" do
     should "be initialized with :host, :connection, and :options" do

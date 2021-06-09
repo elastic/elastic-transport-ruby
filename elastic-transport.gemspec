@@ -18,28 +18,28 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'elasticsearch/transport/version'
+require 'elastic/transport/version'
 
 Gem::Specification.new do |s|
-  s.name          = "elasticsearch-transport"
-  s.version       = Elasticsearch::Transport::VERSION
-  s.authors       = ['Karel Minarik']
-  s.email         = ['karel.minarik@elasticsearch.org']
-  s.summary       = 'Ruby client for Elasticsearch.'
+  s.name          = "elastic-transport"
+  s.version       = Elastic::Transport::VERSION
+  s.authors       = ['Karel Minarik', 'Emily Stolfo', 'Fernando Briano']
+  s.email         = ['support@elastic.co']
+  s.summary       = 'Ruby client for Elastic services.'
   s.homepage      = 'https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/index.html'
   s.license       = 'Apache-2.0'
   s.metadata = {
     'homepage_uri' => 'https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/index.html',
-    'changelog_uri' => 'https://github.com/elastic/elasticsearch-ruby/blob/master/CHANGELOG.md',
-    'source_code_uri' => 'https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-transport',
-    'bug_tracker_uri' => 'https://github.com/elastic/elasticsearch-ruby/issues'
+    'changelog_uri' => 'https://github.com/elastic/elastic-transport-ruby/blob/master/CHANGELOG.md',
+    'source_code_uri' => 'https://github.com/elastic/elastic-transport-ruby',
+    'bug_tracker_uri' => 'https://github.com/elastic/elastic-transport-ruby/issues'
   }
   s.files         = `git ls-files`.split($/)
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ['lib']
 
-  s.extra_rdoc_files  = [ 'README.md', 'LICENSE.txt' ]
+  s.extra_rdoc_files  = ['README.md', 'LICENSE.txt']
   s.rdoc_options      = [ '--charset=UTF-8' ]
 
   s.required_ruby_version = '>= 2.5'
@@ -47,7 +47,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'multi_json'
   s.add_dependency 'faraday', '~> 1'
 
-  s.add_development_dependency 'ansi'
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'cane'
   s.add_development_dependency 'curb'   unless defined? JRUBY_VERSION
@@ -70,6 +69,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'yard'
 
   s.description = <<-DESC.gsub(/^    /, '')
-    Ruby client for Elasticsearch. See the `elasticsearch` gem for full integration.
+    Ruby client for Elastic. See the `elasticsearch` or `elastic-enterprise-search` gems for full integration.
   DESC
 end

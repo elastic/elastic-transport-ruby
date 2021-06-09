@@ -17,13 +17,13 @@
 
 require 'test_helper'
 
-class Elasticsearch::Transport::Transport::ResponseTest < Minitest::Test
+class Elastic::Transport::Transport::ResponseTest < Minitest::Test
   context "Response" do
     should "force-encode the body into UTF" do
       body = "Hello Encoding!".encode(Encoding::ISO_8859_1)
       assert_equal 'ISO-8859-1', body.encoding.name
 
-      response = Elasticsearch::Transport::Transport::Response.new 200, body
+      response = Elastic::Transport::Transport::Response.new 200, body
       assert_equal 'UTF-8', response.body.encoding.name
     end
   end

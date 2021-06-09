@@ -15,13 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
-
+module Elastic
   # Module to encapsulate all logging functionality.
   #
   # @since 7.0.0
   module Loggable
-
     # Log a debug message.
     #
     # @example Log a debug message.
