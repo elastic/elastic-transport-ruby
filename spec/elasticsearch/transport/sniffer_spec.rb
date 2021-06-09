@@ -17,7 +17,7 @@
 
 require 'spec_helper'
 
-describe Elasticsearch::Transport::Transport::Sniffer do
+describe Elastic::Transport::Transport::Sniffer do
   let(:transport) do
     double('transport').tap do |t|
       allow(t).to receive(:perform_request).and_return(response)

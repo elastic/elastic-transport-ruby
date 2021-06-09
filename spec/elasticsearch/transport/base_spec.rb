@@ -17,11 +17,11 @@
 
 require 'spec_helper'
 
-describe Elasticsearch::Transport::Transport::Base do
+describe Elastic::Transport::Transport::Base do
   context 'when a host is printed in a logged message' do
     shared_examples_for 'a redacted string' do
       let(:client) do
-        Elasticsearch::Transport::Client.new(arguments)
+        Elastic::Transport::Client.new(arguments)
       end
 
       let(:logger) do
@@ -81,7 +81,7 @@ describe Elasticsearch::Transport::Transport::Base do
 
   context 'when reload_on_failure is true and and hosts are unreachable' do
     let(:client) do
-      Elasticsearch::Transport::Client.new(arguments)
+      Elastic::Transport::Client.new(arguments)
     end
 
     let(:arguments) do
@@ -99,7 +99,7 @@ describe Elasticsearch::Transport::Transport::Base do
 
   context 'when the client has `retry_on_failure` set to an integer' do
     let(:client) do
-      Elasticsearch::Transport::Client.new(arguments)
+      Elastic::Transport::Client.new(arguments)
     end
 
     let(:arguments) do
@@ -136,7 +136,7 @@ describe Elasticsearch::Transport::Transport::Base do
       it 'retries on 404 status the specified number of max_retries' do
         expect do
           client.transport.perform_request('GET', 'myindex/_doc/1?routing=FOOBARBAZ', {}, nil, nil, retry_on_failure: 5)
-        end.to raise_exception(Elasticsearch::Transport::Transport::Errors::NotFound)
+        end.to raise_exception(Elastic::Transport::Transport::Errors::NotFound)
       end
     end
 
@@ -155,7 +155,7 @@ describe Elasticsearch::Transport::Transport::Base do
 
   context 'when the client has `retry_on_failure` set to true' do
     let(:client) do
-      Elasticsearch::Transport::Client.new(arguments)
+      Elastic::Transport::Client.new(arguments)
     end
 
     let(:arguments) do
@@ -192,7 +192,7 @@ describe Elasticsearch::Transport::Transport::Base do
 
   context 'when the client has `retry_on_failure` set to false' do
     let(:client) do
-      Elasticsearch::Transport::Client.new(arguments)
+      Elastic::Transport::Client.new(arguments)
     end
 
     let(:arguments) do
@@ -230,7 +230,7 @@ describe Elasticsearch::Transport::Transport::Base do
 
   context 'when the client has no `retry_on_failure` set' do
     let(:client) do
-      Elasticsearch::Transport::Client.new(arguments)
+      Elastic::Transport::Client.new(arguments)
     end
 
     let(:arguments) do

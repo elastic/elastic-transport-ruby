@@ -21,11 +21,11 @@ unless JRUBY
   version = ( defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'Ruby' ) + ' ' + RUBY_VERSION
   puts "SKIP: '#{File.basename(__FILE__)}' only supported on JRuby (you're running #{version})"
 else
-  require 'elasticsearch/transport/transport/http/manticore'
+  require 'elastic/transport/transport/http/manticore'
   require 'manticore'
 
-  class Elasticsearch::Transport::Transport::HTTP::ManticoreTest < Minitest::Test
-    include Elasticsearch::Transport::Transport::HTTP
+  class Elastic::Transport::Transport::HTTP::ManticoreTest < Minitest::Test
+    include Elastic::Transport::Transport::HTTP
 
     context "Manticore transport" do
       setup do

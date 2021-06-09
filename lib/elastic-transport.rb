@@ -15,8 +15,4 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
-  module Transport
-    VERSION = '8.0.0'.freeze
-  end
-end
+require 'elastic/transport'

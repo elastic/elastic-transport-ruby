@@ -15,10 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
-
       # @abstract Module with common functionality for transport implementations.
       #
       module Base
@@ -302,7 +301,7 @@ module Elasticsearch
             # Raise an exception so we can catch it for `retry_on_status`
             __raise_transport_error(response) if response.status.to_i >= 300 && @retry_on_status.include?(response.status.to_i)
 
-          rescue Elasticsearch::Transport::Transport::ServerError => e
+          rescue Elastic::Transport::Transport::ServerError => e
             if response && @retry_on_status.include?(response.status)
               log_warn "[#{e.class}] Attempt #{tries} to get response from #{url}"
               if tries <= (max_retries || DEFAULT_MAX_RETRIES)
@@ -438,7 +437,7 @@ module Elasticsearch
             if RbConfig::CONFIG && RbConfig::CONFIG['host_os']
               meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} #{RbConfig::CONFIG['target_cpu']}"
             end
-            "elasticsearch-ruby/#{VERSION} (#{meta.join('; ')})"
+            "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
           end
         end
 

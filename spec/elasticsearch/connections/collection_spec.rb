@@ -17,10 +17,8 @@
 
 require 'spec_helper'
 
-describe Elasticsearch::Transport::Transport::Connections::Collection do
-
+describe Elastic::Transport::Transport::Connections::Collection do
   describe '#initialize' do
-
     let(:collection) do
       described_class.new
     end
@@ -34,21 +32,19 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
     end
 
     context 'when a selector class is specified' do
-
       let(:collection) do
-        described_class.new(selector_class: Elasticsearch::Transport::Transport::Connections::Selector::Random)
+        described_class.new(selector_class: Elastic::Transport::Transport::Connections::Selector::Random)
       end
 
       it 'sets the selector' do
-        expect(collection.selector).to be_a(Elasticsearch::Transport::Transport::Connections::Selector::Random)
+        expect(collection.selector).to be_a(Elastic::Transport::Transport::Connections::Selector::Random)
       end
     end
   end
 
   describe '#get_connection' do
-
     let(:collection) do
-      described_class.new(selector_class: Elasticsearch::Transport::Transport::Connections::Selector::Random)
+      described_class.new(selector_class: Elastic::Transport::Transport::Connections::Selector::Random)
     end
 
     before do
@@ -61,10 +57,13 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
   end
 
   describe '#hosts' do
-
     let(:collection) do
-      described_class.new(connections: [ double('connection', host: 'A'),
-                                         double('connection', host: 'B') ])
+      described_class.new(
+        connections: [
+          double('connection', host: 'A'),
+          double('connection', host: 'B')
+        ]
+      )
     end
 
     it 'returns a list of hosts' do
@@ -73,21 +72,22 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
   end
 
   describe 'enumerable' do
-
     let(:collection) do
-      described_class.new(connections: [ double('connection', host: 'A', dead?: false),
-                                         double('connection', host: 'B', dead?: false) ])
+      described_class.new(
+        connections: [
+          double('connection', host: 'A', dead?: false),
+          double('connection', host: 'B', dead?: false)
+        ]
+      )
     end
 
     describe '#map' do
-
       it 'responds to the method' do
         expect(collection.map { |c| c.host.downcase }).to eq(['a', 'b'])
       end
     end
 
     describe '#[]' do
-
       it 'responds to the method' do
         expect(collection[0].host).to eq('A')
         expect(collection[1].host).to eq('B')
@@ -95,17 +95,19 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
     end
 
     describe '#size' do
-
       it 'responds to the method' do
         expect(collection.size).to eq(2)
       end
     end
 
     context 'when a connection is marked as dead' do
-
       let(:collection) do
-        described_class.new(connections: [ double('connection', host: 'A', dead?: true),
-                                           double('connection', host: 'B', dead?: false) ])
+        described_class.new(
+          connections: [
+            double('connection', host: 'A', dead?: true),
+            double('connection', host: 'B', dead?: false)
+          ]
+        )
       end
 
       it 'does not enumerate the dead connections' do
@@ -114,14 +116,12 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
       end
 
       context '#alive' do
-
         it 'enumerates the alive connections' do
           expect(collection.alive.collect { |c| c.host }).to eq(['B'])
         end
       end
 
       context '#dead' do
-
         it 'enumerates the alive connections' do
           expect(collection.dead.collect { |c| c.host }).to eq(['A'])
         end
@@ -132,12 +132,15 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
   describe '#add' do
 
     let(:collection) do
-      described_class.new(connections: [ double('connection', host: 'A', dead?: false),
-                                         double('connection', host: 'B', dead?: false) ])
+      described_class.new(
+        connections: [
+          double('connection', host: 'A', dead?: false),
+          double('connection', host: 'B', dead?: false)
+        ]
+      )
     end
 
     context 'when an array is provided' do
-
       before do
         collection.add([double('connection', host: 'C', dead?: false),
                         double('connection', host: 'D', dead?: false)])
@@ -149,7 +152,6 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
     end
 
     context 'when an element is provided' do
-
       before do
         collection.add(double('connection', host: 'C', dead?: false))
       end
@@ -161,10 +163,11 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
   end
 
   describe '#remove' do
-
     let(:connections) do
-      [ double('connection', host: 'A', dead?: false),
-        double('connection', host: 'B', dead?: false) ]
+      [
+        double('connection', host: 'A', dead?: false),
+        double('connection', host: 'B', dead?: false)
+      ]
     end
 
     let(:collection) do
@@ -172,7 +175,6 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
     end
 
     context 'when an array is provided' do
-
       before do
         collection.remove(connections)
       end
@@ -183,10 +185,11 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
     end
 
     context 'when an element is provided' do
-
       let(:connections) do
-        [ double('connection', host: 'A', dead?: false),
-          double('connection', host: 'B', dead?: false) ]
+        [
+          double('connection', host: 'A', dead?: false),
+          double('connection', host: 'B', dead?: false)
+        ]
       end
 
       before do
@@ -200,15 +203,13 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
   end
 
   describe '#get_connection' do
-
     context 'when all connections are dead' do
-
       let(:connection_a) do
-        Elasticsearch::Transport::Transport::Connections::Connection.new(host: { host: 'A' })
+        Elastic::Transport::Transport::Connections::Connection.new(host: { host: 'A' })
       end
 
       let(:connection_b) do
-        Elasticsearch::Transport::Transport::Connections::Connection.new(host: { host: 'B' })
+        Elastic::Transport::Transport::Connections::Connection.new(host: { host: 'B' })
       end
 
       let(:collection) do
@@ -226,10 +227,9 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
     end
 
     context 'when multiple threads are used' do
-
       let(:connections) do
         20.times.collect do |i|
-          Elasticsearch::Transport::Transport::Connections::Connection.new(host: { host: i })
+          Elastic::Transport::Transport::Connections::Connection.new(host: { host: i })
         end
       end
 
@@ -238,16 +238,16 @@ describe Elasticsearch::Transport::Transport::Connections::Collection do
       end
 
       it 'allows threads to select connections in parallel' do
-       expect(10.times.collect do
-          threads = []
-          20.times do
-            threads << Thread.new do
-              collection.get_connection
-            end
-          end
-          threads.map { |t| t.join }
-          collection.get_connection.host[:host]
-        end).to eq((0..9).to_a)
+        expect(10.times.collect do
+                 threads = []
+                 20.times do
+                   threads << Thread.new do
+                     collection.get_connection
+                   end
+                 end
+                 threads.map { |t| t.join }
+                 collection.get_connection.host[:host]
+               end).to eq((0..9).to_a)
       end
 
       it 'always returns a connection' do

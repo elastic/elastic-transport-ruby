@@ -15,11 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
       module Serializer
-
         # An abstract class for implementing serializer implementations
         #
         module Base

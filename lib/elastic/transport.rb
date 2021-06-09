@@ -15,23 +15,23 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
-  module Transport
-    module Transport
-      # Wraps the response from Elasticsearch.
-      #
-      class Response
-        attr_reader :status, :body, :headers
+require 'faraday'
+require 'multi_json'
+require 'time'
+require 'timeout'
+require 'uri'
 
-        # @param status  [Integer] Response status code
-        # @param body    [String]  Response body
-        # @param headers [Hash]    Response headers
-        def initialize(status, body, headers={})
-          @status, @body, @headers = status, body, headers
-          @body = body.force_encoding('UTF-8') if body.respond_to?(:force_encoding)
-        end
-      end
+require 'elastic/transport/transport/loggable'
+require 'elastic/transport/transport/serializer/multi_json'
+require 'elastic/transport/transport/sniffer'
+require 'elastic/transport/transport/response'
+require 'elastic/transport/transport/errors'
+require 'elastic/transport/transport/base'
+require 'elastic/transport/transport/connections/selector'
+require 'elastic/transport/transport/connections/connection'
+require 'elastic/transport/transport/connections/collection'
+require 'elastic/transport/transport/http/faraday'
+require 'elastic/transport/client'
+require 'elastic/transport/redacted'
 
-    end
-  end
-end
+require 'elastic/transport/version'

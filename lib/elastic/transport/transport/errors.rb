@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
 
@@ -27,7 +27,7 @@ module Elasticsearch
       #
       class SnifferTimeoutError < Timeout::Error; end
 
-      # Elasticsearch server error (HTTP status 5xx)
+      # Elastic server error (HTTP status 5xx)
       #
       class ServerError < Error; end
 

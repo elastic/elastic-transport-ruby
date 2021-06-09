@@ -40,7 +40,7 @@ require 'mocha/minitest'
 require 'ansi/code'
 
 require 'require-prof' if ENV["REQUIRE_PROF"]
-require 'elasticsearch-transport'
+require 'elastic-transport'
 require 'logger'
 
 require 'hashie'
@@ -64,7 +64,6 @@ module Minitest
   class Test
     def assert_nothing_raised(*args)
       begin
-        line = __LINE__
         yield
       rescue RuntimeError => e
         raise MiniTest::Assertion, "Exception raised:\n<#{e.class}>", e.backtrace

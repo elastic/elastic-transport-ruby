@@ -17,7 +17,7 @@
 
 require 'manticore'
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
       module HTTP
@@ -26,9 +26,9 @@ module Elasticsearch
         #
         # @example HTTP
         #
-        #     require 'elasticsearch/transport/transport/http/manticore'
+        #     require 'elastic/transport/transport/http/manticore'
         #
-        #     client = Elasticsearch::Client.new transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore
+        #     client = Elastic::Transport::Client.new(transport_class: Elastic::Transport::Transport::HTTP::Manticore)
         #
         #     client.transport.connections.first.connection
         #     => #<Manticore::Client:0x56bf7ca6 ...>
@@ -39,11 +39,11 @@ module Elasticsearch
         #  @example HTTPS (All SSL settings are optional,
         #                  see http://www.rubydoc.info/gems/manticore/Manticore/Client:initialize)
         #
-        #     require 'elasticsearch/transport/transport/http/manticore'
+        #     require 'elastic/transport/transport/http/manticore'
         #
-        #     client = Elasticsearch::Client.new \
+        #     client = Elastic::Transport::Client.new \
         #       url: 'https://elasticsearch.example.com',
-        #       transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore,
+        #       transport_class: Elastic::Transport::Transport::HTTP::Manticore,
         #       ssl: {
         #         truststore: '/tmp/truststore.jks',
         #         truststore_password: 'password',
@@ -169,7 +169,7 @@ module Elasticsearch
                 meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} #{RbConfig::CONFIG['target_cpu']}"
               end
               meta << "Manticore #{::Manticore::VERSION}"
-              "elasticsearch-ruby/#{VERSION} (#{meta.join('; ')})"
+              "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
             end
           end
         end

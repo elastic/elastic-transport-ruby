@@ -17,7 +17,7 @@
 
 require 'base64'
 
-module Elasticsearch
+module Elastic
   module Transport
     # Methods for the Elastic meta header used by Cloud.
     # X-Elastic-Client-Meta HTTP header which is used by Elastic Cloud and can be disabled when
@@ -32,7 +32,7 @@ module Elasticsearch
         meta_headers = {
           service.to_sym => version,
           rb: RUBY_VERSION,
-          t: Elasticsearch::Transport::VERSION
+          t: Elastic::Transport::VERSION
         }
         meta_headers.merge!(meta_header_engine) if meta_header_engine
         meta_headers.merge!(meta_header_adapter) if meta_header_adapter
@@ -48,7 +48,7 @@ module Elasticsearch
         elsif defined?(Elasticsearch::VERSION)
           [:es, client_meta_version(Elasticsearch::VERSION)]
         else
-          [:es, client_meta_version(Elasticsearch::Transport::VERSION)]
+          [:es, client_meta_version(Elastic::Transport::VERSION)]
         end
       end
 

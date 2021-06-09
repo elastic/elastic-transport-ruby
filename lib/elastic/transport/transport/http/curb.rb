@@ -15,11 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
       module HTTP
-
         # Alternative HTTP transport implementation, using the [_Curb_](https://rubygems.org/gems/curb) client.
         #
         # @see Transport::Base
@@ -111,7 +110,7 @@ module Elasticsearch
                 meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} #{RbConfig::CONFIG['target_cpu']}"
               end
               meta << "Curb #{Curl::CURB_VERSION}"
-              "elasticsearch-ruby/#{VERSION} (#{meta.join('; ')})"
+              "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
             end
           end
         end
