@@ -3,7 +3,38 @@
 
 This gem provides a low-level Ruby client for connecting to an [Elastic](http://elastic.co) cluster. It powers both the [Elasticsearch client](https://github.com/elasticsearch/elasticsearch-ruby/) and the [Elastic Enterprise Search](https://github.com/elastic/enterprise-search-ruby/) client.
 
-----
+## Compatibility
+
+This gem is compatible with maintained Ruby versions. See [Ruby Maintenance Branches](https://www.ruby-lang.org/en/downloads/branches/). We don't provide support to versions which have reached their end of life.
+
+The gem's version numbers follow Elastic's Stack major versions. The `master` branch is compatible with the Elastic Stack `master` branch, which is the next major version.
+
+| Client version  | Elastic Stack version | Supported | Tests |
+| :-------------: | :-------------------: | :-:       | :---: |
+| 7.x             | 7.x                   | :white_check_mark:       |       |
+| master          | master                | :x:       |  [![Tests](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml) |
+
+
+## Installation
+
+Install the package from [Rubygems](https://rubygems.org):
+
+    gem install elastic-transport
+
+To use an unreleased version, either add it to your `Gemfile` for [Bundler](http://gembundler.com):
+
+    gem 'elastic-transport', git: 'git://github.com/elastic/elastic-transport-ruby.git'
+
+or install it from a source code checkout:
+
+```bash
+git clone https://github.com/elastic/elastic-transport-ruby.git
+cd elastic-transport-ruby
+bundle install
+rake install
+```
+
+## Description
 
 It handles connecting to multiple nodes in the cluster, rotating across connections, logging and tracing requests and responses, maintaining failed connections, discovering nodes in the cluster, and provides an abstraction for
 data serialization and transport.
@@ -32,25 +63,6 @@ Currently these libraries will be automatically detected and used:
 
 For detailed information, see example configurations [below](#transport-implementations).
 
-## Installation
-
-Install the package from [Rubygems](https://rubygems.org):
-
-    gem install elastic-transport
-
-To use an unreleased version, either add it to your `Gemfile` for [Bundler](http://gembundler.com):
-
-    gem 'elastic-transport', git: 'git://github.com/elastic/elastic-transport-ruby.git'
-
-or install it from a source code checkout:
-
-```bash
-git clone https://github.com/elastic/elastic-transport-ruby.git
-cd elastic-transport-ruby
-bundle install
-rake install
-```
-
 ## Example Usage
 
 In the simplest form, connect to Elasticsearch running on <http://localhost:9200>
@@ -72,9 +84,7 @@ Full documentation is available at <http://rubydoc.info/gems/elastic-transport>.
 * [Default port](#default-port)
 * [Authentication](#authentication)
 * [Logging](#logging)
-* [APM integration](#apm-integration)
 * [Custom HTTP Headers](#custom-http-headers)
-* [Identifying running tasks with X-Opaque-Id](#identifying-running-tasks-with-x-opaque-id)
 * [Setting Timeouts](#setting-timeouts)
 * [Randomizing Hosts](#randomizing-hosts)
 * [Retrying on Failures](#retrying-on-failures)
@@ -167,26 +177,6 @@ Elastic::Transport::Client.new url: 'https://username:password@example.com:9200'
                           transport_options: { ssl: { ca_file: '/path/to/cacert.pem' } }
 ```
 
-You can also use [**API Key authentication**](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html):
-
-``` ruby
-Elastic::Transport::Client.new(
-  host: host,
-  transport_options: transport_options,
-  api_key: credentials
-)
-```
-
-Where credentials is either the base64 encoding of `id` and `api_key` joined by a colon or a hash with the `id` and `api_key`:
-
-``` ruby
-Elastic::Transport::Client.new(
-  host: host,
-  transport_options: transport_options,
-  api_key: {id: 'my_id', api_key: 'my_api_key'}
-)
-```
-
 ### Logging
 
 To log requests and responses to standard output with the default logger (an instance of Ruby's {::Logger} class), set the `log` argument to true:
@@ -232,9 +222,6 @@ log.level = :info
 
 client = Elastic::Transport::Client.new(logger: log)
 ```
-### APM integration
-
-This client integrates seamlessly with Elastic APM via the [Elastic APM Agent](https://github.com/elastic/apm-agent-ruby). It will automatically capture client requests if you are using the agent on your code. If you're using `elastic-apm` v3.8.0 or up, you can set `capture_elasticsearch_queries` to `true` in `config/elastic_apm.yml` to also capture the body from requests in Elasticsearch. See [here](https://github.com/elastic/elasticsearch-ruby/tree/master/docs/examples/apm) for an example.
 
 ### Custom HTTP Headers
 
@@ -253,29 +240,6 @@ You can also pass in `headers` as a parameter to any of the API Endpoints to set
 
 ```ruby
 client.search(index: 'myindex', q: 'title:test', headers: {user_agent: "My App"})
-```
-
-### Identifying running tasks with X-Opaque-Id
-
-The X-Opaque-Id header allows to track certain calls, or associate certain tasks with the client that started them ([more on the Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html#_identifying_running_tasks)). To use this feature, you need to set an id for `opaque_id` on the client on each request. Example:
-
-```ruby
-client = Elastic::Transport::Client.new
-client.search(index: 'myindex', q: 'title:test', opaque_id: '123456')
-```
-The search request will include the following HTTP Header:
-```
-X-Opaque-Id: 123456
-```
-
-You can also set a prefix for X-Opaque-Id when initializing the client. This will be prepended to the id you set before each request if you're using X-Opaque-Id. Example:
-```ruby
-client = Elastic::Transport::Client.new(opaque_id_prefix: 'eu-west1_')
-client.search(index: 'myindex', q: 'title:test', opaque_id: '123456')
-```
-The request will include the following HTTP Header:
-```
-X-Opaque-Id: eu-west1_123456
 ```
 
 ### Setting Timeouts
@@ -565,7 +529,7 @@ when connection reloading ("sniffing") times out.
 For local development, clone the repository and run `bundle install`. See `rake -T` for a list of
 available Rake tasks for running tests, generating documentation, starting a testing cluster, etc.
 
-Bug fixes and features must be covered by unit tests. Integration tests are written in Ruby 1.9 syntax.
+Bug fixes and features must be covered by unit tests.
 
 Github's pull requests and issues are used to communicate, send bug reports and code contributions.
 
@@ -595,9 +559,6 @@ Github's pull requests and issues are used to communicate, send bug reports and 
   from the pool, eg. in a round-robin or random fashion. You can implement your own selector strategy.
 
 ## Development
-
-To work on the code, clone and bootstrap the main repository first --
-please see instructions in the main [README](../README.md#development).
 
 To run tests, launch a testing cluster and use the Rake tasks:
 
