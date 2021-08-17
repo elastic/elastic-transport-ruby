@@ -17,7 +17,7 @@
 
 require 'manticore'
 
-module Elastic
+module Elasticsearch
   module Transport
     module Transport
       module HTTP
@@ -26,9 +26,9 @@ module Elastic
         #
         # @example HTTP
         #
-        #     require 'elastic/transport/transport/http/manticore'
+        #     require 'elasticsearch/transport/transport/http/manticore'
         #
-        #     client = Elastic::Transport::Client.new(transport_class: Elastic::Transport::Transport::HTTP::Manticore)
+        #     client = Elasticsearch::Client.new transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore
         #
         #     client.transport.connections.first.connection
         #     => #<Manticore::Client:0x56bf7ca6 ...>
@@ -39,11 +39,11 @@ module Elastic
         #  @example HTTPS (All SSL settings are optional,
         #                  see http://www.rubydoc.info/gems/manticore/Manticore/Client:initialize)
         #
-        #     require 'elastic/transport/transport/http/manticore'
+        #     require 'elasticsearch/transport/transport/http/manticore'
         #
-        #     client = Elastic::Transport::Client.new \
+        #     client = Elasticsearch::Client.new \
         #       url: 'https://elasticsearch.example.com',
-        #       transport_class: Elastic::Transport::Transport::HTTP::Manticore,
+        #       transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore,
         #       ssl: {
         #         truststore: '/tmp/truststore.jks',
         #         truststore_password: 'password',
@@ -63,6 +63,7 @@ module Elastic
           include Base
 
           def initialize(arguments={}, &block)
+            @request_options = { headers: (arguments.dig(:transport_options, :headers) || {}) }
             @manticore = build_client(arguments[:options] || {})
             super(arguments, &block)
           end
@@ -109,7 +110,6 @@ module Elastic
           # @return [Connections::Collection]
           #
           def __build_connections
-            @request_options = {}
             apply_headers(@request_options, options[:transport_options])
             apply_headers(@request_options, options)
 
@@ -155,11 +155,11 @@ module Elastic
           private
 
           def apply_headers(request_options, options)
-            headers = (options && options[:headers]) || {}
+            headers = options&.[](:headers) || {}
             headers[CONTENT_TYPE_STR] = find_value(headers, CONTENT_TYPE_REGEX) || DEFAULT_CONTENT_TYPE
             headers[USER_AGENT_STR] = find_value(headers, USER_AGENT_REGEX) || user_agent_header
             headers[ACCEPT_ENCODING] = GZIP if use_compression?
-            request_options.merge!(headers: headers)
+            request_options[:headers].merge!(headers)
           end
 
           def user_agent_header
@@ -169,7 +169,7 @@ module Elastic
                 meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} #{RbConfig::CONFIG['target_cpu']}"
               end
               meta << "Manticore #{::Manticore::VERSION}"
-              "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
+              "elasticsearch-ruby/#{VERSION} (#{meta.join('; ')})"
             end
           end
         end
