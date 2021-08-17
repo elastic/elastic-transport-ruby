@@ -17,7 +17,7 @@
 
 require 'manticore'
 
-module Elasticsearch
+module Elastic
   module Transport
     module Transport
       module HTTP
