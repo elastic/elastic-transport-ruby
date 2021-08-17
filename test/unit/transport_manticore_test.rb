@@ -18,15 +18,15 @@
 require 'test_helper'
 
 if JRUBY
-  require 'elasticsearch/transport/transport/http/manticore'
   require 'manticore'
+  require 'elastic/transport/transport/http/manticore'
 
-  module Elasticsearch
+  module Elastic
     module Transport
       module Transport
         module HTTP
           class ManticoreTest < Minitest::Test
-            include Elasticsearch::Transport::Transport::HTTP
+            include Elastic::Transport::Transport::HTTP
 
             def common_headers
               {
