@@ -92,53 +92,49 @@ configuring logging, customizing the transport library, etc.
 
 ### Setting Hosts
 
-To connect to a specific Elasticsearch host:
+This behaviour is going to be simplified, see [#5](https://github.com/elastic/elastic-transport-ruby/issues/5). To connect to a specific Elasticsearch host:
 
 ```ruby
-Elastic::Transport::Client.new host: 'search.myserver.com'
+Elastic::Transport::Client.new(host: 'search.myserver.com')
 ```
 
 To connect to a host with specific port:
 
 ```ruby
-Elastic::Transport::Client.new host: 'myhost:8080'
+Elastic::Transport::Client.new(host: 'myhost:8080')
 ```
 
 To connect to multiple hosts:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['myhost1', 'myhost2']
+Elastic::Transport::Client.new(hosts: ['myhost1', 'myhost2'])
 ```
-
 
 Instead of Strings, you can pass host information as an array of Hashes:
 
 ```ruby
-Elastic::Transport::Client.new hosts: [ { host: 'myhost1', port: 8080 }, { host: 'myhost2', port: 8080 } ]
+Elastic::Transport::Client.new(hosts: [{ host: 'myhost1', port: 8080 }, { host: 'myhost2', port: 8080 }])
 ```
 
-**NOTE:** When specifying multiple hosts, you probably want to enable the `retry_on_failure` or `retry_on_status` options to
-          perform a failed request on another node (see the _Retrying on Failures_ chapter).
+**NOTE:** When specifying multiple hosts, you probably want to enable the `retry_on_failure` or `retry_on_status` options to perform a failed request on another node (see the _Retrying on Failures_ chapter).
 
 Common URL parts -- scheme, HTTP authentication credentials, URL prefixes, etc -- are handled automatically:
 ```ruby
-Elastic::Transport::Client.new url: 'https://username:password@api.server.org:4430/search'
+Elastic::Transport::Client.new(url: 'https://username:password@api.server.org:4430/search')
 ```
 
 You can pass multiple URLs separated by a comma:
 ```ruby
-Elastic::Transport::Client.new urls: 'http://localhost:9200,http://localhost:9201'
+Elastic::Transport::Client.new(urls: 'http://localhost:9200,http://localhost:9201')
 ```
 
 Another way to configure the URL(s) is to export the `ELASTICSEARCH_URL` variable.
 
-The client will automatically round-robin across the hosts
-(unless you select or implement a different [connection selector](#connection-selector)).
+The client will automatically round-robin across the hosts (unless you select or implement a different [connection selector](#connection-selector)).
 
 ### Default port
 
-The default port is `9200`. Please specify a port for your host(s) if they differ from this default.
-Please see below for an exception to this when connecting using an Elastic Cloud ID.
+The default port is `9200`. Please specify a port for your host(s) if they differ from this default. Please see below for an exception to this when connecting using an Elastic Cloud ID.
 
 ### Authentication
 
@@ -146,27 +142,30 @@ You can pass the authentication credentials, scheme and port in the host configu
 
 ```ruby
 Elastic::Transport::Client.new(
-    hosts: [
-           { host: 'my-protected-host',
-    port: '443',
-    user: 'USERNAME',
-    password: 'PASSWORD',
-    scheme: 'https'
-  } 
-]
+  hosts: [
+    {
+      host: 'my-protected-host',
+      port: '443',
+      user: 'USERNAME',
+      password: 'PASSWORD',
+      scheme: 'https'
+    }
+  ]
+)
 ```
-... or simply use the common URL format:
+Or use the common URL format:
 
 ```ruby
 Elastic::Transport::Client.new(url: 'https://username:password@example.com:9200')
 ```
 
-To pass a custom certificate for SSL peer verification to Faraday-based clients,
-use the `transport_options` option:
+To pass a custom certificate for SSL peer verification to Faraday-based clients, use the `transport_options` option:
 
 ```ruby
-Elastic::Transport::Client.new url: 'https://username:password@example.com:9200',
-                          transport_options: { ssl: { ca_file: '/path/to/cacert.pem' } }
+Elastic::Transport::Client.new(
+  url: 'https://username:password@example.com:9200',
+  transport_options: { ssl: { ca_file: '/path/to/cacert.pem' } }
+)
 ```
 
 ### Logging
@@ -231,7 +230,7 @@ client = Elastic::Transport::Client.new(
 You can also pass in `headers` as a parameter to any of the API Endpoints to set custom headers for the request:
 
 ```ruby
-client.search(index: 'myindex', q: 'title:test', headers: {user_agent: "My App"})
+client.search(index: 'myindex', q: 'title:test', headers: { user_agent: "My App" })
 ```
 
 ### Setting Timeouts
@@ -240,7 +239,7 @@ For many operations in Elasticsearch, the default timeouts of HTTP libraries are
 To increase the timeout, you can use the `request_timeout` parameter:
 
 ```ruby
-Elastic::Transport::Client.new request_timeout: 5*60
+Elastic::Transport::Client.new(request_timeout: 5 * 60)
 ```
 
 You can also use the `transport_options` argument documented below.
@@ -253,7 +252,7 @@ it might keep connecting to the same nodes "at once". To prevent this, you can r
 collection on initialization and reloading:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], randomize_hosts: true
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], randomize_hosts: true)
 ```
 
 ### Retrying on Failures
@@ -262,77 +261,71 @@ When the client is initialized with multiple hosts, it makes sense to retry a fa
 on a different host:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], retry_on_failure: true
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], retry_on_failure: true)
 ```
 
 By default, the client will retry the request 3 times. You can specify how many times to retry before it raises an exception by passing a number to `retry_on_failure`:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], retry_on_failure: 5
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], retry_on_failure: 5)
 ```
 
 You can also use `retry_on_status` to retry when specific status codes are returned:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], retry_on_status: [502, 503]
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], retry_on_status: [502, 503])
 ```
 
 These two parameters can also be used together:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], retry_on_status: [502, 503], retry_on_failure: 10
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], retry_on_status: [502, 503], retry_on_failure: 10)
 ```
 
 ### Reloading Hosts
 
-Elasticsearch by default dynamically discovers new nodes in the cluster. You can leverage this
-in the client, and periodically check for new nodes to spread the load.
+Elasticsearch by default dynamically discovers new nodes in the cluster. You can leverage this in the client, and periodically check for new nodes to spread the load.
 
-To retrieve and use the information from the
-[_Nodes Info API_](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-info.html)
-on every 10,000th request:
+To retrieve and use the information from the [_Nodes Info API_](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-info.html) on every 10,000th request:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], reload_connections: true
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], reload_connections: true)
 ```
 
 You can pass a specific number of requests after which the reloading should be performed:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], reload_connections: 1_000
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], reload_connections: 1_000)
 ```
 
 To reload connections on failures, use:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], reload_on_failure: true
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], reload_on_failure: true)
 ```
 
 The reloading will timeout if not finished under 1 second by default. To change the setting:
 
 ```ruby
-Elastic::Transport::Client.new hosts: ['localhost:9200', 'localhost:9201'], sniffer_timeout: 3
+Elastic::Transport::Client.new(hosts: ['localhost:9200', 'localhost:9201'], sniffer_timeout: 3)
 ```
 
-**NOTE:** When using reloading hosts ("sniffing") together with authentication, just pass the scheme,
-          user and password with the host info -- or, for more clarity, in the `http` options:
+**NOTE:** When using reloading hosts ("sniffing") together with authentication, just pass the scheme, user and password with the host info -- or, for more clarity, in the `http` options:
 
 ```ruby
-Elastic::Transport::Client.new host: 'localhost:9200',
-                          http: { scheme: 'https', user: 'U', password: 'P' },
-                          reload_connections: true,
-                          reload_on_failure: true
+Elastic::Transport::Client.new(
+  host: 'localhost:9200',
+  http: { scheme: 'https', user: 'U', password: 'P' },
+  reload_connections: true,
+  reload_on_failure: true
+)
 ```
 
 ### Connection Selector
 
-By default, the client will rotate the connections in a round-robin fashion, using the
-{Elastic::Transport::Transport::Connections::Selector::RoundRobin} strategy.
+By default, the client will rotate the connections in a round-robin fashion, using the {Elastic::Transport::Transport::Connections::Selector::RoundRobin} strategy.
 
-You can implement your own strategy to customize the behaviour. For example,
-let's have a "rack aware" strategy, which will prefer the nodes with a specific
-[attribute](https://github.com/elasticsearch/elasticsearch/blob/1.0/config/elasticsearch.yml#L81-L85).
-Only when these would be unavailable, the strategy will use the other nodes:
+You can implement your own strategy to customize the behaviour. For example, let's have a "rack aware" strategy, which will prefer the nodes with a specific [attribute](https://github.com/elasticsearch/elasticsearch/blob/1.0/config/elasticsearch.yml#L81-L85). Only when these would be unavailable, the strategy will use the other nodes:
 
 ```ruby
 class RackIdSelector
@@ -351,11 +344,9 @@ Elastic::Transport::Client.new hosts: ['x1.search.org', 'x2.search.org'], select
 
 ### Transport Implementations
 
-By default, the client will use the [_Faraday_](https://rubygems.org/gems/faraday) HTTP library
-as a transport implementation.
+By default, the client will use the [_Faraday_](https://rubygems.org/gems/faraday) HTTP library as a transport implementation.
 
-It will auto-detect and use an _adapter_ for _Faraday_ based on gems loaded in your code,
-preferring HTTP clients with support for persistent connections.
+It will auto-detect and use an _adapter_ for _Faraday_ based on gems loaded in your code, preferring HTTP clients with support for persistent connections.
 
 To use the [_Patron_](https://github.com/toland/patron) HTTP, for example, just require it:
 
@@ -386,7 +377,7 @@ end
 To use a specific adapter for _Faraday_, pass it as the `adapter` argument:
 
 ```ruby
-client = Elastic::Transport::Client.new adapter: :net_http_persistent
+client = Elastic::Transport::Client.new(adapter: :net_http_persistent)
 
 client.transport.connections.first.connection.builder.handlers
 # => [Faraday::Adapter::NetHttpPersistent]
@@ -397,12 +388,14 @@ To pass options to the
 constructor, use the `transport_options` key:
 
 ```ruby
-client = Elastic::Transport::Client.new transport_options: {
-  request: { open_timeout: 1 },
-  headers: { user_agent:   'MyApp' },
-  params:  { :format => 'yaml' },
-  ssl:     { verify: false }
-}
+client = Elastic::Transport::Client.new(
+  transport_options: {
+    request: { open_timeout: 1 },
+    headers: { user_agent:   'MyApp' },
+    params:  { :format => 'yaml' },
+    ssl:     { verify: false }
+  }
+)
 ```
 
 To configure the _Faraday_ instance directly, use a block:
@@ -426,13 +419,14 @@ transport_configuration = lambda do |f|
   f.adapter  :patron
 end
 
-transport = Elastic::Transport::Transport::HTTP::Faraday.new \
+transport = Elastic::Transport::Transport::HTTP::Faraday.new(
   hosts: [ { host: 'localhost', port: '9200' } ],
   &transport_configuration
+)
 
 # Pass the transport to the client
 #
-client = Elastic::Transport::Client.new transport: transport
+client = Elastic::Transport::Client.new(transport: transport)
 ```
 
 Instead of passing the transport to the constructor, you can inject it at run time:
@@ -445,14 +439,18 @@ faraday_configuration = lambda do |f|
   f.adapter :excon
 end
 
-faraday_client = Elastic::Transport::Transport::HTTP::Faraday.new \
-  hosts: [ { host: 'my-protected-host',
-             port: '443',
-             user: 'USERNAME',
-             password: 'PASSWORD',
-             scheme: 'https'
-          }],
+faraday_client = Elastic::Transport::Transport::HTTP::Faraday.new(
+  hosts: [
+    {
+      host: 'my-protected-host',
+      port: '443',
+      user: 'USERNAME',
+      password: 'PASSWORD',
+      scheme: 'https'
+    }
+  ],
   &faraday_configuration
+)
 
 # Create a default client
 #
@@ -469,57 +467,47 @@ You can also use a bundled [_Curb_](https://rubygems.org/gems/curb) based transp
 require 'curb'
 require 'elastic/transport/transport/http/curb'
 
-client = Elastic::Transport::Client.new transport_class: Elastic::Transport::Transport::HTTP::Curb
+client = Elastic::Transport::Client.new(transport_class: Elastic::Transport::Transport::HTTP::Curb)
 
 client.transport.connections.first.connection
 # => #<Curl::Easy http://localhost:9200/>
 ```
 
-It's possible to customize the _Curb_ instance by passing a block to the constructor as well
-(in this case, as an inline block):
+It's possible to customize the _Curb_ instance by passing a block to the constructor as well (in this case, as an inline block):
 
 ```ruby
-transport = Elastic::Transport::Transport::HTTP::Curb.new \
+transport = Elastic::Transport::Transport::HTTP::Curb.new(
   hosts: [ { host: 'localhost', port: '9200' } ],
   & lambda { |c| c.verbose = true }
+)
 
-client = Elastic::Transport::Client.new transport: transport
+client = Elastic::Transport::Client.new(transport: transport)
 ```
 
-You can write your own transport implementation easily, by including the
-{Elastic::Transport::Transport::Base} module, implementing the required contract,
-and passing it to the client as the `transport_class` parameter -- or injecting it directly.
+You can write your own transport implementation by including the `Elastic::Transport::Transport::Base` module, implementing the required contract, and passing it to the client as the `transport_class` parameter -- or injecting it directly.
 
 ### Serializer Implementations
 
-By default, the [MultiJSON](http://rubygems.org/gems/multi_json) library is used as the
-serializer implementation, and it will pick up the "right" adapter based on gems available.
+By default, the [MultiJSON](http://rubygems.org/gems/multi_json) library is used as the serializer implementation, and it will pick up the "right" adapter based on gems available.
 
-The serialization component is pluggable, though, so you can write your own by including the
-{Elastic::Transport::Transport::Serializer::Base} module, implementing the required contract,
-and passing it to the client as the `serializer_class` or `serializer` parameter.
+The serialization component is pluggable, though, so you can write your own by including the `Elastic::Transport::Transport::Serializer::Base` module, implementing the required contract, and passing it to the client as the `serializer_class` or `serializer` parameter.
 
 ### Exception Handling
 
-The library defines a [number of exception classes](https://github.com/elasticsearch/elasticsearch-ruby/blob/master/elasticsearch-transport/lib/elasticsearch/transport/transport/errors.rb)
-for various client and server errors, as well as unsuccessful HTTP responses,
+The library defines a [number of exception classes](https://github.com/elastic/elastic-transport-ruby/blob/main/lib/elastic/transport/transport/errors.rb) for various client and server errors, as well as unsuccessful HTTP responses,
 making it possible to `rescue` specific exceptions with desired granularity.
 
-The highest-level exception is {Elastic::Transport::Transport::Error}
-and will be raised for any generic client *or* server errors.
+The highest-level exception is `Elastic::Transport::Transport::Error` and will be raised for any generic client *or* server errors.
 
-{Elastic::Transport::Transport::ServerError} will be raised for server errors only.
+`Elastic::Transport::Transport::ServerError` will be raised for server errors only.
 
-As an example for response-specific errors, a `404` response status will raise
-an {Elastic::Transport::Transport::Errors::NotFound} exception.
+As an example for response-specific errors, a `404` response status will raise an `Elastic::Transport::Transport::Errors::NotFound` exception.
 
-Finally, {Elastic::Transport::Transport::SnifferTimeoutError} will be raised
-when connection reloading ("sniffing") times out.
+Finally, `Elastic::Transport::Transport::SnifferTimeoutError` will be raised when connection reloading ("sniffing") times out.
 
 ## Development and Community
 
-For local development, clone the repository and run `bundle install`. See `rake -T` for a list of
-available Rake tasks for running tests, generating documentation, starting a testing cluster, etc.
+For local development, clone the repository and run `bundle install`. See `rake -T` for a list of available Rake tasks for running tests, generating documentation, starting a testing cluster, etc.
 
 Bug fixes and features must be covered by unit tests.
 
@@ -527,28 +515,14 @@ Github's pull requests and issues are used to communicate, send bug reports and 
 
 ## The Architecture
 
-* {Elastic::Transport::Client} is composed of {Elastic::Transport::Transport}
-
-* {Elastic::Transport::Transport} is composed of {Elastic::Transport::Transport::Connections},
-  and an instance of logger, tracer, serializer and sniffer.
-
-* Logger and tracer can be any object conforming to Ruby logging interface,
-  ie. an instance of [`Logger`](http://www.ruby-doc.org/stdlib-1.9.3/libdoc/logger/rdoc/Logger.html),
-  [_log4r_](https://rubygems.org/gems/log4r), [_logging_](https://github.com/TwP/logging/), etc.
-
-* The {Elastic::Transport::Transport::Serializer::Base} implementations handle converting data for Elasticsearch
-  (eg. to JSON). You can implement your own serializer.
-
-* {Elastic::Transport::Transport::Sniffer} allows to discover nodes in the cluster and use them as connections.
-
-* {Elastic::Transport::Transport::Connections::Collection} is composed of
-  {Elastic::Transport::Transport::Connections::Connection} instances and a selector instance.
-
-* {Elastic::Transport::Transport::Connections::Connection} contains the connection attributes such as hostname and port,
-  as well as the concrete persistent "session" connected to a specific node.
-
-* The {Elastic::Transport::Transport::Connections::Selector::Base} implementations allow to choose connections
-  from the pool, eg. in a round-robin or random fashion. You can implement your own selector strategy.
+* `Elastic::Transport::Client` is composed of `Elastic::Transport::Transport`.
+* `Elastic::Transport::Transport` is composed of `Elastic::Transport::Transport::Connections`, and an instance of logger, tracer, serializer and sniffer.
+* Logger and tracer can be any object conforming to the Ruby logging interface, ie. an instance of [`Logger`](http://www.ruby-doc.org/stdlib-1.9.3/libdoc/logger/rdoc/Logger.html), [_log4r_](https://rubygems.org/gems/log4r), [_logging_](https://github.com/TwP/logging/), etc.
+* The `Elastic::Transport::Transport::Serializer::Base` implementations handles converting data for Elasticsearch (eg. to JSON). You can implement your own serializer.
+* `Elastic::Transport::Transport::Sniffer` allows discovering nodes in the cluster and use them as connections.
+* `Elastic::Transport::Transport::Connections::Collection` is composed of `Elastic::Transport::Transport::Connections::Connection` instances and a selector instance.
+* `Elastic::Transport::Transport::Connections::Connection` contains the connection attributes such as hostname and port, as well as the concrete persistent "session" connected to a specific node.
+* The `Elastic::Transport::Transport::Connections::Selector::Base` implementations allows you to choose connections from the pool, eg. in a round-robin or random fashion. You can implement your own selector strategy.
 
 ## Development
 
