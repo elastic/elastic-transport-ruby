@@ -1,5 +1,7 @@
 *.gem
 *.rbc
+*.log
+.byebug_history
 .bundle
 .config
 .yardoc
