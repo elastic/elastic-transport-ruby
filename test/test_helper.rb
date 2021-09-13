@@ -15,18 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
+password = ENV['ELASTIC_PASSWORD'] || 'changeme'
+host = ENV['TEST_ES_SERVER'] || 'http://localhost:9200'
+raise URI::InvalidURIError unless host =~ /\A#{URI::DEFAULT_PARSER.make_regexp}\z/
 
-ELASTICSEARCH_HOSTS = if hosts = ENV['TEST_ES_SERVER'] || ENV['ELASTICSEARCH_HOSTS']
-                        hosts.split(',').map do |host|
-                          /(http\:\/\/)?(\S+)/.match(host)[2]
-                        end
-                      else
-                        ['localhost:9200']
-                      end.freeze
+uri = URI.parse(host)
+HOST = "http://elastic:#{password}@#{uri.host}:#{uri.port}".freeze
 
-TEST_HOST, TEST_PORT = ELASTICSEARCH_HOSTS.first.split(':') if ELASTICSEARCH_HOSTS
-
-JRUBY    = defined?(JRUBY_VERSION)
+JRUBY = defined?(JRUBY_VERSION)
 
 if ENV['COVERAGE']
   require 'simplecov'

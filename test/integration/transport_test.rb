@@ -20,44 +20,46 @@ require 'test_helper'
 class Elastic::Transport::ClientIntegrationTest < Minitest::Test
   context "Transport" do
     setup do
-      @host, @port = ELASTICSEARCH_HOSTS.first.split(':')
       begin; Object.send(:remove_const, :Patron);   rescue NameError; end
+      uri = URI(HOST)
+      @host = {
+        host: uri.host,
+        port: uri.port,
+        user: uri.user,
+        password: uri.password
+      }
     end
 
     should "allow to customize the Faraday adapter to Typhoeus" do
       require 'typhoeus'
       require 'typhoeus/adapters/faraday'
 
-      transport = Elastic::Transport::Transport::HTTP::Faraday.new \
-        :hosts => [ { host: @host, port: @port } ] do |f|
-          f.response :logger
-          f.adapter  :typhoeus
-        end
+      transport = Elastic::Transport::Transport::HTTP::Faraday.new(hosts: [@host]) do |f|
+        f.response :logger
+        f.adapter  :typhoeus
+      end
 
-      client = Elastic::Transport::Client.new transport: transport
+      client = Elastic::Transport::Client.new(transport: transport)
       client.perform_request 'GET', ''
     end unless jruby?
 
     should "allow to customize the Faraday adapter to NetHttpPersistent" do
       require 'net/http/persistent'
 
-      transport = Elastic::Transport::Transport::HTTP::Faraday.new \
-                                                                       :hosts => [ { host: @host, port: @port } ] do |f|
+      transport = Elastic::Transport::Transport::HTTP::Faraday.new(hosts: [@host]) do |f|
         f.response :logger
         f.adapter  :net_http_persistent
       end
 
-      client = Elastic::Transport::Client.new transport: transport
+      client = Elastic::Transport::Client.new(transport: transport)
       client.perform_request 'GET', ''
     end
 
     should "allow to define connection parameters and pass them" do
-      transport = Elastic::Transport::Transport::HTTP::Faraday.new \
-                    :hosts => [ { host: @host, port: @port } ],
-                    :options => { :transport_options => {
-                                    :params => { :format => 'yaml' }
-                                  }
-                                }
+      transport = Elastic::Transport::Transport::HTTP::Faraday.new(
+        hosts: [@host],
+        options: { transport_options: { params: { format: 'yaml' } } }
+      )
 
       client = Elastic::Transport::Client.new transport: transport
       response = client.perform_request 'GET', ''
@@ -69,12 +71,11 @@ class Elastic::Transport::ClientIntegrationTest < Minitest::Test
       require 'curb'
       require 'elastic/transport/transport/http/curb'
 
-      transport = Elastic::Transport::Transport::HTTP::Curb.new \
-        :hosts => [ { host: @host, port: @port } ] do |curl|
-          curl.verbose = true
-        end
+      transport = Elastic::Transport::Transport::HTTP::Curb.new(hosts: [@host]) do |curl|
+        curl.verbose = true
+      end
 
-      client = Elastic::Transport::Client.new transport: transport
+      client = Elastic::Transport::Client.new(transport: transport)
       client.perform_request 'GET', ''
     end unless JRUBY
 
@@ -82,12 +83,11 @@ class Elastic::Transport::ClientIntegrationTest < Minitest::Test
       require 'curb'
       require 'elastic/transport/transport/http/curb'
 
-      transport = Elastic::Transport::Transport::HTTP::Curb.new \
-        :hosts => [ { host: @host, port: @port } ] do |curl|
-          curl.verbose = true
-        end
+      transport = Elastic::Transport::Transport::HTTP::Curb.new(hosts: [@host]) do |curl|
+        curl.verbose = true
+      end
 
-      client = Elastic::Transport::Client.new transport: transport
+      client = Elastic::Transport::Client.new(transport: transport)
       response = client.perform_request 'GET', ''
 
       assert_respond_to(response.body, :to_hash)
