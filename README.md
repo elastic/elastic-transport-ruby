@@ -7,14 +7,6 @@ This gem provides a low-level Ruby client for connecting to an [Elastic](http://
 
 This gem is compatible with maintained Ruby versions. See [Ruby Maintenance Branches](https://www.ruby-lang.org/en/downloads/branches/). We don't provide support to versions which have reached their end of life.
 
-The gem's version numbers follow Elastic's Stack major versions. The `master` branch is compatible with the Elastic Stack `master` branch, which is the next major version.
-
-| Client version  | Elastic Stack version | Supported | Tests |
-| :-------------: | :-------------------: | :-:       | :---: |
-| 7.x             | 7.x                   | :white_check_mark:       |       |
-| master          | master                | :x:       |  [![Tests](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml) |
-
-
 ## Installation
 
 Install the package from [Rubygems](https://rubygems.org):
