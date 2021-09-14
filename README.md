@@ -526,6 +526,18 @@ Github's pull requests and issues are used to communicate, send bug reports and 
 
 ## Development
 
+A rake task is included to launch an Elasticsearch cluster with Docker. You need to install docker on your system and then run:
+```bash
+$ rake docker:start[VERSION]
+```
+
+E.g.:
+```bash
+$ rake docker:start[8.0.0-alpha1]
+```
+
+You can find the available version in [Docker @ Elastic](https://www.docker.elastic.co/r/elasticsearch).
+
 To run tests, launch a testing cluster and use the Rake tasks:
 
 ```bash

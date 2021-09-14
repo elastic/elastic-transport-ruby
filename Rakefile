@@ -65,7 +65,7 @@ namespace :docker do
     E.g.:
       rake docker:start[8.0.0-SNAPSHOT]
   DOC
-  task :start, [:version, :suite] do |_, params|
+  task :start, [:version] do |_, params|
     abort 'Docker not installed' unless find_executable 'docker'
     abort 'You need to set a version, e.g. rake docker:start[7.x-SNAPSHOT]' unless params[:version]
 
