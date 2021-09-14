@@ -25,11 +25,11 @@ Gem::Specification.new do |s|
   s.version       = Elastic::Transport::VERSION
   s.authors       = ['Karel Minarik', 'Emily Stolfo', 'Fernando Briano']
   s.email         = ['support@elastic.co']
-  s.summary       = 'Ruby client for Elastic services.'
-  s.homepage      = 'https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/index.html'
+  s.summary       = 'Low level Ruby client for Elastic services.'
+  s.homepage      = 'https://github.com/elastic/elastic-transport-ruby'
   s.license       = 'Apache-2.0'
   s.metadata = {
-    'homepage_uri' => 'https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/index.html',
+    'homepage_uri' => 'https://github.com/elastic/elastic-transport-ruby',
     'changelog_uri' => 'https://github.com/elastic/elastic-transport-ruby/blob/master/CHANGELOG.md',
     'source_code_uri' => 'https://github.com/elastic/elastic-transport-ruby',
     'bug_tracker_uri' => 'https://github.com/elastic/elastic-transport-ruby/issues'
@@ -69,6 +69,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'yard'
 
   s.description = <<-DESC.gsub(/^    /, '')
-    Ruby client for Elastic. See the `elasticsearch` or `elastic-enterprise-search` gems for full integration.
+    Low level Ruby client for Elastic. See the `elasticsearch` or `elastic-enterprise-search` gems for full integration.
   DESC
 end
