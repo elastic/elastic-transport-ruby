@@ -93,6 +93,6 @@ class Elastic::Transport::ClientIntegrationTest < Minitest::Test
       assert_respond_to(response.body, :to_hash)
       assert_not_nil response.body['name']
       assert_equal 'application/json', response.headers['content-type']
-    end unless JRUBY
+    end unless jruby?
   end
 end
