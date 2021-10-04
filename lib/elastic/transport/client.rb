@@ -178,7 +178,7 @@ module Elastic
       def validate_ca_fingerprints
         transport.connections.connections.each do |connection|
           unless connection.host[:scheme] == 'https'
-            raise Elasticsearch::Transport::Transport::Error, 'CA fingerprinting can\'t be configured over http'
+            raise Elastic::Transport::Transport::Error, 'CA fingerprinting can\'t be configured over http'
           end
 
           next if connection.verified
@@ -192,7 +192,7 @@ module Elastic
             OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == @ca_fingerprint.upcase
           end
           if matching_certs.empty?
-            raise Elasticsearch::Transport::Transport::Error,
+            raise Elastic::Transport::Transport::Error,
                   'Server certificate CA fingerprint does not match the value configured in ca_fingerprint'
           end
 
