@@ -1648,4 +1648,71 @@ describe Elastic::Transport::Client do
       end
     end
   end
+
+  context 'CA Fingerprinting' do
+    context 'when setting a ca_fingerprint' do
+      let(:certificate) do
+        system(
+          'openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=BE/O=Test/CN=Test"' \
+          ' -keyout certificate.key -out certificate.crt',
+          err: File::NULL
+        )
+        OpenSSL::X509::Certificate.new File.read('./certificate.crt')
+      end
+
+      let(:client) do
+        Elasticsearch::Transport::Client.new(
+          host: 'https://elastic:changeme@localhost:9200',
+          ca_fingerprint: OpenSSL::Digest::SHA256.hexdigest(certificate.to_der)
+        )
+      end
+
+      it 'validates CA fingerprints on perform request' do
+        expect(client.transport.connections.connections.map(&:verified).uniq).to eq [false]
+        allow(client.transport).to receive(:perform_request) { 'Hello' }
+
+        server = double('server').as_null_object
+        allow(TCPSocket).to receive(:new) { server }
+        socket = double('socket')
+        allow(OpenSSL::SSL::SSLSocket).to receive(:new) { socket }
+        allow(socket).to receive(:connect) { nil }
+        allow(socket).to receive(:peer_cert_chain) { [certificate] }
+
+        response = client.perform_request('GET', '/')
+        expect(client.transport.connections.connections.map(&:verified).uniq).to eq [true]
+        expect(response).to eq 'Hello'
+      end
+    end
+
+    context 'when using an http host' do
+      let(:client) do
+        Elasticsearch::Transport::Client.new(
+          host: 'http://elastic:changeme@localhost:9200',
+          ca_fingerprint: 'test'
+        )
+      end
+
+      it 'raises an error' do
+        expect do
+          client.perform_request('GET', '/')
+        end.to raise_exception(Elasticsearch::Transport::Transport::Error)
+      end
+    end
+
+    context 'when not setting a ca_fingerprint' do
+      let(:client) do
+        Elasticsearch::Transport::Client.new(
+          host: 'http://elastic:changeme@localhost:9200'
+        )
+      end
+
+      it 'has unvalidated connections' do
+        allow(client).to receive(:validate_ca_fingerprints) { nil }
+        allow(client.transport).to receive(:perform_request) { nil }
+
+        client.perform_request('GET', '/')
+        expect(client).to_not have_received(:validate_ca_fingerprints)
+      end
+    end
+  end
 end
