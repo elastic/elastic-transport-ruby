@@ -189,7 +189,7 @@ module Elastic
           ssl.connect
           cert_store = ssl.peer_cert_chain
           matching_certs = cert_store.select do |cert|
-            OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == @ca_fingerprint.upcase
+            OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == @ca_fingerprint.gsub(':', '').upcase
           end
           if matching_certs.empty?
             raise Elastic::Transport::Transport::Error,
