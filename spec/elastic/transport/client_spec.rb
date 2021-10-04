@@ -1661,7 +1661,7 @@ describe Elastic::Transport::Client do
       end
 
       let(:client) do
-        Elasticsearch::Transport::Client.new(
+        Elastic::Transport::Client.new(
           host: 'https://elastic:changeme@localhost:9200',
           ca_fingerprint: OpenSSL::Digest::SHA256.hexdigest(certificate.to_der)
         )
@@ -1686,7 +1686,7 @@ describe Elastic::Transport::Client do
 
     context 'when using an http host' do
       let(:client) do
-        Elasticsearch::Transport::Client.new(
+        Elastic::Transport::Client.new(
           host: 'http://elastic:changeme@localhost:9200',
           ca_fingerprint: 'test'
         )
@@ -1695,13 +1695,13 @@ describe Elastic::Transport::Client do
       it 'raises an error' do
         expect do
           client.perform_request('GET', '/')
-        end.to raise_exception(Elasticsearch::Transport::Transport::Error)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
 
     context 'when not setting a ca_fingerprint' do
       let(:client) do
-        Elasticsearch::Transport::Client.new(
+        Elastic::Transport::Client.new(
           host: 'http://elastic:changeme@localhost:9200'
         )
       end

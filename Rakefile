@@ -55,7 +55,6 @@ namespace :test do
   end
 end
 
-
 namespace :docker do
   desc <<~DOC
     Start Elasticsearch in a Docker container. Credentials are 'elastic:changeme'.
