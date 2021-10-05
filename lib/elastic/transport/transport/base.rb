@@ -354,7 +354,7 @@ module Elastic
           took     = (json['took'] ? sprintf('%.3fs', json['took']/1000.0) : 'n/a') rescue 'n/a'
           __log_response(method, path, params, body, url, response, json, took, duration) unless ignore.include?(response.status.to_i)
           __trace(method, path, params, connection_headers(connection), body, url, response, nil, 'N/A', duration) if tracer
-          warnings(response.headers['warning']) if response.headers&.[]('warning')
+          log_warn(response.headers['warning']) if response.headers&.[]('warning')
 
           Response.new response.status, json || response.body, response.headers
         ensure
@@ -428,10 +428,6 @@ module Elastic
             end
             "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
           end
-        end
-
-        def warnings(warning)
-          warn("warning: #{warning}")
         end
 
         def connection_headers(connection)
