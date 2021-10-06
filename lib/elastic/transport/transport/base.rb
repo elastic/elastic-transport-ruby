@@ -53,6 +53,7 @@ module Elastic
           @options     = arguments[:options] || {}
           @options[:http] ||= {}
           @options[:retry_on_status] ||= []
+          @options[:delay_on_retry]  ||= 0
 
           @block       = block
           @compression = !!@options[:compression]
@@ -273,6 +274,7 @@ module Elastic
           start = Time.now
           tries = 0
           reload_on_failure = opts.fetch(:reload_on_failure, @options[:reload_on_failure])
+          delay_on_retry = opts.fetch(:delay_on_retry, @options[:delay_on_retry])
 
           max_retries = if opts.key?(:retry_on_failure)
             opts[:retry_on_failure] === true ? DEFAULT_MAX_RETRIES : opts[:retry_on_failure]
@@ -284,6 +286,7 @@ module Elastic
           ignore = Array(params.delete(:ignore)).compact.map { |s| s.to_i }
 
           begin
+            sleep(delay_on_retry / 1000.0) if tries > 0
             tries     += 1
             connection = get_connection or raise Error.new('Cannot get new connection from pool.')
 
@@ -297,7 +300,6 @@ module Elastic
 
             # Raise an exception so we can catch it for `retry_on_status`
             __raise_transport_error(response) if response.status.to_i >= 300 && @retry_on_status.include?(response.status.to_i)
-
           rescue Elastic::Transport::Transport::ServerError => e
             if response && @retry_on_status.include?(response.status)
               log_warn "[#{e.class}] Attempt #{tries} to get response from #{url}"
@@ -310,7 +312,6 @@ module Elastic
             else
               raise e
             end
-
           rescue *host_unreachable_exceptions => e
             log_error "[#{e.class}] #{e.message} #{connection.host.inspect}"
 
@@ -332,11 +333,9 @@ module Elastic
             else
               raise e
             end
-
           rescue Exception => e
             log_fatal "[#{e.class}] #{e.message} (#{connection.host.inspect if connection})"
             raise e
-
           end #/begin
 
           duration = Time.now - start
