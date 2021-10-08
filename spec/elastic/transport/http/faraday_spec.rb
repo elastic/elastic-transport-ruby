@@ -17,9 +17,9 @@
 
 require_relative '../../../spec_helper'
 
-describe Elasticsearch::Transport::Transport::HTTP::Faraday do
+describe Elastic::Transport::Transport::HTTP::Faraday do
   let(:client) do
-    Elasticsearch::Transport::Client.new(transport_class: described_class)
+    Elastic::Transport::Client.new(transport_class: described_class)
   end
 
   describe '#perform_request' do
@@ -49,7 +49,7 @@ describe Elasticsearch::Transport::Transport::HTTP::Faraday do
     end
 
     it 'return response' do
-      expect(perform_request).to be_kind_of(Elasticsearch::Transport::Transport::Response)
+      expect(perform_request).to be_kind_of(Elastic::Transport::Transport::Response)
     end
 
     it 'run body with preper params' do
@@ -106,7 +106,7 @@ describe Elasticsearch::Transport::Transport::HTTP::Faraday do
 
     context 'when compression enabled' do
       let(:client) do
-        Elasticsearch::Transport::Client.new(transport_class: described_class, compression: true)
+        Elastic::Transport::Client.new(transport_class: described_class, compression: true)
       end
       let(:body_string) { '{"foo":"bar"}' }
       let(:expected_headers) { super().merge({ 'Content-Encoding' => 'gzip', 'Accept-Encoding' => 'gzip' }) }
