@@ -18,9 +18,9 @@
 unless defined?(JRUBY_VERSION)
   require_relative '../../../spec_helper'
 
-  describe Elasticsearch::Transport::Transport::HTTP::Curb do
+  describe Elastic::Transport::Transport::HTTP::Curb do
     let(:client) do
-      Elasticsearch::Transport::Client.new(transport_class: described_class)
+      Elastic::Transport::Client.new(transport_class: described_class)
     end
 
     describe '#perform_request' do
@@ -46,7 +46,7 @@ unless defined?(JRUBY_VERSION)
       end
 
       it 'return response' do
-        expect(perform_request).to be_kind_of(Elasticsearch::Transport::Transport::Response)
+        expect(perform_request).to be_kind_of(Elastic::Transport::Transport::Response)
       end
 
       it 'put body' do
@@ -95,7 +95,7 @@ unless defined?(JRUBY_VERSION)
 
       context 'when compression enabled' do
         let(:client) do
-          Elasticsearch::Transport::Client.new(transport_class: described_class, compression: true)
+          Elastic::Transport::Client.new(transport_class: described_class, compression: true)
         end
         let(:body_string) { '{"foo":"bar"}' }
         let(:compressed_body) do
