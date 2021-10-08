@@ -1405,7 +1405,7 @@ describe Elastic::Transport::Client do
             end
 
             it 'sets the Accept-Encoding header' do
-              expect(client.transport.connections[0].connection.headers['Accept-Encoding'])
+              expect(client.transport.connections[0].connection.headers['Accept-Encoding']).to eq 'gzip'
             end
 
             it 'preserves the other headers' do
@@ -1423,7 +1423,7 @@ describe Elastic::Transport::Client do
             end
 
             it 'sets the Accept-Encoding header' do
-              expect(client.transport.connections[0].connection.headers['Accept-Encoding'])
+              expect(client.transport.connections[0].connection.headers['Accept-Encoding']).to eq 'gzip'
             end
 
             it 'preserves the other headers' do
@@ -1441,7 +1441,7 @@ describe Elastic::Transport::Client do
             end
 
             it 'sets the Accept-Encoding header' do
-              expect(client.transport.connections[0].connection.headers['Accept-Encoding'])
+              expect(client.transport.connections[0].connection.headers['Accept-Encoding']).to eq 'gzip'
             end
 
             it 'preserves the other headers' do
@@ -1459,7 +1459,7 @@ describe Elastic::Transport::Client do
             end
 
             it 'sets the Accept-Encoding header' do
-              expect(client.transport.connections[0].connection.headers['Accept-Encoding'])
+              expect(client.transport.connections[0].connection.headers['Accept-Encoding']).to eq 'gzip'
             end
 
             it 'preserves the other headers' do
@@ -1477,7 +1477,7 @@ describe Elastic::Transport::Client do
             end
 
             it 'sets the Accept-Encoding header' do
-              expect(client.transport.connections[0].connection.headers['Accept-Encoding'])
+              expect(client.transport.connections[0].connection.headers['Accept-Encoding']).to eq 'gzip'
             end
 
             it 'preserves the other headers' do
@@ -1499,7 +1499,7 @@ describe Elastic::Transport::Client do
         end
 
         it 'sets the Accept-Encoding header' do
-          expect(client.transport.connections[0].connection.headers['Accept-Encoding'])
+          expect(client.transport.connections[0].connection.headers['Accept-Encoding']).to eq 'gzip'
         end
 
         it 'preserves the other headers' do
