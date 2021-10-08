@@ -1,4 +1,11 @@
-## 8.0.0
+## 8.0.0.pre2
+
+- Fixes tracing for Manticore [commit](https://github.com/elastic/elastic-transport-ruby/commit/98c81d19de4fee394f9c1a5079a1892ec951e0f9).
+- Implements CA Fingerprinting [pull request](https://github.com/elastic/elastic-transport-ruby/pull/13)
+- Adds `delay_on_retry` to wait between each failed connection, thanks @DinoPullerUqido! [commit](https://github.com/elastic/elastic-transport-ruby/commit/c2f8311409ca63a293588cb7eea5a0c672dbd436)
+- Fixes compression, thanks @johnnyshields! [commit](https://github.com/elastic/elastic-transport-ruby/commit/8b326d643f76f037075500e19bbe096b2c298099)
+
+## 8.0.0.pre1
 
 - Library renamed from [`elasticsearch-transport`](https://github.com/elastic/elasticsearch-ruby/tree/7.x/elasticsearch-transport) to `elastic-transport` and promoted to its own repository.
 
