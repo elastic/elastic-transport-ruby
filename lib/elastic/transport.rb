@@ -20,6 +20,7 @@ require 'multi_json'
 require 'time'
 require 'timeout'
 require 'uri'
+require 'zlib'
 
 require 'elastic/transport/transport/loggable'
 require 'elastic/transport/transport/serializer/multi_json'
