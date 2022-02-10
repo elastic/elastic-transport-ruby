@@ -1,3 +1,8 @@
+## 8.0.0.pre3
+
+- Tested in Ruby 3.1, JRuby 9.3, drops Ruby 2.5 in test Matrix. Version 8.0.0.pre3 is being tested for Ruby (MRI) 2.6, 2.7, 3.0 and 3.1 and JRuby 9.3.
+- Updates Manticore implementation headers setup. When using the Manticore HTTP implementation, adding a custom `User-Agent` value in the headers on initialization would get overwritten. [Pull Request](https://github.com/elastic/elastic-transport-ruby/pull/22) - [Issue reported in elastic/elasticsearch-ruby#1684](https://github.com/elastic/elasticsearch-ruby/issues/1684).
+
 ## 8.0.0.pre2
 
 - Fixes tracing for Manticore [commit](https://github.com/elastic/elastic-transport-ruby/commit/98c81d19de4fee394f9c1a5079a1892ec951e0f9).
