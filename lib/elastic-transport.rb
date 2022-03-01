@@ -16,3 +16,4 @@
 # under the License.
 
 require 'elastic/transport'
+require 'elastic/api/response'
