@@ -90,7 +90,10 @@ describe Elastic::Transport::Client do
       let(:headers) { client.transport.connections.first.connection.headers }
 
       context 'using net/http/persistent' do
-        let(:adapter) { :net_http_persistent }
+        let(:adapter) do
+          require 'faraday/net_http_persistent'
+          :net_http_persistent
+        end
 
         it 'sets adapter in the meta header version to 0 when not loaded' do
           was_required = defined?(Net::HTTP::Persistent)
@@ -115,7 +118,10 @@ describe Elastic::Transport::Client do
       end
 
       context 'using httpclient' do
-        let(:adapter) { :httpclient }
+        let(:adapter) do
+          require 'faraday/httpclient'
+          :httpclient
+        end
 
         it 'sets adapter in the meta header version to 0 when not loaded' do
           was_required = defined?(HTTPClient)
@@ -166,7 +172,10 @@ describe Elastic::Transport::Client do
       end unless jruby?
 
       unless jruby?
-        let(:adapter) { :patron }
+        let(:adapter) do
+          require 'faraday/patron'
+          :patron
+        end
 
         context 'using patron without requiring it' do
           it 'sets adapter in the meta header version to 0 when not loaded' do
