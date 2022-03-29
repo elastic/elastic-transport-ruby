@@ -35,4 +35,8 @@ group :development, :test do
   else
     gem 'pry-byebug'
   end
+
+  gem 'faraday-patron'
+  gem 'faraday-httpclient', '~> 2.0'
+  gem 'faraday-net_http_persistent'
 end

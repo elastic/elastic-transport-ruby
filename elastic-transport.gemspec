@@ -45,7 +45,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.5'
 
   s.add_dependency 'multi_json'
-  s.add_dependency 'faraday', '~> 1'
+  s.add_dependency 'faraday', '>= 1', '< 3'
 
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'cane'
