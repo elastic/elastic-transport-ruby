@@ -211,14 +211,6 @@ module Elastic
         )
       end
 
-      def add_header(header)
-        headers = @arguments[:transport_options]&.[](:headers) || {}
-        headers.merge!(header)
-        @arguments[:transport_options].merge!(
-          headers: headers
-        )
-      end
-
       # Normalizes and returns hosts configuration.
       #
       # Arrayifies the `hosts_config` argument and extracts `host` and `port` info from strings.
