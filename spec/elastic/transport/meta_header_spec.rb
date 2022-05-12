@@ -26,14 +26,14 @@ describe Elastic::Transport::Client do
     let(:adapter_code) { "nh=#{defined?(Net::HTTP::VERSION) ? Net::HTTP::VERSION : Net::HTTP::HTTPVersion}" }
     let(:meta_header) do
       if jruby?
-        "es=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},jv=#{ENV_JAVA['java.version']},jr=#{JRUBY_VERSION},fd=#{Faraday::VERSION},#{adapter_code}"
+        "et=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},jv=#{ENV_JAVA['java.version']},jr=#{JRUBY_VERSION},fd=#{Faraday::VERSION},#{adapter_code}"
       else
-        "es=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},fd=#{Faraday::VERSION},#{adapter_code}"
+        "et=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},fd=#{Faraday::VERSION},#{adapter_code}"
       end
     end
 
     context 'client_meta_version' do
-      let(:version) { ['7.1.0-alpha', '7.11.0.pre.1', '8.0.0-beta', '8.0.0.beta.2']}
+      let(:version) { ['7.1.0-alpha', '7.11.0.pre.1', '8.0.0-beta', '8.0.0.beta.2'] }
 
       it 'converts the version to X.X.Xp' do
         expect(client.send(:client_meta_version, '7.0.0-alpha')).to eq('7.0.0p')
@@ -81,9 +81,9 @@ describe Elastic::Transport::Client do
     context 'adapters' do
       let(:meta_header) do
         if jruby?
-          "es=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},jv=#{ENV_JAVA['java.version']},jr=#{JRUBY_VERSION},fd=#{Faraday::VERSION}"
+          "et=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},jv=#{ENV_JAVA['java.version']},jr=#{JRUBY_VERSION},fd=#{Faraday::VERSION}"
         else
-          "es=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},fd=#{Faraday::VERSION}"
+          "et=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},fd=#{Faraday::VERSION}"
         end
       end
       let(:client) { described_class.new(adapter: adapter) }
@@ -246,9 +246,9 @@ describe Elastic::Transport::Client do
       let(:subject) { client.instance_variable_get('@arguments')[:transport_options][:headers] }
       let(:meta_header) do
         if jruby?
-          "es=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},jv=#{ENV_JAVA['java.version']},jr=#{JRUBY_VERSION}"
+          "et=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION},jv=#{ENV_JAVA['java.version']},jr=#{JRUBY_VERSION}"
         else
-          "es=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION}"
+          "et=#{meta_version},rb=#{RUBY_VERSION},t=#{Elastic::Transport::VERSION}"
         end
       end
 
@@ -258,14 +258,29 @@ describe Elastic::Transport::Client do
       end
     end
 
-    context 'when using a different service version' do
+    context 'when Elasticsearch is being used' do
       before do
-        stub_const('Elastic::ELASTICSEARCH_SERVICE_VERSION', [:ent, '8.0.0'])
+        stub_const('Elastic::ELASTICSEARCH_SERVICE_VERSION', [:es, '8.0.0'])
       end
 
       let(:client) { Elastic::Transport::Client.new }
 
       it 'sets the service version in the metaheader' do
+        allow_any_instance_of(Kernel).to receive(:caller).and_return(['elasticsearch'])
+        expect(subject['x-elastic-client-meta']).to match(regexp)
+        expect(subject['x-elastic-client-meta']).to start_with('es=8.0.0')
+      end
+    end
+
+    context 'when Enterprise Search is being used' do
+      before do
+        stub_const('Elastic::ENTERPRISE_SERVICE_VERSION', [:ent, '8.0.0'])
+      end
+
+      let(:client) { Elastic::Transport::Client.new }
+
+      it 'sets the service version in the metaheader' do
+        allow_any_instance_of(Kernel).to receive(:caller).and_return(['enterprise-search-ruby'])
         expect(subject['x-elastic-client-meta']).to match(regexp)
         expect(subject['x-elastic-client-meta']).to start_with('ent=8.0.0')
       end
