@@ -200,6 +200,7 @@ describe Elastic::Transport::Client do
       end
 
       let(:client) do
+        require 'faraday/patron'
         described_class.new(adapter: :patron, enable_meta_header: false)
       end
 
@@ -228,6 +229,7 @@ describe Elastic::Transport::Client do
       end
 
       let(:client) do
+        require 'faraday/patron'
         described_class.new(adapter: :patron, enable_meta_header: false)
       end
 
@@ -253,6 +255,8 @@ describe Elastic::Transport::Client do
 
     context 'when the Faraday adapter is configured' do
       let(:client) do
+        require 'faraday/patron'
+
         described_class.new do |faraday|
           faraday.adapter :patron
           faraday.response :logger
@@ -1264,6 +1268,7 @@ describe Elastic::Transport::Client do
 
         context 'when the Faraday adapter is set in the block' do
           let(:client) do
+            require 'faraday/net_http_persistent'
             Elastic::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
               client.adapter(:net_http_persistent)
             end
@@ -1415,6 +1420,7 @@ describe Elastic::Transport::Client do
 
           context 'when using the HTTPClient adapter' do
             let(:client) do
+              require 'faraday/httpclient'
               described_class.new(hosts: ELASTICSEARCH_HOSTS, compression: true, adapter: :httpclient, enable_meta_header: false)
             end
 
@@ -1451,6 +1457,7 @@ describe Elastic::Transport::Client do
 
           context 'when using the Net::HTTP::Persistent adapter' do
             let(:client) do
+              require 'faraday/net_http_persistent'
               described_class.new(hosts: ELASTICSEARCH_HOSTS, compression: true, adapter: :net_http_persistent)
             end
 
