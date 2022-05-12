@@ -1,18 +1,17 @@
-## 8.0.0.pre3
+## 8.0.1
 
-- Tested in Ruby 3.1, JRuby 9.3, drops Ruby 2.5 in test Matrix. Version 8.0.0.pre3 is being tested for Ruby (MRI) 2.6, 2.7, 3.0 and 3.1 and JRuby 9.3.
-- Updates Manticore implementation headers setup. When using the Manticore HTTP implementation, adding a custom `User-Agent` value in the headers on initialization would get overwritten. [Pull Request](https://github.com/elastic/elastic-transport-ruby/pull/22) - [Issue reported in elastic/elasticsearch-ruby#1684](https://github.com/elastic/elasticsearch-ruby/issues/1684).
+- Minor code cleanup
+- Adds Elastic Transport service token, updates specs for meta header.
 
-## 8.0.0.pre2
+## 8.0.0
 
+- Library renamed from [`elasticsearch-transport`](https://github.com/elastic/elasticsearch-ruby/tree/7.x/elasticsearch-transport) to `elastic-transport` and promoted to its own repository.
 - Fixes tracing for Manticore [commit](https://github.com/elastic/elastic-transport-ruby/commit/98c81d19de4fee394f9c1a5079a1892ec951e0f9).
 - Implements CA Fingerprinting [pull request](https://github.com/elastic/elastic-transport-ruby/pull/13)
 - Adds `delay_on_retry` to wait between each failed connection, thanks @DinoPullerUqido! [commit](https://github.com/elastic/elastic-transport-ruby/commit/c2f8311409ca63a293588cb7eea5a0c672dbd436)
 - Fixes compression, thanks @johnnyshields! [commit](https://github.com/elastic/elastic-transport-ruby/commit/8b326d643f76f037075500e19bbe096b2c298099)
-
-## 8.0.0.pre1
-
-- Library renamed from [`elasticsearch-transport`](https://github.com/elastic/elasticsearch-ruby/tree/7.x/elasticsearch-transport) to `elastic-transport` and promoted to its own repository.
+- Tested in Ruby 3.1, JRuby 9.3, drops Ruby 2.5 in test Matrix. Version 8.0.0 tested for Ruby (MRI) 2.6, 2.7, 3.0 and 3.1 and JRuby 9.3.
+- Updates Manticore implementation headers setup. When using the Manticore HTTP implementation, adding a custom `User-Agent` value in the headers on initialization would get overwritten. [Pull Request](https://github.com/elastic/elastic-transport-ruby/pull/22) - [Issue reported in elastic/elasticsearch-ruby#1684](https://github.com/elastic/elasticsearch-ruby/issues/1684).
 
 # Changes from elasticsearch-transport:
 
