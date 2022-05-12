@@ -48,7 +48,7 @@ module Elastic
         elsif defined?(Elasticsearch::VERSION)
           [:es, client_meta_version(Elasticsearch::VERSION)]
         else
-          [:es, client_meta_version(Elastic::Transport::VERSION)]
+          [:et, client_meta_version(Elastic::Transport::VERSION)]
         end
       end
 
