@@ -204,6 +204,7 @@ describe Elastic::Transport::Client do
       end
 
       it 'uses Faraday with the adapter' do
+        require 'faraday/patron'
         expect(adapter).to eq Faraday::Adapter::Patron
       end
     end
@@ -214,6 +215,7 @@ describe Elastic::Transport::Client do
       end
 
       let(:client) do
+        require 'faraday/typhoeus'
         described_class.new(adapter: :typhoeus, enable_meta_header: false)
       end
 
@@ -1263,6 +1265,8 @@ describe Elastic::Transport::Client do
         end
 
         context 'when the Faraday adapter is set in the block' do
+          require 'faraday/net_http_persistent'
+
           let(:client) do
             Elastic::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
               client.adapter(:net_http_persistent)
@@ -1414,6 +1418,8 @@ describe Elastic::Transport::Client do
           end
 
           context 'when using the HTTPClient adapter' do
+            require 'faraday/httpclient'
+
             let(:client) do
               described_class.new(hosts: ELASTICSEARCH_HOSTS, compression: true, adapter: :httpclient, enable_meta_header: false)
             end

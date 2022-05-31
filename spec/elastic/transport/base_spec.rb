@@ -105,7 +105,8 @@ describe Elastic::Transport::Transport::Base do
     let(:arguments) do
       {
         hosts: ['http://unavailable:9200', 'http://unavailable:9201'],
-        retry_on_failure: 2
+        retry_on_failure: 2,
+        adapter: :net_http
       }
     end
 
@@ -129,7 +130,8 @@ describe Elastic::Transport::Transport::Base do
       let(:arguments) do
         {
           hosts: ELASTICSEARCH_HOSTS,
-          retry_on_status: ['404']
+          retry_on_status: ['404'],
+          adapter: :net_http
         }
       end
 
