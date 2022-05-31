@@ -21,7 +21,7 @@ if JRUBY
   require 'elastic/transport/transport/http/manticore'
 
   class Elastic::Transport::ClientManticoreIntegrationTest < Minitest::Test
-    context "Transport" do
+    context 'Transport' do
       setup do
         uri = URI(HOST)
         @host = {
