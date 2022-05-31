@@ -1,3 +1,30 @@
+## 8.1.0
+
+Adds support for Faraday version 2. From [Faraday's Upgrading guide](https://github.com/lostisland/faraday/blob/main/UPGRADING.md#faraday-20), the main change is the adapters have moved:
+
+> With this release, we've officially moved all adapters, except for the net_http one, out of Faraday. What that means, is that they won't be available out-of-the-box anymore, and you'll instead need to add them to your Gemfile.
+> If you just use the default net_http adapter, then you don't need to do anything!
+> Otherwise, add the corresponding adapter gem to your Gemfile (e.g. faraday-net_http_persistent). Then, simply require them after you require faraday. 
+
+We're now supporting Faraday v2 and Faraday v1. The adapters were removed as development dependency in the gemspec and added to the Gemfile. A new file `Gemfile-faraday1.gemfile` was added to run tests with version `1.x` of Faraday too.
+
+These are the gems required for the different adapters with Faraday 2, instead of the libraries on which they were based:
+```
+# HTTPCLient
+'faraday-httpclient'
+
+# NetHTTPPersistent
+'faraday-net_http_persistent'
+
+# Patron
+'faraday-patron'
+
+# Typhoeus
+'faraday-typhoeus'
+```
+
+If you're using Faraday 1, you shouldn't have to change anything, but please [submit an issue](https://github.com/elastic/elastic-transport-ruby/issues) if you encounter any issues.
+
 ## 8.0.1
 
 - Minor code cleanup
