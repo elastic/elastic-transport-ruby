@@ -55,9 +55,11 @@ module Elastic
               end
 
               connection.connection.http(method.to_sym)
-
+              header_string = connection.connection.header_str.to_s
               response_headers = {}
-              response_headers['content-type'] = 'application/json' if connection.connection.header_str =~ /\/json/
+
+              _response_status, *response_headers = header_string.split(/[\r\n]+/).map(&:strip)
+              response_headers = Hash[response_headers.flat_map{ |s| s.scan(/^(\S+): (.+)/) }].transform_keys(&:downcase)
 
               Response.new connection.connection.response_code,
                            decompress_response(connection.connection.body_str),
