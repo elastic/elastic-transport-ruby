@@ -191,8 +191,8 @@ describe Elastic::Transport::Client do
         it 'uses Faraday NetHttp' do
           expect(adapter).to eq Faraday::Adapter::NetHttp
         end
-      end unless jruby?
-    end
+      end
+    end unless jruby?
 
     context 'when the adapter is patron' do
       let(:adapter) do
@@ -207,7 +207,7 @@ describe Elastic::Transport::Client do
         require 'faraday/patron'
         expect(adapter).to eq Faraday::Adapter::Patron
       end
-    end
+    end unless jruby?
 
     context 'when the adapter is typhoeus' do
       let(:adapter) do
@@ -236,7 +236,7 @@ describe Elastic::Transport::Client do
       it 'uses Faraday with the adapter' do
         expect(adapter).to eq Faraday::Adapter::Patron
       end
-    end
+    end unless jruby?
 
     context 'when the adapter can be detected', unless: jruby? do
       around do |example|
@@ -276,7 +276,7 @@ describe Elastic::Transport::Client do
       it 'sets the logger' do
         expect(handlers).to include(Faraday::Response::Logger)
       end
-    end
+    end unless jruby?
   end
 
   shared_examples_for 'a client that extracts hosts' do
