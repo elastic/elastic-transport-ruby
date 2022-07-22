@@ -20,7 +20,6 @@ require 'test_helper'
 class Elastic::Transport::ClientIntegrationTest < Minitest::Test
   context 'Transport' do
     setup do
-      begin; Object.send(:remove_const, :Patron); rescue NameError; end
       uri = URI(HOST)
       @host = {
         host: uri.host,
@@ -42,7 +41,11 @@ class Elastic::Transport::ClientIntegrationTest < Minitest::Test
 
     unless jruby?
       should 'allow to customize the Faraday adapter to Typhoeus' do
-        require 'faraday/typhoeus'
+        if is_faraday_v2?
+          require 'faraday/typhoeus'
+        else
+          require 'typhoeus'
+        end
 
         transport = Elastic::Transport::Transport::HTTP::Faraday.new(hosts: [@host]) do |f|
           f.response :logger
@@ -85,8 +88,11 @@ class Elastic::Transport::ClientIntegrationTest < Minitest::Test
       end
 
       should 'allow to customize the Faraday adapter to Patron' do
-        require 'faraday/patron'
-
+        if is_faraday_v2?
+          require 'faraday/patron'
+        else
+          require 'patron'
+        end
         transport = Elastic::Transport::Transport::HTTP::Faraday.new(hosts: [@host]) do |f|
           f.response :logger
           f.adapter  :patron
