@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ '2.7', '3.0', '3.1', 'jruby-9.3' ]
-        es_version: ['8.1-SNAPSHOT', '8.2-SNAPSHOT', '8.3.0-SNAPSHOT']
+        es_version: ['8.3.0-SNAPSHOT']
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -74,7 +74,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install libcurl4-openssl-dev
         ruby -v
-        bundle install
+        BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle install
     - name: faraday1 unit tests
       run: bundle exec rake test:faraday1:unit
     - name: specs
