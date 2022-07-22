@@ -215,7 +215,8 @@ describe Elastic::Transport::Client do
       end
 
       let(:client) do
-        require 'faraday/typhoeus'
+        require 'faraday/typhoeus' if is_faraday_v2?
+
         described_class.new(adapter: :typhoeus, enable_meta_header: false)
       end
 
@@ -1265,7 +1266,7 @@ describe Elastic::Transport::Client do
         end
 
         context 'when the Faraday adapter is set in the block' do
-          require 'faraday/net_http_persistent'
+          require 'faraday/net_http_persistent' if is_faraday_v2?
 
           let(:client) do
             Elastic::Transport::Client.new(host: ELASTICSEARCH_HOSTS.first, logger: logger) do |client|
