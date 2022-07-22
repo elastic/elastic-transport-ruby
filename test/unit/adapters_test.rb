@@ -35,7 +35,11 @@ class Elastic::Transport::ClientAdaptersUnitTest < Minitest::Test
 
     should 'use Patron Faraday adapter' do
       fork do
-        require 'faraday/patron'
+        if is_faraday_v2?
+          require 'faraday/patron'
+        else
+          require 'patron'
+        end
 
         client = Elastic::Transport::Client.new
         assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Patron)
@@ -44,7 +48,11 @@ class Elastic::Transport::ClientAdaptersUnitTest < Minitest::Test
 
     should 'use Typhoeus Faraday adapter' do
       fork do
-        require 'faraday/typhoeus'
+        if is_faraday_v2?
+          require 'faraday/typhoeus'
+        else
+          require 'typhoeus'
+        end
 
         client = Elastic::Transport::Client.new
         assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Typhoeus)
@@ -53,7 +61,11 @@ class Elastic::Transport::ClientAdaptersUnitTest < Minitest::Test
 
     should 'use NetHttpPersistent Faraday adapter' do
       fork do
-        require 'faraday/net_http_persistent'
+        if is_faraday_v2?
+          require 'faraday/net_http_persistent'
+        else
+          require 'net/http/persistent'
+        end
 
         client = Elastic::Transport::Client.new
         assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::NetHttpPersistent)
@@ -62,11 +74,15 @@ class Elastic::Transport::ClientAdaptersUnitTest < Minitest::Test
 
     should 'use HTTPClient Faraday adapter' do
       fork do
-        require 'faraday/httpclient'
+        if is_faraday_v2?
+          require 'faraday/httpclient'
+        else
+          require 'httpclient'
+        end
 
         client = Elastic::Transport::Client.new
         assert_equal(Faraday::Adapter::HTTPClient, client.transport.connections.first.connection.adapter)
       end
     end
   end unless jruby?
-end if is_faraday_v2?
+end
