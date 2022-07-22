@@ -73,6 +73,7 @@ namespace :test do
 
     desc 'Faraday 1: Run unit tests with dependency on Faraday 1'
     task :unit do
+      sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} bundle install"
       Dir.glob('./test/unit/**/**.rb').each do |test|
         sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} ruby -Ilib:test #{test}"
       end
@@ -80,6 +81,7 @@ namespace :test do
 
     desc 'Faraday 1: Run integration tests with dependency on Faraday 1'
     task :integration do
+      sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} bundle install"
       Dir.glob('./test/integration/**/**.rb').each do |test|
         sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} ruby -Ilib:test #{test}"
       end
