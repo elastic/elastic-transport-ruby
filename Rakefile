@@ -67,7 +67,6 @@ namespace :test do
   namespace :faraday1 do
     desc 'Faraday 1: Run RSpec with dependency on Faraday 1'
     task :spec do
-      sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} bundle install"
       sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} bundle exec rspec"
     end
 
