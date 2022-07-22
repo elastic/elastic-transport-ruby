@@ -18,13 +18,22 @@
 require 'bundler/gem_tasks'
 require 'mkmf'
 
-desc "Run unit tests"
+desc 'Run unit tests'
 task default: 'test:unit'
 task test: 'test:unit'
 
 # ----- Test tasks ------------------------------------------------------------
 require 'rake/testtask'
 require 'rspec/core/rake_task'
+FARADAY1_GEMFILE = 'Gemfile-faraday1.gemfile'.freeze
+GEMFILES = ['Gemfile', FARADAY1_GEMFILE].freeze
+
+task :install do
+  GEMFILES.each do |gemfile|
+    gemfile = File.expand_path("../#{gemfile}", __FILE__)
+    sh "bundle install --gemfile #{gemfile}"
+  end
+end
 
 namespace :test do
   RSpec::Core::RakeTask.new(:spec)
@@ -46,12 +55,42 @@ namespace :test do
   desc 'Run all tests'
   task :all do
     Rake::Task['test:unit'].invoke
+    Rake::Task['test:spec'].invoke
     Rake::Task['test:integration'].invoke
   end
 
   Rake::TestTask.new(:profile) do |test|
     test.libs << 'lib' << 'test'
     test.test_files = FileList['test/profile/**/*_test.rb']
+  end
+
+  namespace :faraday1 do
+    desc 'Faraday 1: Run RSpec with dependency on Faraday 1'
+    task :spec do
+      sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} bundle install"
+      sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} bundle exec rspec"
+    end
+
+    desc 'Faraday 1: Run unit tests with dependency on Faraday 1'
+    task :unit do
+      Dir.glob('./test/unit/**/**.rb').each do |test|
+        sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} ruby -Ilib:test #{test}"
+      end
+    end
+
+    desc 'Faraday 1: Run integration tests with dependency on Faraday 1'
+    task :integration do
+      Dir.glob('./test/integration/**/**.rb').each do |test|
+        sh "BUNDLE_GEMFILE=#{FARADAY1_GEMFILE} ruby -Ilib:test #{test}"
+      end
+    end
+
+    desc 'Faraday 1: Run all tests'
+    task :all do
+      Rake::Task['test:faraday1:unit'].invoke
+      Rake::Task['test:faraday1:spec'].invoke
+      Rake::Task['test:faraday1:integration'].invoke
+    end
   end
 end
 
