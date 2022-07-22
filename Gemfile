@@ -21,11 +21,11 @@ source 'https://rubygems.org'
 gemspec
 
 group :development, :test do
-  gem 'rspec'
   gem 'faraday-httpclient'
   gem 'faraday-net_http_persistent'
   gem 'faraday-patron' unless defined? JRUBY_VERSION
   gem 'faraday-typhoeus'
+  gem 'rspec'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
   else

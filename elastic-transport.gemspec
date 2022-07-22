@@ -44,19 +44,12 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 2.5'
 
-  s.add_dependency 'faraday', '~> 2'
+  s.add_dependency 'faraday'
   s.add_dependency 'multi_json'
 
   # Faraday Adapters
-  s.add_development_dependency 'faraday-httpclient'
-  s.add_development_dependency 'faraday-net_http_persistent'
   s.add_development_dependency 'manticore' if defined? JRUBY_VERSION
-  unless defined? JRUBY_VERSION
-    s.add_development_dependency 'curb'
-    s.add_development_dependency 'faraday-patron'
-    s.add_development_dependency 'faraday-typhoeus'
-  end
-
+  s.add_development_dependency 'curb' unless defined? JRUBY_VERSION
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'cane'
   s.add_development_dependency 'hashie'
