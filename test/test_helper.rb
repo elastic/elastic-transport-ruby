@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+require 'uri'
 
 password = ENV['ELASTIC_PASSWORD'] || 'changeme'
 host = ENV['TEST_ES_SERVER'] || 'http://localhost:9200'
@@ -29,17 +30,16 @@ if ENV['COVERAGE']
   SimpleCov.start { add_filter %r{^/test/} }
 end
 
+require 'ansi/code'
 require 'minitest/autorun'
 require 'minitest/reporters'
-require 'shoulda/context'
 require 'mocha/minitest'
-require 'ansi/code'
+require 'shoulda/context'
 
-require 'require-prof' if ENV["REQUIRE_PROF"]
 require 'elastic-transport'
-require 'logger'
-
 require 'hashie'
+require 'logger'
+require 'require-prof' if ENV["REQUIRE_PROF"]
 
 RequireProf.print_timing_infos if ENV["REQUIRE_PROF"]
 
@@ -78,6 +78,10 @@ module Minitest
 
     alias :assert_raise :assert_raises
   end
+end
+
+def is_faraday_v2?
+  Gem::Version.new(Faraday::VERSION) >= Gem::Version.new(2)
 end
 
 Minitest::Reporters.use! FixedMinitestSpecReporter.new

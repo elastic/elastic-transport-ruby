@@ -1,3 +1,22 @@
+## 8.1.0
+
+Upgrades Faraday dependency to Faraday 2. From [Faraday's Upgrading guide](https://github.com/lostisland/faraday/blob/main/UPGRADING.md#faraday-20), main change is adapters have moved:
+
+> With this release, we've officially moved all adapters, except for the net_http one, out of Faraday. What that means, is that they won't be available out-of-the-box anymore, and you'll instead need to add them to your Gemfile.
+> If you just use the default net_http adapter, then you don't need to do anything!
+> Otherwise, add the corresponding adapter gem to your Gemfile (e.g. faraday-net_http_persistent). Then, simply require them after you require faraday. 
+
+The gemspec has been updated to include development dependencies for the corresponding Faraday adapters instead of the libraries on which they were based:
+```
+s.add_development_dependency 'faraday-httpclient'
+s.add_development_dependency 'faraday-net_http_persistent'
+s.add_development_dependency 'faraday-patron'
+s.add_development_dependency 'faraday-typhoeus'
+```
+The code for auto detecting adapters has been updated to check for the different adapter classes to be defined (see `client.__auto_detect_adapter`) instead of the libraries they depend on.
+
+If you want to keep using Faraday 1, lock the gem version to '~> 8.0'.
+
 ## 8.0.1
 
 - Minor code cleanup

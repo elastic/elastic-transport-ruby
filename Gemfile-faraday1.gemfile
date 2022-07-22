@@ -15,32 +15,25 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require 'test_helper'
+source 'https://rubygems.org'
 
-if JRUBY
-  require 'elastic/transport/transport/http/manticore'
+# Usage:
+#
+# $ BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle install
+# $ BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle exec rake test:faraday1:unit
 
-  class Elastic::Transport::ClientManticoreIntegrationTest < Minitest::Test
-    context 'Transport' do
-      setup do
-        uri = URI(HOST)
-        @host = {
-          host: uri.host,
-          port: uri.port,
-          user: uri.user,
-          password: uri.password
-        }
-      end
+gem 'faraday', '~> 1'
+gemspec path: './'
 
-      should 'allow to customize the Faraday adapter to Manticore' do
-        client = Elastic::Transport::Client.new(
-          transport_class: Elastic::Transport::Transport::HTTP::Manticore,
-          trace: true,
-          hosts: [@host]
-        )
-        response = client.perform_request 'GET', ''
-        assert_respond_to(response.body, :to_hash)
-      end
-    end
+group :development, :test do
+  gem 'httpclient'
+  gem 'net-http-persistent'
+  gem 'patron' unless defined? JRUBY_VERSION
+  gem 'rspec'
+  gem 'typhoeus'
+  if defined?(JRUBY_VERSION)
+    gem 'pry-nav'
+  else
+    gem 'pry-byebug'
   end
 end
