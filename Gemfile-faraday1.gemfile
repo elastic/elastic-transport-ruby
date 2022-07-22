@@ -15,21 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
+source 'https://rubygems.org'
+
 # Usage:
 #
 # $ BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle install
 # $ BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle exec rake test:faraday1:unit
 
-source 'https://rubygems.org'
-
 gemspec path: './'
 gem 'faraday', '~> 1'
 
 group :development, :test do
-  gem 'rspec'
   gem 'httpclient'
   gem 'net-http-persistent'
   gem 'patron' unless defined? JRUBY_VERSION
+  gem 'rspec'
   gem 'typhoeus'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
@@ -37,4 +37,3 @@ group :development, :test do
     gem 'pry-byebug'
   end
 end
-
