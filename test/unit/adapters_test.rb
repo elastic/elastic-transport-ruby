@@ -17,7 +17,7 @@
 
 require 'test_helper'
 
-class Elastic::Transport::ClientAdaptersIntegrationTest < Minitest::Test
+class Elastic::Transport::ClientAdaptersUnitTest < Minitest::Test
   context 'Adapters' do
     setup do
       begin
@@ -65,8 +65,8 @@ class Elastic::Transport::ClientAdaptersIntegrationTest < Minitest::Test
         require 'faraday/httpclient'
 
         client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::HTTPClient)
+        assert_equal(Faraday::Adapter::HTTPClient, client.transport.connections.first.connection.adapter)
       end
     end
   end unless jruby?
-end
+end if is_faraday_v2?
