@@ -74,10 +74,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install libcurl4-openssl-dev
         ruby -v
+        gem install bundler
         BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle install
     - name: faraday1 unit tests
-      run: bundle exec rake test:faraday1:unit
+      run: BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle exec rake test:faraday1:unit
     - name: specs
-      run: bundle exec rake test:faraday1:spec
+      run: BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle exec rake test:faraday1:spec
     - name: integration tests
-      run: bundle exec rake test:faraday1:integration
+      run: BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle exec rake test:faraday1:integration
