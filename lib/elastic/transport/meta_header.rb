@@ -103,31 +103,31 @@ module Elastic
           adapter_version = case @arguments[:adapter]
                    when :patron
                      version = Patron::VERSION if defined?(::Patron::VERSION)
-                     {pt: version}
+                     { pt: version }
                    when :net_http
                      version = if defined?(Net::HTTP::VERSION)
                                  Net::HTTP::VERSION
                                elsif defined?(Net::HTTP::HTTPVersion)
                                  Net::HTTP::HTTPVersion
                                end
-                     {nh: version}
+                     { nh: version }
                    when :typhoeus
                      version = Typhoeus::VERSION if defined?(::Typhoeus::VERSION)
-                     {ty: version}
+                     { ty: version }
                    when :httpclient
                      version = HTTPClient::VERSION if defined?(HTTPClient::VERSION)
-                     {hc: version}
+                     { hc: version }
                    when :net_http_persistent
                      version = Net::HTTP::Persistent::VERSION if defined?(Net::HTTP::Persistent::VERSION)
-                     {np: version}
+                     { np: version }
                    else
                      {}
                    end
-          {fd: Faraday::VERSION}.merge(adapter_version)
+          { fd: Faraday::VERSION }.merge(adapter_version)
         elsif defined?(Transport::HTTP::Curb) && @transport_class == Transport::HTTP::Curb
-          {cl: Curl::CURB_VERSION}
+          { cl: Curl::CURB_VERSION }
         elsif defined?(Transport::HTTP::Manticore) && @transport_class == Transport::HTTP::Manticore
-          {mc: Manticore::VERSION}
+          { mc: Manticore::VERSION }
         end
       end
     end

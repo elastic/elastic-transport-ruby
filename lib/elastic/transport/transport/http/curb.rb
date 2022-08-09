@@ -37,33 +37,34 @@ module Elastic
               body, headers = compress_request(body, headers)
 
               case method
-                when 'HEAD'
-                  connection.connection.set :nobody, true
-                when 'GET', 'POST', 'PUT', 'DELETE'
-                  connection.connection.set :nobody, false
-                  connection.connection.put_data = body if body
+              when 'HEAD'
+                connection.connection.set :nobody, true
+              when 'GET', 'POST', 'PUT', 'DELETE'
+                connection.connection.set :nobody, false
+                connection.connection.put_data = body if body
 
-                  if headers
-                    if connection.connection.headers
-                      connection.connection.headers.merge!(headers)
-                    else
-                      connection.connection.headers = headers
-                    end
+                if headers
+                  if connection.connection.headers
+                    connection.connection.headers.merge!(headers)
+                  else
+                    connection.connection.headers = headers
                   end
+                end
 
-                else raise ArgumentError, "Unsupported HTTP method: #{method}"
+              else raise ArgumentError, "Unsupported HTTP method: #{method}"
               end
 
               connection.connection.http(method.to_sym)
               header_string = connection.connection.header_str.to_s
-              response_headers = {}
 
               _response_status, *response_headers = header_string.split(/[\r\n]+/).map(&:strip)
-              response_headers = Hash[response_headers.flat_map{ |s| s.scan(/^(\S+): (.+)/) }].transform_keys(&:downcase)
+              response_headers = Hash[response_headers.flat_map { |s| s.scan(/^(\S+): (.+)/) }].transform_keys(&:downcase)
 
-              Response.new connection.connection.response_code,
-                           decompress_response(connection.connection.body_str),
-                           response_headers
+              Response.new(
+                connection.connection.response_code,
+                decompress_response(connection.connection.body_str),
+                response_headers
+              )
             end
           end
 
@@ -75,7 +76,7 @@ module Elastic
             client = ::Curl::Easy.new
 
             apply_headers(client, options)
-            client.url     = __full_url(host)
+            client.url = __full_url(host)
 
             if host[:user]
               client.http_auth_types = host[:auth_type] || :basic
@@ -107,13 +108,13 @@ module Elastic
 
           def user_agent_header(client)
             @user_agent ||= begin
-              meta = ["RUBY_VERSION: #{RUBY_VERSION}"]
-              if RbConfig::CONFIG && RbConfig::CONFIG['host_os']
-                meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} #{RbConfig::CONFIG['target_cpu']}"
-              end
-              meta << "Curb #{Curl::CURB_VERSION}"
-              "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
-            end
+                              meta = ["RUBY_VERSION: #{RUBY_VERSION}"]
+                              if RbConfig::CONFIG && RbConfig::CONFIG['host_os']
+                                meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} #{RbConfig::CONFIG['target_cpu']}"
+                              end
+                              meta << "Curb #{Curl::CURB_VERSION}"
+                              "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
+                            end
           end
         end
       end
