@@ -1,4 +1,4 @@
-## 8.1.0
+## 8.1.0.pre1
 
 Adds support for Faraday version 2. From [Faraday's Upgrading guide](https://github.com/lostisland/faraday/blob/main/UPGRADING.md#faraday-20), the main change is the adapters have moved:
 
