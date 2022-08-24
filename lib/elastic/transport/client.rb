@@ -283,24 +283,26 @@ module Elastic
       # Auto-detect the best adapter (HTTP "driver") available, based on libraries
       # loaded by the user, preferring those with persistent connections
       # ("keep-alive") by default
+      # Check adapters based on the usage of Faraday 1 or 2. Faraday should be defined here
+      # since this is only called when transport class is Transport::HTTP::Faraday
       #
       # @return [Symbol]
       #
       # @api private
       #
       def __auto_detect_adapter
-        case
-        when defined?(::Patron)
-          :patron
-        when defined?(::Typhoeus)
-          :typhoeus
-        when defined?(::HTTPClient)
-          :httpclient
-        when defined?(::Net::HTTP::Persistent)
-          :net_http_persistent
+        if Gem::Version.new(Faraday::VERSION) >= Gem::Version.new(2)
+          return :patron if defined?(Faraday::Adapter::Patron)
+          return :typhoeus if defined?(Faraday::Adapter::Typhoeus)
+          return :httpclient if defined?(Faraday::Adapter::HTTPClient)
+          return :net_http_persistent if defined?(Faraday::Adapter::NetHttpPersistent)
         else
-          ::Faraday.default_adapter
+          return :patron if defined?(::Patron)
+          return :typhoeus if defined?(::Typhoeus)
+          return :httpclient if defined?(::HTTPClient)
+          return :net_http_persistent if defined?(::Net::HTTP::Persistent)
         end
+        ::Faraday.default_adapter
       end
     end
   end
