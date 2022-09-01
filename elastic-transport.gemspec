@@ -44,7 +44,7 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 2.5'
 
-  s.add_dependency 'faraday'
+  s.add_dependency 'faraday', '< 3'
   s.add_dependency 'multi_json'
 
   # Faraday Adapters
