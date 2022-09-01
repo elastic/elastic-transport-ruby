@@ -42,10 +42,12 @@ Features overview:
 * Request retries and dead connections handling
 * Node reloading (based on cluster state) on errors or on demand
 
-For optimal performance, use a HTTP library which supports persistent ("keep-alive") connections, such as [patron](https://github.com/toland/patron) or [Typhoeus](https://github.com/typhoeus/typhoeus).
-Just require the library (`require 'patron'`) in your code, and it will be automatically used.
+This library uses [Faraday](https://github.com/lostisland/faraday) by default as the HTTP transport implementation. We test it it with Faraday versions 1.x and Faraday 2.x.
 
-Currently these libraries will be automatically detected and used:
+For optimal performance, use a HTTP library which supports persistent ("keep-alive") connections, such as [patron](https://github.com/toland/patron) or [Typhoeus](https://github.com/typhoeus/typhoeus).
+Require the library (`require 'patron'`) in your code for Faraday 1.x or the adapter (`require 'faraday/patron'`) for Faraday 2.x, and it will be automatically used.
+
+Currently these libraries are supported:
 - [Patron](https://github.com/toland/patron)
 - [Typhoeus](https://github.com/typhoeus/typhoeus)
 - [HTTPClient](https://rubygems.org/gems/httpclient)
@@ -53,12 +55,11 @@ Currently these libraries will be automatically detected and used:
 
 **Note on [Typhoeus](https://github.com/typhoeus/typhoeus)**: You need to use v1.4.0 or up since older versions are not compatible with Faraday 1.0.
 
-For detailed information, see example configurations [below](#transport-implementations).
+You can customize Faraday and implement your own HTTP transport. For detailed information, see the example configurations and more information [below](#transport-implementations).
 
 ## Example Usage
 
-In the simplest form, connect to Elasticsearch running on <http://localhost:9200>
-without any configuration:
+In the simplest form, connect to Elasticsearch running on <http://localhost:9200> without any configuration:
 
 ```ruby
 require 'elastic/transport'
@@ -346,12 +347,21 @@ Elastic::Transport::Client.new hosts: ['x1.search.org', 'x2.search.org'], select
 
 By default, the client will use the [_Faraday_](https://rubygems.org/gems/faraday) HTTP library as a transport implementation.
 
-It will auto-detect and use an _adapter_ for _Faraday_ based on gems loaded in your code, preferring HTTP clients with support for persistent connections.
-
-To use the [_Patron_](https://github.com/toland/patron) HTTP, for example, just require it:
+It will auto-detect and use an _adapter_ for _Faraday_ based on gems loaded in your code, preferring HTTP clients with support for persistent connections. Faraday 2 changed the way adapters are used ([read more here](https://github.com/lostisland/faraday/blob/main/UPGRADING.md#adapters-have-moved)). If you're using Faraday 1.x, you can require the HTTP library. To use the [_Patron_](https://github.com/toland/patron) HTTP, for example, require it:
 
 ```ruby
 require 'patron'
+```
+
+If you're using Faraday 2.x, you need to add the corresponding adapter gem to your Gemfile and require them after you require `faraday`:
+
+```ruby
+# Gemfile
+gem 'faraday-patron'
+
+# Code
+require 'faraday'
+require 'faraday/patron'
 ```
 
 Then, create a new client, and the _Patron_  gem will be used as the "driver":
@@ -377,6 +387,10 @@ end
 To use a specific adapter for _Faraday_, pass it as the `adapter` argument:
 
 ```ruby
+# Gemfile
+gem 'faraday-net_http_persistent'
+
+# Code
 client = Elastic::Transport::Client.new(adapter: :net_http_persistent)
 
 client.transport.connections.first.connection.builder.handlers
