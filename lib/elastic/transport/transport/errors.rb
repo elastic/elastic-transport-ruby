@@ -18,7 +18,6 @@
 module Elastic
   module Transport
     module Transport
-
       # Generic client error
       #
       class Error < StandardError; end
@@ -78,14 +77,13 @@ module Elastic
         505 => 'HTTPVersionNotSupported',
         506 => 'VariantAlsoNegotiates',
         510 => 'NotExtended'
-      }
+      }.freeze
 
-      ERRORS = HTTP_STATUSES.inject({}) do |sum, error|
+      ERRORS = HTTP_STATUSES.each_with_object({}) do |error, sum|
         status, name = error
         sum[status] = Errors.const_set name, Class.new(ServerError)
         sum
       end
-
     end
   end
 end
