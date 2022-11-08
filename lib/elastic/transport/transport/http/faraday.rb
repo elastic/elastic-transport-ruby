@@ -34,26 +34,27 @@ module Elastic
           #
           def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
             super do |connection, url|
-              headers = if connection.connection.headers
-                          if !headers.nil?
-                            connection.connection.headers.merge(headers)
-                          else
-                            connection.connection.headers
-                          end
-                        else
-                          headers
-                        end
+              headers = parse_headers(headers, connection)
               body = body ? __convert_to_json(body) : nil
               body, headers = compress_request(body, headers)
 
-              response = connection.connection.run_request(
-                method.downcase.to_sym,
-                url,
-                body,
-                headers
-              )
+              response = connection.connection.run_request(method.downcase.to_sym, url, body, headers)
 
-              Response.new response.status, decompress_response(response.body), response.headers
+              Response.new(response.status, decompress_response(response.body), response.headers)
+            end
+          end
+
+          # Merges headers already present in the connection and the ones passed in to perform_request
+          #
+          def parse_headers(headers, connection)
+            if connection.connection.headers
+              if !headers.nil?
+                connection.connection.headers.merge(headers)
+              else
+                connection.connection.headers
+              end
+            else
+              headers
             end
           end
 
@@ -86,9 +87,10 @@ module Elastic
             @user_agent ||= begin
               meta = ["RUBY_VERSION: #{RUBY_VERSION}"]
               if RbConfig::CONFIG && RbConfig::CONFIG['host_os']
-                meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} #{RbConfig::CONFIG['target_cpu']}"
+                meta << "#{RbConfig::CONFIG['host_os'].split('_').first[/[a-z]+/i].downcase} " \
+                        "#{RbConfig::CONFIG['target_cpu']}"
               end
-              meta << "#{client.headers[USER_AGENT_STR]}"
+              meta << client.headers[USER_AGENT_STR]
               "elastic-transport-ruby/#{VERSION} (#{meta.join('; ')})"
             end
           end
