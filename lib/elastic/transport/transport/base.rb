@@ -72,7 +72,7 @@ module Elastic
           @reload_connections = options[:reload_connections]
           @reload_after    = options[:reload_connections].is_a?(Integer) ? options[:reload_connections] : DEFAULT_RELOAD_AFTER
           @resurrect_after = options[:resurrect_after] || DEFAULT_RESURRECT_AFTER
-          @retry_on_status = Array(options[:retry_on_status]).map { |d| d.to_i }
+          @retry_on_status = Array(options[:retry_on_status]).map(&:to_i)
         end
 
         # Returns a connection from the connection pool by delegating to {Connections::Collection#get_connection}.
@@ -87,7 +87,7 @@ module Elastic
           resurrect_dead_connections! if Time.now > @last_request_at + @resurrect_after
 
           @counter_mtx.synchronize { @counter += 1 }
-          reload_connections!         if reload_connections && counter % reload_after == 0
+          reload_connections! if reload_connections && (counter % reload_after).zero?
           connections.get_connection(options)
         end
 
@@ -97,10 +97,10 @@ module Elastic
         #
         def reload_connections!
           hosts = sniffer.hosts
-          __rebuild_connections :hosts => hosts, :options => options
+          __rebuild_connections(hosts: hosts, options: options)
           self
         rescue SnifferTimeoutError
-          log_error "[SnifferTimeoutError] Timeout when reloading connections."
+          log_error('[SnifferTimeoutError] Timeout when reloading connections.')
           self
         end
 
@@ -109,7 +109,7 @@ module Elastic
         # @see Connections::Connection#resurrect!
         #
         def resurrect_dead_connections!
-          connections.dead.each { |c| c.resurrect! }
+          connections.dead.each(&:resurrect!)
         end
 
         # Rebuilds the connections collection in the transport.
@@ -128,7 +128,7 @@ module Elastic
             __close_connections
 
             new_connections = __build_connections
-            stale_connections = @connections.all.select  { |c| ! new_connections.include?(c) }
+            stale_connections = @connections.all.reject { |c| new_connections.include?(c) }
             new_connections = new_connections.reject { |c| @connections.all.include?(c) }
 
             @connections.remove(stale_connections)
@@ -178,7 +178,7 @@ module Elastic
         # @api    private
         #
         def __build_connection(host, options={}, block=nil)
-          raise NoMethodError, "Implement this method in your class"
+          raise NoMethodError, 'Implement this method in your class'
         end
 
         # Closes the connections collection
