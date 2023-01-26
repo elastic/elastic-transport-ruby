@@ -110,6 +110,15 @@ namespace :docker do
   end
 end
 
+desc 'Run Ruby console with the Elastic transport client libraries loaded'
+task :console do
+  require 'irb'
+  require 'irb/completion'
+  require 'elastic-transport'
+  ARGV.clear
+  IRB.start
+end
+
 # ----- Documentation tasks ---------------------------------------------------
 require 'yard'
 YARD::Rake::YardocTask.new(:doc) do |t|
