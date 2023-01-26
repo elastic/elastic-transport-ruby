@@ -283,23 +283,27 @@ module Elastic
           end
 
           params = params.clone
+          # Transforms ignore status codes to Integer
           ignore = Array(params.delete(:ignore)).compact.map { |s| s.to_i }
 
           begin
             sleep(delay_on_retry / 1000.0) if tries > 0
-            tries     += 1
+            tries += 1
             connection = get_connection or raise Error.new('Cannot get new connection from pool.')
 
-            if connection.connection.respond_to?(:params) && connection.connection.params.respond_to?(:to_hash)
+            if connection.connection.respond_to?(:params) &&
+               connection.connection.params.respond_to?(:to_hash)
               params = connection.connection.params.merge(params.to_hash)
             end
 
-            url      = connection.full_url(path, params)
+            url = connection.full_url(path, params)
             response = block.call(connection, url)
-            connection.healthy! if connection.failures > 0
+            connection.healthy! if connection.failures.positive?
 
             # Raise an exception so we can catch it for `retry_on_status`
-            __raise_transport_error(response) if response.status.to_i >= 300 && @retry_on_status.include?(response.status.to_i)
+            __raise_transport_error(response) if response.status.to_i >= 300 &&
+                                                 @retry_on_status.include?(response.status.to_i)
+
           rescue Elastic::Transport::Transport::ServerError => e
             if response && @retry_on_status.include?(response.status)
               log_warn "[#{e.class}] Attempt #{tries} to get response from #{url}"
