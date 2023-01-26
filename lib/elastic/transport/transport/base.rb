@@ -322,16 +322,18 @@ module Elastic
               reload_connections! and retry
             end
 
+            exception = Elastic::Transport::Transport::Error.new(e.message)
+
             if max_retries
               log_warn "[#{e.class}] Attempt #{tries} connecting to #{connection.host.inspect}"
               if tries <= max_retries
                 retry
               else
                 log_fatal "[#{e.class}] Cannot connect to #{connection.host.inspect} after #{tries} tries"
-                raise e
+                raise exception
               end
             else
-              raise e
+              raise exception
             end
           rescue Exception => e
             log_fatal "[#{e.class}] #{e.message} (#{connection.host.inspect if connection})"
