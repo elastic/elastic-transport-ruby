@@ -30,16 +30,16 @@ describe Elastic::Transport::Transport::Base do
 
       it 'does not include the password in the logged string' do
         expect(logger).not_to receive(:error).with(/secret_password/)
-        expect {
+        expect do
           client.perform_request('GET', '/_cluster/stats')
-        }.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
 
       it 'replaces the password with the string \'REDACTED\'' do
         expect(logger).to receive(:error).with(/REDACTED/)
-        expect {
+        expect do
           client.perform_request('GET', '/_cluster/stats')
-        }.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
 
@@ -93,7 +93,7 @@ describe Elastic::Transport::Transport::Base do
     end
 
     it 'raises an exception' do
-      expect { client.perform_request('GET', '/info') }.to raise_exception(Faraday::ConnectionFailed)
+      expect { client.perform_request('GET', '/info') }.to raise_exception(Elastic::Transport::Transport::Error)
     end
   end
 
@@ -115,9 +115,9 @@ describe Elastic::Transport::Transport::Base do
       end
 
       it 'uses the client `retry_on_failure` value' do
-        expect {
+        expect do
           client.transport.perform_request('GET', '/info')
-        }.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
 
@@ -148,7 +148,7 @@ describe Elastic::Transport::Transport::Base do
       it 'uses the option `retry_on_failure` value' do
         expect do
           client.transport.perform_request('GET', '/info', {}, nil, nil, retry_on_failure: 5)
-        end.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
   end
@@ -160,8 +160,8 @@ describe Elastic::Transport::Transport::Base do
 
     let(:arguments) do
       {
-          hosts: ['http://unavailable:9200', 'http://unavailable:9201'],
-          retry_on_failure: true
+        hosts: ['http://unavailable:9200', 'http://unavailable:9201'],
+        retry_on_failure: true
       }
     end
 
@@ -171,9 +171,9 @@ describe Elastic::Transport::Transport::Base do
       end
 
       it 'uses the default `MAX_RETRIES` value' do
-        expect {
+        expect do
           client.transport.perform_request('GET', '/info')
-        }.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
 
@@ -183,9 +183,9 @@ describe Elastic::Transport::Transport::Base do
       end
 
       it 'uses the option `retry_on_failure` value' do
-        expect {
+        expect do
           client.transport.perform_request('GET', '/info', {}, nil, nil, retry_on_failure: 5)
-        }.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
   end
@@ -197,8 +197,8 @@ describe Elastic::Transport::Transport::Base do
 
     let(:arguments) do
       {
-          hosts: ['http://unavailable:9200', 'http://unavailable:9201'],
-          retry_on_failure: false
+        hosts: ['http://unavailable:9200', 'http://unavailable:9201'],
+        retry_on_failure: false
       }
     end
 
@@ -208,22 +208,21 @@ describe Elastic::Transport::Transport::Base do
       end
 
       it 'does not retry' do
-        expect {
+        expect do
           client.transport.perform_request('GET', '/info')
-        }.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
 
     context 'when `perform_request` is called with a `retry_on_failure` option value' do
-
       before do
         expect(client.transport).to receive(:get_connection).exactly(6).times.and_call_original
       end
 
       it 'uses the option `retry_on_failure` value' do
-        expect {
+        expect do
           client.transport.perform_request('GET', '/info', {}, nil, nil, retry_on_failure: 5)
-        }.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
   end
@@ -245,7 +244,7 @@ describe Elastic::Transport::Transport::Base do
       it 'does not retry' do
         expect do
           client.transport.perform_request('GET', '/info')
-        end.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
 
@@ -257,7 +256,7 @@ describe Elastic::Transport::Transport::Base do
       it 'uses the option `retry_on_failure` value' do
         expect do
           client.transport.perform_request('GET', '/info', {}, nil, nil, retry_on_failure: 5)
-        end.to raise_exception(Faraday::ConnectionFailed)
+        end.to raise_exception(Elastic::Transport::Transport::Error)
       end
     end
   end
