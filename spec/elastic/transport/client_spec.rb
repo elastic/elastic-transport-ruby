@@ -1327,9 +1327,9 @@ describe Elastic::Transport::Client do
 
         it 'retries only the specified number of times' do
           expect(client.perform_request('GET', '_nodes/_local'))
-          expect {
+          expect do
             client.perform_request('GET', '_nodes/_local')
-          }.to raise_exception(Faraday::ConnectionFailed)
+          end.to raise_exception(Elastic::Transport::Transport::Error)
         end
       end
 
