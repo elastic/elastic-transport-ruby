@@ -255,10 +255,9 @@ class Elastic::Transport::Transport::BaseTest < Minitest::Test
     should "raise an error on connection failure" do
       @transport.expects(:get_connection).returns(stub_everything :failures => 1)
 
-      # `block.expects(:call).raises(::Errno::ECONNREFUSED)` fails on Ruby 1.8
-      block = lambda { |a,b| raise ::Errno::ECONNREFUSED }
+      block = lambda { |a,b| raise Elastic::Transport::Transport::Error }
 
-      assert_raise ::Errno::ECONNREFUSED do
+      assert_raise Elastic::Transport::Transport::Error do
         @transport.perform_request 'GET', '/', &block
       end
     end
@@ -291,11 +290,11 @@ class Elastic::Transport::Transport::BaseTest < Minitest::Test
       c = stub_everything :failures => 1
       @transport.expects(:get_connection).returns(c)
 
-      block = lambda { |a,b| raise ::Errno::ECONNREFUSED }
+      block = lambda { |a, b| raise Errno::ECONNREFUSED }
 
       c.expects(:dead!)
 
-      assert_raise( ::Errno::ECONNREFUSED ) { @transport.perform_request 'GET', '/', &block }
+      assert_raise( Elastic::Transport::Transport::Error ) { @transport.perform_request 'GET', '/', &block }
     end
   end
 
@@ -311,7 +310,7 @@ class Elastic::Transport::Transport::BaseTest < Minitest::Test
 
     should "reload connections when host is unreachable" do
       @block.expects(:call).times(2).
-            raises(Errno::ECONNREFUSED).
+        raises(Errno::ECONNREFUSED).
             then.returns(stub_everything :failures => 1)
 
       @transport.expects(:reload_connections!).returns([])
@@ -343,13 +342,13 @@ class Elastic::Transport::Transport::BaseTest < Minitest::Test
 
     should "raise an error after max tries" do
       @block.expects(:call).times(4).
-            raises(Errno::ECONNREFUSED).
+        raises(Errno::ECONNREFUSED).
             then.raises(Errno::ECONNREFUSED).
             then.raises(Errno::ECONNREFUSED).
             then.raises(Errno::ECONNREFUSED).
             then.returns(stub_everything :failures => 1)
 
-      assert_raise Errno::ECONNREFUSED do
+      assert_raise Elastic::Transport::Transport::Error do
         @transport.perform_request('GET', '/', &@block)
       end
     end
