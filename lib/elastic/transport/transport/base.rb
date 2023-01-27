@@ -24,12 +24,12 @@ module Elastic
         include Loggable
 
         DEFAULT_PORT             = 9200
-        DEFAULT_PROTOCOL         = 'http'
+        DEFAULT_PROTOCOL         = 'http'.freeze
         DEFAULT_RELOAD_AFTER     = 10_000 # Requests
         DEFAULT_RESURRECT_AFTER  = 60     # Seconds
         DEFAULT_MAX_RETRIES      = 3      # Requests
         DEFAULT_SERIALIZER_CLASS = Serializer::MultiJson
-        SANITIZED_PASSWORD       = '*' * (rand(14)+1)
+        SANITIZED_PASSWORD       = '*' * (rand(14) + 1)
 
         attr_reader   :hosts, :options, :connections, :counter, :last_request_at, :protocol
         attr_accessor :serializer, :sniffer, :logger, :tracer,
@@ -59,7 +59,7 @@ module Elastic
           @compression = !!@options[:compression]
           @connections = __build_connections
 
-          @serializer  = options[:serializer] || ( options[:serializer_class] ? options[:serializer_class].new(self) : DEFAULT_SERIALIZER_CLASS.new(self) )
+          @serializer  = options[:serializer] || ( options[:serializer_class] ? options[:serializer_class].new(self) : DEFAULT_SERIALIZER_CLASS.new(self))
           @protocol    = options[:protocol] || DEFAULT_PROTOCOL
 
           @logger      = options[:logger]
@@ -177,7 +177,7 @@ module Elastic
         # @return [Connections::Connection]
         # @api    private
         #
-        def __build_connection(host, options={}, block=nil)
+        def __build_connection(host, options = {}, block = nil)
           raise NoMethodError, 'Implement this method in your class'
         end
 
@@ -209,14 +209,14 @@ module Elastic
         #
         def __trace(method, path, params, headers, body, url, response, json, took, duration)
           trace_url  = "http://localhost:9200/#{path}?pretty" +
-              ( params.empty? ? '' : "&#{::Faraday::Utils::ParamsHash[params].to_query}" )
+              (params.empty? ? '' : "&#{::Faraday::Utils::ParamsHash[params].to_query}")
           trace_body = body ? " -d '#{__convert_to_json(body, :pretty => true)}'" : ''
           trace_command = "curl -X #{method.to_s.upcase}"
-          trace_command += " -H '#{headers.collect { |k,v| "#{k}: #{v}" }.join(", ")}'" if headers && !headers.empty?
+          trace_command += " -H '#{headers.collect { |k, v| "#{k}: #{v}" }.join(", ")}'" if headers && !headers.empty?
           trace_command += " '#{trace_url}'#{trace_body}\n"
           tracer.info trace_command
           tracer.debug "# #{Time.now.iso8601} [#{response.status}] (#{format('%.3f', duration)}s)\n#"
-          tracer.debug json ? serializer.dump(json, :pretty => true).gsub(/^/, '# ').sub(/\}$/, "\n# }")+"\n" : "# #{response.body}\n"
+          tracer.debug json ? serializer.dump(json, pretty: true).gsub(/^/, '# ').sub(/\}$/, "\n# }")+"\n" : "# #{response.body}\n"
         end
 
         # Raise error specific for the HTTP response status or a generic server error
@@ -276,15 +276,11 @@ module Elastic
           reload_on_failure = opts.fetch(:reload_on_failure, @options[:reload_on_failure])
           delay_on_retry = opts.fetch(:delay_on_retry, @options[:delay_on_retry])
 
-          max_retries = if opts.key?(:retry_on_failure)
-            opts[:retry_on_failure] === true ? DEFAULT_MAX_RETRIES : opts[:retry_on_failure]
-          elsif options.key?(:retry_on_failure)
-            options[:retry_on_failure] === true ? DEFAULT_MAX_RETRIES : options[:retry_on_failure]
-          end
+          max_retries = max_retries(opts) || max_retries(options)
 
           params = params.clone
           # Transforms ignore status codes to Integer
-          ignore = Array(params.delete(:ignore)).compact.map { |s| s.to_i }
+          ignore = Array(params.delete(:ignore)).compact.map(&:to_i)
 
           begin
             sleep(delay_on_retry / 1000.0) if tries > 0
@@ -303,17 +299,14 @@ module Elastic
             # Raise an exception so we can catch it for `retry_on_status`
             __raise_transport_error(response) if response.status.to_i >= 300 &&
                                                  @retry_on_status.include?(response.status.to_i)
-
           rescue Elastic::Transport::Transport::ServerError => e
-            if response && @retry_on_status.include?(response.status)
-              log_warn "[#{e.class}] Attempt #{tries} to get response from #{url}"
-              if tries <= (max_retries || DEFAULT_MAX_RETRIES)
-                retry
-              else
-                log_fatal "[#{e.class}] Cannot get response from #{url} after #{tries} tries"
-                raise e
-              end
+            raise e unless response && @retry_on_status.include?(response.status)
+
+            log_warn "[#{e.class}] Attempt #{tries} to get response from #{url}"
+            if tries <= (max_retries || DEFAULT_MAX_RETRIES)
+              retry
             else
+              log_fatal "[#{e.class}] Cannot get response from #{url} after #{tries} tries"
               raise e
             end
           rescue *host_unreachable_exceptions => e
@@ -321,22 +314,20 @@ module Elastic
 
             connection.dead!
 
-            if reload_on_failure and tries < connections.all.size
+            if reload_on_failure && tries < connections.all.size
               log_warn "[#{e.class}] Reloading connections (attempt #{tries} of #{connections.all.size})"
               reload_connections! and retry
             end
 
             exception = Elastic::Transport::Transport::Error.new(e.message)
 
-            if max_retries
-              log_warn "[#{e.class}] Attempt #{tries} connecting to #{connection.host.inspect}"
-              if tries <= max_retries
-                retry
-              else
-                log_fatal "[#{e.class}] Cannot connect to #{connection.host.inspect} after #{tries} tries"
-                raise exception
-              end
+            raise exception unless max_retries
+
+            log_warn "[#{e.class}] Attempt #{tries} connecting to #{connection.host.inspect}"
+            if tries <= max_retries
+              retry
             else
+              log_fatal "[#{e.class}] Cannot connect to #{connection.host.inspect} after #{tries} tries"
               raise exception
             end
           rescue Exception => e
@@ -355,8 +346,11 @@ module Elastic
             __raise_transport_error response unless ignore.include?(response.status.to_i)
           end
 
-          json     = serializer.load(response.body) if response.body && !response.body.empty? && response.headers && response.headers["content-type"] =~ /json/
-          took     = (json['took'] ? sprintf('%.3fs', json['took']/1000.0) : 'n/a') rescue 'n/a'
+          json = serializer.load(response.body) if response.body &&
+                                                       !response.body.empty? &&
+                                                       response.headers &&
+                                                       response.headers["content-type"] =~ /json/
+          took = (json['took'] ? sprintf('%.3fs', json['took'] / 1000.0) : 'n/a') rescue 'n/a'
           __log_response(method, path, params, body, url, response, json, took, duration) unless ignore.include?(response.status.to_i)
           __trace(method, path, params, connection_headers(connection), body, url, response, nil, 'N/A', duration) if tracer
           log_warn(response.headers['warning']) if response.headers&.[]('warning')
@@ -378,16 +372,20 @@ module Elastic
         private
 
         USER_AGENT_STR = 'User-Agent'.freeze
-        USER_AGENT_REGEX = /user\-?\_?agent/
+        USER_AGENT_REGEX = /user-?_?agent/
         ACCEPT_ENCODING = 'Accept-Encoding'.freeze
         CONTENT_ENCODING = 'Content-Encoding'.freeze
         CONTENT_TYPE_STR = 'Content-Type'.freeze
-        CONTENT_TYPE_REGEX = /content\-?\_?type/
+        CONTENT_TYPE_REGEX = /content-?_?type/
         DEFAULT_CONTENT_TYPE = 'application/json'.freeze
         GZIP = 'gzip'.freeze
         GZIP_FIRST_TWO_BYTES = '1f8b'.freeze
         HEX_STRING_DIRECTIVE = 'H*'.freeze
         RUBY_ENCODING = '1.9'.respond_to?(:force_encoding)
+
+        def max_retries(opts)
+          opts[:retry_on_failure] == true ? DEFAULT_MAX_RETRIES : opts[:retry_on_failure]
+        end
 
         def compress_request(body, headers)
           if body
@@ -415,7 +413,7 @@ module Elastic
 
           io = StringIO.new(body)
           gzip_reader = if RUBY_ENCODING
-                          Zlib::GzipReader.new(io, :encoding => 'ASCII-8BIT')
+                          Zlib::GzipReader.new(io, encoding: 'ASCII-8BIT')
                         else
                           Zlib::GzipReader.new(io)
                         end
@@ -448,7 +446,7 @@ module Elastic
           end
         end
 
-        def user_agent_header(client)
+        def user_agent_header(_client)
           @user_agent ||= begin
             meta = ["RUBY_VERSION: #{RUBY_VERSION}"]
             if RbConfig::CONFIG && RbConfig::CONFIG['host_os']
@@ -459,7 +457,8 @@ module Elastic
         end
 
         def connection_headers(connection)
-          if defined?(Elastic::Transport::Transport::HTTP::Manticore) && self.class == Elastic::Transport::Transport::HTTP::Manticore
+          if defined?(Elastic::Transport::Transport::HTTP::Manticore) &&
+             instance_of?(Elastic::Transport::Transport::HTTP::Manticore)
             @request_options[:headers]
           else
             connection.connection.headers
