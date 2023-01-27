@@ -1194,17 +1194,7 @@ describe Elastic::Transport::Client do
 
   context 'when the client connects to Elasticsearch' do
     let(:logger) do
-      Logger.new(STDERR).tap do |logger|
-        logger.formatter = proc do |severity, datetime, progname, msg|
-          color = case severity
-                  when /INFO/ then :green
-                  when /ERROR|WARN|FATAL/ then :red
-                  when /DEBUG/ then :cyan
-                  else :white
-                  end
-          ANSI.ansi(severity[0] + ' ', color, :faint) + ANSI.ansi(msg, :white, :faint) + "\n"
-        end
-      end unless ENV['QUIET']
+      Logger.new($stderr) unless ENV['QUIET']
     end
 
     let(:port) do
