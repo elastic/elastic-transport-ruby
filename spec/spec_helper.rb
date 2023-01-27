@@ -21,7 +21,6 @@ end
 
 require 'elastic-transport'
 require 'logger'
-require 'ansi/code'
 require 'hashie/mash'
 if defined?(JRUBY_VERSION)
   require 'elastic/transport/transport/http/manticore'

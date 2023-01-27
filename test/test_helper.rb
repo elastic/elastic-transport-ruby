@@ -30,7 +30,6 @@ if ENV['COVERAGE']
   SimpleCov.start { add_filter %r{^/test/} }
 end
 
-require 'ansi/code'
 require 'minitest/autorun'
 require 'minitest/reporters'
 require 'mocha/minitest'
