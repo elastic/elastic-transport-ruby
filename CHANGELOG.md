@@ -1,10 +1,19 @@
+## 8.2.0
+
+Tested versions of Ruby: (MRI) 2.7, 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4.
+
+- Fixes [issue #44](https://github.com/elastic/elastic-transport-ruby/issues/44), raising `Elasticsearch::Transport::Transport::Error` instead of `Faraday::ConnectionFailed` (or any other Faraday error class) when a host is unreachable.
+- Removes development dependency on `ansi`, it hasn't been updated for years.
+- Adds `rake console` task to run IRB with the Elastic transport client libraries loaded.
+- General refactors, cleanup and updates in code for `base.rb` (The base class used by HTTP implementations Faraday, Manticore, Curb), `errors.rb`, `faraday.rb`, and more.
+
 ## 8.1.0
 
 Adds support for Faraday version 2. From [Faraday's Upgrading guide](https://github.com/lostisland/faraday/blob/main/UPGRADING.md#faraday-20), the main change is the adapters have moved:
 
 > With this release, we've officially moved all adapters, except for the net_http one, out of Faraday. What that means, is that they won't be available out-of-the-box anymore, and you'll instead need to add them to your Gemfile.
 > If you just use the default net_http adapter, then you don't need to do anything!
-> Otherwise, add the corresponding adapter gem to your Gemfile (e.g. faraday-net_http_persistent). Then, simply require them after you require faraday. 
+> Otherwise, add the corresponding adapter gem to your Gemfile (e.g. faraday-net_http_persistent). Then, simply require them after you require faraday.
 
 We're now supporting Faraday v2 and Faraday v1. The adapters were removed as development dependency in the gemspec and added to the Gemfile. A new file `Gemfile-faraday1.gemfile` was added to run tests with version `1.x` of Faraday too.
 
