@@ -2,7 +2,7 @@
 
 Tested versions of Ruby: (MRI) 2.7, 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4.
 
-- Fixes [issue #44](https://github.com/elastic/elastic-transport-ruby/issues/44), raising `Elasticsearch::Transport::Transport::Error` instead of `Faraday::ConnectionFailed` (or any other Faraday error class) when a host is unreachable.
+- Fixes [issue #44](https://github.com/elastic/elastic-transport-ruby/issues/44), raising `Elastic::Transport::Transport::Error` instead of `Faraday::ConnectionFailed` (or any other Faraday error class) when a host is unreachable.
 - Removes development dependency on `ansi`, it hasn't been updated for years.
 - Adds `rake console` task to run IRB with the Elastic transport client libraries loaded.
 - General refactors, cleanup and updates in code for `base.rb` (The base class used by HTTP implementations Faraday, Manticore, Curb), `errors.rb`, `faraday.rb`, and more.
