@@ -23,32 +23,7 @@ This gem is compatible with maintained Ruby versions. See [Ruby Maintenance Bran
 
 ## Development and Community
 
-For local development, clone the repository and run `bundle install`. See `rake -T` for a list of available Rake tasks for running tests, generating documentation, starting a testing cluster, etc.
-
-Bug fixes and features must be covered by unit tests.
-
-A rake task is included to launch an Elasticsearch cluster with Docker. You need to install docker on your system and then run:
-```bash
-$ rake docker:start[VERSION]
-```
-
-E.g.:
-```bash
-$ rake docker:start[8.0.0-alpha1]
-```
-
-You can find the available version in [Docker @ Elastic](https://www.docker.elastic.co/r/elasticsearch).
-
-To run tests, launch a testing cluster and use the Rake tasks:
-
-```bash
-time rake test:unit
-time rake test:integration
-```
-
-Use `COVERAGE=true` before running a test task to check coverage with Simplecov.
-
-Github's pull requests and issues are used to communicate, send bug reports and code contributions.
+See [CONTRIBUTING](./CONTRIBUTING.md).
 
 ## License
 
