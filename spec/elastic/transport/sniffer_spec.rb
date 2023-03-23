@@ -257,6 +257,24 @@ describe Elastic::Transport::Transport::Sniffer do
       end
     end
 
+    context 'when the address is IPv4' do
+      let(:publish_address) do
+        'inet[/127.0.0.1:9200]'
+      end
+
+      it 'parses the response' do
+        expect(hosts.size).to eq(1)
+      end
+
+      it 'correctly parses the host' do
+        expect(hosts[0][:host]).to eq('127.0.0.1')
+      end
+
+      it 'correctly parses the port' do
+        expect(hosts[0][:port]).to eq('9200')
+      end
+    end
+
     context 'when the transport has :randomize_hosts option' do
       let(:raw_response) do
         { 'nodes' => { 'n1' => { 'http' => { 'publish_address' => '127.0.0.1:9250' } },
