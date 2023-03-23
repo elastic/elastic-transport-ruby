@@ -76,12 +76,9 @@ module Elastic
         end
 
         def parse_publish_address(publish_address)
-          # publish_address is in the format:
-          # - hostname/ip:port
-          # - inet[hostname/ip:port]
-          publish_address = publish_address[5..-2] if publish_address =~ /^inet\[.*\]$/
-          # If hostname is empty.
-          publish_address = publish_address[1..] if publish_address =~ /^\//
+          # When publish_address is in the format 'inet[hostname/ip:port]'
+          return parse_address_port(publish_address[6..-2]) if publish_address =~ /^inet\[.*\]$/
+
           if publish_address =~ /\//
             parts = publish_address.partition('/')
             [ parts[0], parse_address_port(parts[2])[1] ]
