@@ -1,3 +1,9 @@
+## 8.2.1
+
+Tested versions of Ruby: (MRI) 2.7, 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4. Ruby 2.7's end of life is coming in a few days, so this'll probably be the last release to test for Ruby 2.7.
+
+- Fixes parsing ipv4 addresses like `inet[/127.0.0.1:9200]` in sniffer, [issue #48](https://github.com/elastic/elastic-transport-ruby/issues/48). [Pull Request](https://github.com/elastic/elastic-transport-ruby/pull/49) by [@robbat2](https://github.com/robbat2), thank you!
+
 ## 8.2.0
 
 Tested versions of Ruby: (MRI) 2.7, 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4.
