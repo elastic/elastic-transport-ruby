@@ -122,8 +122,7 @@ module Elastic
       # @yield [faraday] Access and configure the `Faraday::Connection` instance directly with a block
       #
       def initialize(arguments = {}, &block)
-        @options = arguments.transform_keys(&:to_sym)
-        @arguments = @options
+        @arguments = arguments.transform_keys(&:to_sym)
         @arguments[:logger] ||= @arguments[:log]   ? DEFAULT_LOGGER.call() : nil
         @arguments[:tracer] ||= @arguments[:trace] ? DEFAULT_TRACER.call() : nil
         @arguments[:reload_connections] ||= false
@@ -134,7 +133,6 @@ module Elastic
         @arguments[:transport_options]  ||= {}
         @arguments[:http]               ||= {}
         @arguments[:enable_meta_header] = arguments.fetch(:enable_meta_header, true)
-        @options[:http]                 ||= {}
 
         @hosts ||= __extract_hosts(@arguments[:hosts] ||
                                    @arguments[:host] ||
@@ -236,7 +234,7 @@ module Elastic
                 end
 
         host_list = hosts.map { |host| __parse_host(host) }
-        @options[:randomize_hosts] ? host_list.shuffle! : host_list
+        @arguments[:randomize_hosts] ? host_list.shuffle! : host_list
       end
 
       def __parse_host(host)
@@ -273,8 +271,8 @@ module Elastic
                        raise ArgumentError, "Please pass host as a String, URI or Hash -- #{host.class} given."
                      end
 
-        @options[:http][:user] ||= host_parts[:user]
-        @options[:http][:password] ||= host_parts[:password]
+        @arguments[:http][:user] ||= host_parts[:user]
+        @arguments[:http][:password] ||= host_parts[:password]
         host_parts[:port] = host_parts[:port].to_i if host_parts[:port]
         host_parts[:path].chomp!('/') if host_parts[:path]
         host_parts
