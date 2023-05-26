@@ -168,7 +168,7 @@ module Elastic
 
       # Performs a request through delegation to {#transport}.
       #
-      def perform_request(method, path, params = {}, body = nil, headers = nil)
+      def perform_request(method, path, params = {}, body = nil, headers = nil, path_patterns = nil)
         method = @send_get_body_as if 'GET' == method && body
         validate_ca_fingerprints if @ca_fingerprint
         transport.perform_request(method, path, params, body, headers)
