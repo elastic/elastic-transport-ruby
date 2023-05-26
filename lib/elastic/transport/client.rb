@@ -26,6 +26,7 @@ module Elastic
     #
     class Client
       DEFAULT_TRANSPORT_CLASS = Transport::HTTP::Faraday
+      OTEL_TRACER_NAME = 'elasticsearch-api'
       include MetaHeader
 
       DEFAULT_LOGGER = lambda do
@@ -164,6 +165,10 @@ module Elastic
                          @transport_class.new(hosts: @hosts, options: @arguments)
                        end
         end
+
+        @otel_tracer = if defined?(OpenTelemetry)
+          OpenTelemetry.tracer_provider.tracer(OTEL_TRACER_NAME)
+        end
       end
 
       # Performs a request through delegation to {#transport}.
@@ -171,10 +176,23 @@ module Elastic
       def perform_request(method, path, params = {}, body = nil, headers = nil, path_patterns = nil)
         method = @send_get_body_as if 'GET' == method && body
         validate_ca_fingerprints if @ca_fingerprint
-        transport.perform_request(method, path, params, body, headers)
+        if @otel_tracer
+          @otel_tracer.in_span(otel_span_name(path, path_patterns)) do |span|
+            # Set span attributes
+            transport.perform_request(method, path, params, body, headers)
+          end
+        else
+          transport.perform_request(method, path, params, body, headers)
+        end
       end
 
       private
+
+      def otel_span_name(path, patterns)
+        patterns.find(proc { patterns[0] }) do |pattern|
+          pattern.count('/') == path.count('/')
+        end
+      end
 
       def validate_ca_fingerprints
         transport.connections.connections.each do |connection|
