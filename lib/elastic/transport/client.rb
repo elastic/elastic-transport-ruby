@@ -176,14 +176,14 @@ module Elastic
         validate_ca_fingerprints if @ca_fingerprint
         if @otel
           @otel.tracer.in_span(endpoint) do |span|
-            path_params(endpoint, path_templates, path).each do |k, v|
+            span['db.operation'] = endpoint if endpoint
+            span['http.request.method'] = method
+            path_params(endpoint, path_templates, path)&.each do |k, v|
               span["db.elasticsearch.path_parts.#{k}"] = v
             end
-            span['db.operation'] = endpoint if endpoint
-            if body && OpenTelemetry::SEARCH_ENDPOINTS.member?(endpoint)
-              span['db.statement'] = body.to_json if body
+            if body_as_json = @otel.process_body(body, endpoint)
+              span['db.statement'] = body_as_json
             end
-            span['http.request.method'] = method
             transport.perform_request(method, path, params || {}, body, headers)
           end
         else
