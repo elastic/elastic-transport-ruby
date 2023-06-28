@@ -76,6 +76,18 @@ if defined?(::OpenTelemetry)
         expect(span.attributes['server.address']).to eq('localhost')
         expect(span.attributes['server.port']).to eq(9200)
       end
+
+      context 'a non-search endpoint' do
+        let(:body) do
+          { query: { match: {} } }
+        end
+
+        it 'does not capture db.statement' do
+          client.perform_request('POST', 'foo/_update_by_query', nil, body, nil, ["/{index}/_update_by_query"], 'update_by_query')
+
+          expect(span.attributes['db.statement']).to be_nil
+        end
+      end
     end
   end
 end

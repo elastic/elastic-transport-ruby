@@ -180,7 +180,9 @@ module Elastic
               span["db.elasticsearch.path_parts.#{k}"] = v
             end
             span['db.operation'] = endpoint if endpoint
-            span['db.statement'] = body.to_json if body
+            if body && OpenTelemetry::SEARCH_ENDPOINTS.member?(endpoint)
+              span['db.statement'] = body.to_json if body
+            end
             span['http.request.method'] = method
             transport.perform_request(method, path, params || {}, body, headers)
           end
