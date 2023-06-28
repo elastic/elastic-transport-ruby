@@ -20,6 +20,9 @@ module Elastic
     class OpenTelemetry
       OTEL_TRACER_NAME = 'elasticsearch-api'
       ENDPOINT_PATH_REGEXPS = {}
+      DEFAULT_BODY_STRATEGY = 'sanitize'
+      ENV_VARIABLE_BODY_STRATEGY = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_BODY'
+      ENV_VARIABLE_BODY_SANITIZE_KEYS = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_BODY_SANITIZE_KEYS'
       SEARCH_ENDPOINTS = Set[
         "search",
         "async_search.submit",
@@ -34,6 +37,8 @@ module Elastic
 
       def initialize
         @tracer = ::OpenTelemetry.tracer_provider.tracer(OTEL_TRACER_NAME)
+        @body_strategy = ENV[ENV_VARIABLE_BODY_STRATEGY] || DEFAULT_BODY_STRATEGY
+        @sanitize_keys = ENV[ENV_VARIABLE_BODY_SANITIZE_KEYS]&.split(',')
       end
       attr_accessor :tracer
 
@@ -48,6 +53,94 @@ module Elastic
           end
         end
         ENDPOINT_PATH_REGEXPS[endpoint]
+      end
+
+      def process_body(body, endpoint)
+        unless @body_strategy == 'omit' || !SEARCH_ENDPOINTS.include?(endpoint)
+          if @body_strategy == 'sanitize'
+            body = Sanitizer.sanitize(body, @sanitize_keys)
+          end
+          body.to_json unless body&.is_a?(String)
+        end
+      end
+
+      # Replaces values in a hash, given a set of keys to match on.
+      class Sanitizer
+        class << self
+          FILTERED = '?'
+          DEFAULT_KEY_PATTERNS =
+            %w[password passwd pwd secret *key *token* *session* *credit* *card* *auth* set-cookie].map! do |p|
+              Regexp.new(p.gsub('*', '.*'))
+            end
+
+          def sanitize(body, key_patterns = [])
+            patterns = DEFAULT_KEY_PATTERNS
+            patterns += key_patterns if key_patterns
+            sanitize!(DeepDup.dup(body), patterns)
+          end
+
+          private
+
+          def sanitize!(obj, key_patterns)
+            return obj unless obj.is_a?(Hash)
+
+            obj.each_pair do |k, v|
+              case v
+              when Hash
+                sanitize!(v, key_patterns)
+              else
+                next unless filter_key?(key_patterns, k)
+
+                obj[k] = FILTERED
+              end
+            end
+          end
+
+          def filter_key?(key_patterns, key)
+            key_patterns.any? { |regex| regex.match(key) }
+          end
+        end
+      end
+
+      # Makes a deep copy of an Array or Hash
+      # NB: Not guaranteed to work well with complex objects, only simple Hash,
+      # Array, String, Number, etc.
+      class DeepDup
+        def initialize(obj)
+          @obj = obj
+        end
+
+        def dup
+          deep_dup(@obj)
+        end
+
+        def self.dup(obj)
+          new(obj).dup
+        end
+
+        private
+
+        def deep_dup(obj)
+          case obj
+          when Hash then hash(obj)
+          when Array then array(obj)
+          else obj.dup
+          end
+        end
+
+        def array(arr)
+          arr.map { |obj| deep_dup(obj) }
+        end
+
+        def hash(hsh)
+          result = hsh.dup
+
+          hsh.each_pair do |key, value|
+            result[key] = deep_dup(value)
+          end
+
+          result
+        end
       end
     end
   end

@@ -63,7 +63,7 @@ if defined?(::OpenTelemetry)
 
     context 'when a request is instrumented' do
       let(:body) do
-        { query: { match: {} } }
+        { query: { match: { password: { query: 'secret'} } } }
       end
 
       it 'creates a span' do
@@ -79,11 +79,13 @@ if defined?(::OpenTelemetry)
 
       context 'a non-search endpoint' do
         let(:body) do
-          { query: { match: {} } }
+          { query: { match: { something: "test" } } }
         end
 
         it 'does not capture db.statement' do
-          client.perform_request('POST', 'foo/_update_by_query', nil, body, nil, ["/{index}/_update_by_query"], 'update_by_query')
+          client.perform_request(
+            'POST', 'foo/_delete_by_query', nil, body, nil, ["/{index}/_delete_by_query"], 'delete_by_query'
+          )
 
           expect(span.attributes['db.statement']).to be_nil
         end
