@@ -32,7 +32,7 @@ group :development, :test do
   else
     gem 'pry-byebug'
   end
-  if RUBY_VERSION > '3.0'
+  if RUBY_VERSION >= '3.0'
     gem 'opentelemetry-sdk', require: false
   end
 end
