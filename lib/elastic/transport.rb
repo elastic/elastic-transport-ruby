@@ -34,5 +34,6 @@ require 'elastic/transport/transport/connections/collection'
 require 'elastic/transport/transport/http/faraday'
 require 'elastic/transport/client'
 require 'elastic/transport/redacted'
+require 'elastic/transport/opentelemetry'
 
 require 'elastic/transport/version'

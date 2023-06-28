@@ -89,6 +89,7 @@ module Elastic
           #
           def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
             super do |connection, url|
+              capture_otel_span_attributes(connection, url)
               body = body ? __convert_to_json(body) : nil
               body, headers = compress_request(body, parse_headers(headers))
               params[:body] = body if body

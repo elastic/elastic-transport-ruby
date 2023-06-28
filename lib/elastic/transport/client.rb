@@ -26,7 +26,7 @@ module Elastic
     #
     class Client
       DEFAULT_TRANSPORT_CLASS = Transport::HTTP::Faraday
-      OTEL_TRACER_NAME = 'elasticsearch-api'
+
       include MetaHeader
 
       DEFAULT_LOGGER = lambda do
@@ -166,32 +166,37 @@ module Elastic
                        end
         end
 
-        @otel_tracer = if defined?(OpenTelemetry)
-          OpenTelemetry.tracer_provider.tracer(OTEL_TRACER_NAME)
-        end
+        @otel = OpenTelemetry.new if defined?(::OpenTelemetry)
       end
 
       # Performs a request through delegation to {#transport}.
       #
-      def perform_request(method, path, params = {}, body = nil, headers = nil, path_patterns = nil)
+      def perform_request(method, path, params = {}, body = nil, headers = nil, path_templates = nil, endpoint = nil)
         method = @send_get_body_as if 'GET' == method && body
         validate_ca_fingerprints if @ca_fingerprint
-        if @otel_tracer
-          @otel_tracer.in_span(otel_span_name(path, path_patterns)) do |span|
-            # Set span attributes
-            transport.perform_request(method, path, params, body, headers)
+        if @otel
+          @otel.tracer.in_span(endpoint) do |span|
+            path_params(endpoint, path_templates, path).each do |k, v|
+              span["db.elasticsearch.path_parts.#{k}"] = v
+            end
+            span['db.operation'] = endpoint if endpoint
+            span['db.statement'] = body if body
+            span['http.request.method'] = method
+            transport.perform_request(method, path, params || {}, body, headers)
           end
         else
-          transport.perform_request(method, path, params, body, headers)
+          transport.perform_request(method, path, params || {}, body, headers)
         end
       end
 
       private
 
-      def otel_span_name(path, patterns)
-        patterns.find(proc { patterns[0] }) do |pattern|
-          pattern.count('/') == path.count('/')
+      def path_params(endpoint, path_templates, path)
+        matching_regexp = @otel.path_regexps(endpoint, path_templates).find do |r|
+          path.match?(r)
         end
+
+        path.match(matching_regexp)&.named_captures if matching_regexp
       end
 
       def validate_ca_fingerprints

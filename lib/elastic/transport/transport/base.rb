@@ -471,6 +471,14 @@ module Elastic
             connection.connection.headers
           end
         end
+
+        def capture_otel_span_attributes(connection, url)
+          if defined?(::OpenTelemetry)
+            ::OpenTelemetry::Trace.current_span&.set_attribute('url.full', url)
+            ::OpenTelemetry::Trace.current_span&.set_attribute('server.address', connection.host[:host])
+            ::OpenTelemetry::Trace.current_span&.set_attribute('server.port', connection.host[:port])
+          end
+        end
       end
     end
   end
