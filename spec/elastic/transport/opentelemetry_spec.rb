@@ -30,26 +30,52 @@ if defined?(::OpenTelemetry)
       end
     end
 
-    let(:otel) do
-      described_class.new
+    let(:otel) { described_class.new }
+
+    context 'when path parameters' do
+      it 'creates a span with path parameters' do
+        client.perform_request(
+          'DELETE', '/foo,bar/_aliases/abc,xyz', nil, nil, nil, ["/{index}/_alias/{name}", "/{index}/_aliases/{name}"],
+          'indices.delete_alias'
+        )
+
+        expect(span.name).to eql('indices.delete_alias')
+        expect(span.attributes['db.elasticsearch.path_parts.index']).to eql('foo,bar')
+        expect(span.attributes['db.elasticsearch.path_parts.name']).to eq('abc,xyz')
+        expect(span.attributes['db.operation']).to eq('indices.delete_alias')
+        expect(span.attributes['db.statement']).to be_nil
+        expect(span.attributes['http.request.method']).to eq('DELETE')
+        expect(span.attributes['server.address']).to eq('localhost')
+        expect(span.attributes['server.port']).to eq(9200)
+      end
     end
 
-    let(:tracer) { otel.tracer }
+    describe '#path_regexps' do
+      let(:endpoint) { 'search' }
+      let(:path_templates) { ["/_search", "/{index}/_search"] }
 
-    it 'creates a span' do
-      client.perform_request(
-        'DELETE', '/foo,bar/_aliases/abc,xyz', nil, nil, nil, ["/{index}/_alias/{name}", "/{index}/_aliases/{name}"],
-        'indices.delete_alias'
-      ) rescue
+      it 'caches the regexps' do
+        expect(described_class::ENDPOINT_PATH_REGEXPS['search']).to be_nil
+        expect(otel.path_regexps(endpoint, path_templates)).to eq([/\/_search$/, /\/(?<index>[^\/]+)\/_search$/])
+        expect(described_class::ENDPOINT_PATH_REGEXPS['search'][0]).to eq(/\/_search$/)
+      end
+    end
 
-      expect(span.name).to eql('indices.delete_alias')
-      expect(span.attributes['db.elasticsearch.path_parts.index']).to eql('foo,bar')
-      expect(span.attributes['db.elasticsearch.path_parts.name']).to eq('abc,xyz')
-      expect(span.attributes['db.operation']).to eq('indices.delete_alias')
-      expect(span.attributes['db.statement']).to be_nil
-      expect(span.attributes['http.request.method']).to eq('DELETE')
-      expect(span.attributes['server.address']).to eq('localhost')
-      expect(span.attributes['server.port']).to eq(9200)
+    context 'when a request is instrumented' do
+      let(:body) do
+        { query: { match: {} } }
+      end
+
+      it 'creates a span' do
+        client.perform_request('GET', '/_search', nil, body, nil, ["/_search", "/{index}/_search"], 'search')
+
+        expect(span.name).to eql('search')
+        expect(span.attributes['db.operation']).to eq('search')
+        expect(span.attributes['db.statement']).to eq(body.to_json)
+        expect(span.attributes['http.request.method']).to eq('GET')
+        expect(span.attributes['server.address']).to eq('localhost')
+        expect(span.attributes['server.port']).to eq(9200)
+      end
     end
   end
 end
