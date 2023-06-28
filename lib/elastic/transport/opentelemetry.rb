@@ -20,6 +20,16 @@ module Elastic
     class OpenTelemetry
       OTEL_TRACER_NAME = 'elasticsearch-api'
       ENDPOINT_PATH_REGEXPS = {}
+      SEARCH_ENDPOINTS = Set[
+        "search",
+        "async_search.submit",
+        "msearch",
+        "eql.search",
+        "terms_enum",
+        "search_template",
+        "msearch_template",
+        "render_search_template",
+      ]
       MUTEX = Mutex.new
 
       def initialize
