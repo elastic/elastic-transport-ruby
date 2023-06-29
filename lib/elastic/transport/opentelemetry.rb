@@ -20,7 +20,7 @@ module Elastic
     class OpenTelemetry
       OTEL_TRACER_NAME = 'elasticsearch-api'
       ENDPOINT_PATH_REGEXPS = {}
-      DEFAULT_BODY_STRATEGY = 'sanitize'
+      DEFAULT_BODY_STRATEGY = 'omit'
       ENV_VARIABLE_BODY_STRATEGY = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_BODY'
       ENV_VARIABLE_BODY_SANITIZE_KEYS = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_BODY_SANITIZE_KEYS'
       SEARCH_ENDPOINTS = Set[
@@ -38,7 +38,9 @@ module Elastic
       def initialize
         @tracer = ::OpenTelemetry.tracer_provider.tracer(OTEL_TRACER_NAME)
         @body_strategy = ENV[ENV_VARIABLE_BODY_STRATEGY] || DEFAULT_BODY_STRATEGY
-        @sanitize_keys = ENV[ENV_VARIABLE_BODY_SANITIZE_KEYS]&.split(',')
+        @sanitize_keys = ENV[ENV_VARIABLE_BODY_SANITIZE_KEYS]&.split(',')&.collect! do |pattern|
+          Regexp.new(pattern.gsub('*', '.*'))
+        end
       end
       attr_accessor :tracer
 
@@ -67,7 +69,7 @@ module Elastic
       # Replaces values in a hash, given a set of keys to match on.
       class Sanitizer
         class << self
-          FILTERED = '?'
+          FILTERED = 'REDACTED'
           DEFAULT_KEY_PATTERNS =
             %w[password passwd pwd secret *key *token* *session* *credit* *card* *auth* set-cookie].map! do |p|
               Regexp.new(p.gsub('*', '.*'))
@@ -85,13 +87,12 @@ module Elastic
             return obj unless obj.is_a?(Hash)
 
             obj.each_pair do |k, v|
-              case v
-              when Hash
+              if filter_key?(key_patterns, k)
+                obj[k] = FILTERED
+              elsif v.is_a?(Hash)
                 sanitize!(v, key_patterns)
               else
-                next unless filter_key?(key_patterns, k)
-
-                obj[k] = FILTERED
+                next
               end
             end
           end

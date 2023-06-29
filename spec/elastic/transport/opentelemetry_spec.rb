@@ -66,15 +66,65 @@ if defined?(::OpenTelemetry)
         { query: { match: { password: { query: 'secret'} } } }
       end
 
-      it 'creates a span' do
+      it 'creates a span and omits db.statement' do
         client.perform_request('GET', '/_search', nil, body, nil, ["/_search", "/{index}/_search"], 'search')
 
         expect(span.name).to eql('search')
         expect(span.attributes['db.operation']).to eq('search')
-        expect(span.attributes['db.statement']).to eq(body.to_json)
+        expect(span.attributes['db.statement']).to be_nil
         expect(span.attributes['http.request.method']).to eq('GET')
         expect(span.attributes['server.address']).to eq('localhost')
         expect(span.attributes['server.port']).to eq(9200)
+      end
+
+      context 'when body is sanitized' do
+        context 'no custom keys' do
+          let(:sanitized_body) do
+            { query: { match: { password: 'REDACTED' } } }
+          end
+
+          around(:example) do |ex|
+            body_strategy = ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]
+            ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]  = 'sanitize'
+            ex.run
+            ENV[described_class::ENV_VARIABLE_BODY_STRATEGY] = body_strategy
+          end
+
+          it 'sanitizes the body' do
+            client.perform_request('GET', '/_search', nil, body, nil, ["/_search", "/{index}/_search"], 'search')
+
+            expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
+          end
+        end
+
+        context 'with custom keys' do
+          let(:body) do
+            { query: { match: { sensitive: { query: 'secret'} } } }
+          end
+
+          let(:sanitized_body) do
+            { query: { match: { sensitive: 'REDACTED' } } }
+          end
+
+          around(:example) do |ex|
+            body_strategy = ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]
+            ENV[described_class::ENV_VARIABLE_BODY_STRATEGY] = 'sanitize'
+
+            keys = ENV[described_class::ENV_VARIABLE_BODY_SANITIZE_KEYS]
+            ENV[described_class::ENV_VARIABLE_BODY_SANITIZE_KEYS] = 'sensitive'
+
+            ex.run
+
+            ENV[described_class::ENV_VARIABLE_BODY_STRATEGY] = body_strategy
+            ENV[described_class::ENV_VARIABLE_BODY_SANITIZE_KEYS] = keys
+          end
+
+          it 'sanitizes the body' do
+            client.perform_request('GET', '/_search', nil, body, nil, ["/_search", "/{index}/_search"], 'search')
+
+            expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
+          end
+        end
       end
 
       context 'a non-search endpoint' do
@@ -88,6 +138,40 @@ if defined?(::OpenTelemetry)
           )
 
           expect(span.attributes['db.statement']).to be_nil
+        end
+      end
+    end
+
+    describe Elastic::Transport::OpenTelemetry::Sanitizer do
+      let(:key_patterns) { nil }
+
+      context '#sanitize' do
+        let(:body) do
+          { query: { match: { password: "test" } } }
+        end
+
+        let(:expected_body) do
+          { query: { match: { password: "REDACTED" } } }
+        end
+
+        it 'redacts sensitive values' do
+          expect(described_class.sanitize(body, key_patterns)).to eq(expected_body)
+        end
+
+        context 'with specified key patterns' do
+          let(:key_patterns) { [/something/] }
+
+          let(:body) do
+            { query: { match: { something: "test" } } }
+          end
+
+          let(:expected_body) do
+            { query: { match: { something: "REDACTED" } } }
+          end
+
+          it 'redacts sensitive values' do
+            expect(described_class.sanitize(body, key_patterns)).to eq(expected_body)
+          end
         end
       end
     end
