@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.name          = "elastic-transport"
   s.version       = Elastic::Transport::VERSION
   s.authors       = ['Karel Minarik', 'Emily Stolfo', 'Fernando Briano']
-  s.email         = ['support@elastic.co']
+  s.email         = ['clients-team@elastic.co']
   s.summary       = 'Low level Ruby client for Elastic services.'
   s.homepage      = 'https://github.com/elastic/elastic-transport-ruby'
   s.license       = 'Apache-2.0'
