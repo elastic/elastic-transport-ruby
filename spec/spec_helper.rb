@@ -92,7 +92,7 @@ RSpec.configure do |config|
   config.color = true
 end
 
-if ENV['TEST_OTEL'] == 'true'
+if ENV['TEST_WITH_OTEL'] == 'true'
   require 'opentelemetry-sdk'
   EXPORTER = OpenTelemetry::SDK::Trace::Export::InMemorySpanExporter.new
   span_processor = OpenTelemetry::SDK::Trace::Export::SimpleSpanProcessor.new(EXPORTER)
