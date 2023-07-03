@@ -62,7 +62,7 @@ if defined?(::OpenTelemetry)
         expect(span.attributes['db.statement']).to be_nil
         expect(span.attributes['http.request.method']).to eq('POST')
         expect(span.attributes['server.address']).to eq('localhost')
-        expect(span.attributes['server.port']).to eq(9200)
+        expect(span.attributes['server.port']).to eq(TEST_PORT)
       end
     end
 
@@ -90,7 +90,7 @@ if defined?(::OpenTelemetry)
         expect(span.attributes['db.statement']).to be_nil
         expect(span.attributes['http.request.method']).to eq('GET')
         expect(span.attributes['server.address']).to eq('localhost')
-        expect(span.attributes['server.port']).to eq(9200)
+        expect(span.attributes['server.port']).to eq(TEST_PORT)
       end
 
       context 'when body is sanitized' do
