@@ -476,7 +476,7 @@ module Elastic
           if defined?(::OpenTelemetry)
             ::OpenTelemetry::Trace.current_span&.set_attribute('url.full', url)
             ::OpenTelemetry::Trace.current_span&.set_attribute('server.address', connection.host[:host])
-            ::OpenTelemetry::Trace.current_span&.set_attribute('server.port', connection.host[:port])
+            ::OpenTelemetry::Trace.current_span&.set_attribute('server.port', connection.host[:port].to_i)
           end
         end
       end
