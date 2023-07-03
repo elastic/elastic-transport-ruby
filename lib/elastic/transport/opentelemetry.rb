@@ -51,7 +51,7 @@ module Elastic
           return ENDPOINT_PATH_REGEXPS[endpoint] if ENDPOINT_PATH_REGEXPS.key?(endpoint)
 
           ENDPOINT_PATH_REGEXPS[endpoint] = path_templates.collect do |template|
-            Regexp.new(template.gsub('{', '(?<').gsub('}', '>[^/]+)') + '$')
+            Regexp.new('^' + template.gsub('{', '(?<').gsub('}', '>[^/]+)') + '$')
           end
         end
         ENDPOINT_PATH_REGEXPS[endpoint]

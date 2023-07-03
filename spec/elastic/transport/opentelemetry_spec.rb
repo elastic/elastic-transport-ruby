@@ -72,8 +72,22 @@ if defined?(::OpenTelemetry)
 
       it 'caches the regexps' do
         expect(described_class::ENDPOINT_PATH_REGEXPS['search']).to be_nil
-        expect(otel.path_regexps(endpoint, path_templates)).to eq([/\/_search$/, /\/(?<index>[^\/]+)\/_search$/])
-        expect(described_class::ENDPOINT_PATH_REGEXPS['search'][0]).to eq(/\/_search$/)
+        expect(otel.path_regexps(endpoint, path_templates)).to eq([/^\/_search$/, /^\/(?<index>[^\/]+)\/_search$/])
+        expect(described_class::ENDPOINT_PATH_REGEXPS['search'][0]).to eq(/^\/_search$/)
+      end
+
+      context 'path parts' do
+        let(:endpoint) { 'nodes.info' }
+        let(:path_templates) { ["/_nodes", "/_nodes/{node_id}", "/_nodes/{metric}", "/_nodes/{node_id}/{metric}"] }
+
+        it 'extracts the path parameters' do
+          path = "/_nodes/123"
+          matching_regexp = otel.path_regexps(endpoint, path_templates).find do |r|
+            path.match?(r)
+          end
+
+          expect(path.match(matching_regexp)&.named_captures).to eq('node_id' => '123')
+        end
       end
     end
 
