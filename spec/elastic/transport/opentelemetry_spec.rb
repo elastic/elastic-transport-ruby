@@ -33,18 +33,34 @@ if defined?(::OpenTelemetry)
     let(:otel) { described_class.new }
 
     context 'when path parameters' do
+      before do
+        client.perform_request(
+          'DELETE', '/users', nil, nil, nil, ["/{index}"],
+          'delete'
+        )
+      rescue
+      end
+      after do
+        client.perform_request(
+          'DELETE', '/users', nil, nil, nil, ["/{index}"],
+          'delete'
+        )
+      rescue
+      end
+
       it 'creates a span with path parameters' do
         client.perform_request(
-          'DELETE', '/foo,bar/_aliases/abc,xyz', nil, nil, nil, ["/{index}/_alias/{name}", "/{index}/_aliases/{name}"],
-          'indices.delete_alias'
+          'POST', '/users/_create/abc', nil, { name: 'otel-test' }, nil, ["/{index}/_create/{id}"],
+          'create'
         )
 
-        expect(span.name).to eql('indices.delete_alias')
-        expect(span.attributes['db.elasticsearch.path_parts.index']).to eql('foo,bar')
-        expect(span.attributes['db.elasticsearch.path_parts.name']).to eq('abc,xyz')
-        expect(span.attributes['db.operation']).to eq('indices.delete_alias')
+        span = exporter.finished_spans.find { |s| s.name == 'create' }
+        expect(span.name).to eql('create')
+        expect(span.attributes['db.elasticsearch.path_parts.index']).to eql('users')
+        expect(span.attributes['db.elasticsearch.path_parts.id']).to eq('abc')
+        expect(span.attributes['db.operation']).to eq('create')
         expect(span.attributes['db.statement']).to be_nil
-        expect(span.attributes['http.request.method']).to eq('DELETE')
+        expect(span.attributes['http.request.method']).to eq('POST')
         expect(span.attributes['server.address']).to eq('localhost')
         expect(span.attributes['server.port']).to eq(9200)
       end
@@ -134,7 +150,7 @@ if defined?(::OpenTelemetry)
 
         it 'does not capture db.statement' do
           client.perform_request(
-            'POST', 'foo/_delete_by_query', nil, body, nil, ["/{index}/_delete_by_query"], 'delete_by_query'
+            'POST', '_all/_delete_by_query', nil, body, nil, ["/{index}/_delete_by_query"], 'delete_by_query'
           )
 
           expect(span.attributes['db.statement']).to be_nil
