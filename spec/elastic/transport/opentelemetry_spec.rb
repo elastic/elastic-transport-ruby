@@ -25,7 +25,7 @@ if defined?(::OpenTelemetry)
     let(:span) { exporter.finished_spans[0] }
 
     let(:client) do
-      Elastic::Transport::Client.new.tap do |_client|
+      Elastic::Transport::Client.new(hosts: ELASTICSEARCH_HOSTS).tap do |_client|
         allow(_client).to receive(:__build_connections)
       end
     end
