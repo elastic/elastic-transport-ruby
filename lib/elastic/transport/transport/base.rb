@@ -429,7 +429,7 @@ module Elastic
         end
 
         def apply_headers(client, options)
-          headers = options[:headers] || {}
+          headers = options[:headers].clone || {}
           headers[CONTENT_TYPE_STR] = find_value(headers, CONTENT_TYPE_REGEX) || DEFAULT_CONTENT_TYPE
           headers[USER_AGENT_STR] = find_value(headers, USER_AGENT_REGEX) || user_agent_header(client)
           client.headers[ACCEPT_ENCODING] = GZIP if use_compression?
