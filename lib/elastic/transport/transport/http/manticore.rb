@@ -162,7 +162,7 @@ module Elastic
           private
 
           def apply_headers(options)
-            headers = options[:headers] || options.dig(:transport_options, :headers) || {}
+            headers = options[:headers].clone || options.dig(:transport_options, :headers).clone || {}
             headers[CONTENT_TYPE_STR] = find_value(headers, CONTENT_TYPE_REGEX) || DEFAULT_CONTENT_TYPE
             headers[USER_AGENT_STR] = find_value(headers, USER_AGENT_REGEX) || find_value(@request_options[:headers], USER_AGENT_REGEX) || user_agent_header
             headers[ACCEPT_ENCODING] = GZIP if use_compression?
