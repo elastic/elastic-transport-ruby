@@ -1,3 +1,9 @@
+## 8.2.2
+
+Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4
+
+- Refactors `apply_headers` in base and manticore implementation: When passing in an object to the initializer, `apply_headers` would mutate this object and in certain conditions, this would raise `RuntimeError` in JRuby 9.3 and `ConcurrencyError` in JRuby 9.4. This update clones the options object instead.
+
 ## 8.2.1
 
 Tested versions of Ruby: (MRI) 2.7, 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4. Ruby 2.7's end of life is coming in a few days, so this'll probably be the last release to test for Ruby 2.7.
