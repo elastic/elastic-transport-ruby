@@ -166,7 +166,9 @@ module Elastic
                        end
         end
 
-        @otel = OpenTelemetry.new if defined?(::OpenTelemetry)
+        if defined?(::OpenTelemetry) && ENV[OpenTelemetry::ENV_VARIABLE_ENABLED] != 'false'
+          @otel = OpenTelemetry.new
+        end
       end
 
       # Performs a request through delegation to {#transport}.
