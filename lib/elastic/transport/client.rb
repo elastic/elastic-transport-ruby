@@ -173,21 +173,21 @@ module Elastic
 
       # Performs a request through delegation to {#transport}.
       #
-      def perform_request(method, path, params = {}, body = nil, headers = nil, path_templates = nil, endpoint = nil)
+      def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
         method = @send_get_body_as if 'GET' == method && body
         validate_ca_fingerprints if @ca_fingerprint
         if @otel
-          span_name = endpoint || method
+          span_name = opts[:endpoint] || method
           @otel.tracer.in_span(span_name) do |span|
             span['http.request.method'] = method
-            if endpoint && path_templates
-              path_params(endpoint, path_templates, path)&.each do |k, v|
+            if opts[:endpoint] && opts[:path_templates]
+              @otel.path_params(opts[:endpoint], opts[:path_templates], path)&.each do |k, v|
                 span["db.elasticsearch.path_parts.#{k}"] = v
               end
-              if body_as_json = @otel.process_body(body, endpoint)
+              if body_as_json = @otel.process_body(body, opts[:endpoint])
                 span['db.statement'] = body_as_json
               end
-              span['db.operation'] = endpoint
+              span['db.operation'] = opts[:endpoint]
             end
             transport.perform_request(method, path, params || {}, body, headers)
           end
@@ -197,15 +197,6 @@ module Elastic
       end
 
       private
-
-      def path_params(endpoint, path_templates, path)
-        return unless endpoint && path_templates
-        matching_regexp = @otel.path_regexps(endpoint, path_templates).find do |r|
-          path.match?(r)
-        end
-
-        path.match(matching_regexp)&.named_captures if matching_regexp
-      end
 
       def validate_ca_fingerprints
         transport.connections.connections.each do |connection|

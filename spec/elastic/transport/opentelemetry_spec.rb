@@ -35,23 +35,23 @@ if defined?(::OpenTelemetry)
     context 'when path parameters' do
       before do
         client.perform_request(
-          'DELETE', '/users', nil, nil, nil, ["/{index}"],
-          'delete'
+          'DELETE', '/users', nil, nil, nil, path_templates: ["/{index}"],
+          endpoint: 'delete'
         )
       rescue
       end
       after do
         client.perform_request(
-          'DELETE', '/users', nil, nil, nil, ["/{index}"],
-          'delete'
+          'DELETE', '/users', nil, nil, nil, path_templates: ["/{index}"],
+          endpoint: 'delete'
         )
       rescue
       end
 
       it 'creates a span with path parameters' do
         client.perform_request(
-          'POST', '/users/_create/abc', nil, { name: 'otel-test' }, nil, ["/{index}/_create/{id}"],
-          'create'
+          'POST', '/users/_create/abc', nil, { name: 'otel-test' }, nil,
+          path_templates: ["/{index}/_create/{id}"], endpoint: 'create'
         )
 
         span = exporter.finished_spans.find { |s| s.name == 'create' }
@@ -97,7 +97,8 @@ if defined?(::OpenTelemetry)
       end
 
       it 'creates a span and omits db.statement' do
-        client.perform_request('GET', '/_search', nil, body, nil, ["/_search", "/{index}/_search"], 'search')
+        client.perform_request('GET', '/_search', nil, body, nil,
+                               path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
 
         expect(span.name).to eql('search')
         expect(span.attributes['db.operation']).to eq('search')
@@ -121,7 +122,8 @@ if defined?(::OpenTelemetry)
           end
 
           it 'sanitizes the body' do
-            client.perform_request('GET', '/_search', nil, body, nil, ["/_search", "/{index}/_search"], 'search')
+            client.perform_request('GET', '/_search', nil, body, nil,
+                                   path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
 
             expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
           end
@@ -150,7 +152,8 @@ if defined?(::OpenTelemetry)
           end
 
           it 'sanitizes the body' do
-            client.perform_request('GET', '/_search', nil, body, nil, ["/_search", "/{index}/_search"], 'search')
+            client.perform_request('GET', '/_search', nil, body, nil,
+                                   path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
 
             expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
           end
@@ -164,7 +167,8 @@ if defined?(::OpenTelemetry)
 
         it 'does not capture db.statement' do
           client.perform_request(
-            'POST', '_all/_delete_by_query', nil, body, nil, ["/{index}/_delete_by_query"], 'delete_by_query'
+            'POST', '_all/_delete_by_query', nil, body, nil,
+            path_templates: ["/{index}/_delete_by_query"], endpoint: 'delete_by_query'
           )
 
           expect(span.attributes['db.statement']).to be_nil
@@ -182,7 +186,8 @@ if defined?(::OpenTelemetry)
         end
 
         it 'instruments' do
-          client.perform_request('GET', '/_search', nil, nil, nil, ["/_search", "/{index}/_search"], 'search')
+          client.perform_request('GET', '/_search', nil, nil, nil,
+                                 path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
           expect(span.name).to eq('search')
         end
       end
@@ -196,7 +201,8 @@ if defined?(::OpenTelemetry)
         end
 
         it 'instruments' do
-          client.perform_request('GET', '/_search', nil, nil, nil, ["/_search", "/{index}/_search"], 'search')
+          client.perform_request('GET', '/_search', nil, nil, nil,
+                                 path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
           expect(span).to be_nil
         end
       end

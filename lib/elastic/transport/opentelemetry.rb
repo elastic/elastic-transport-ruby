@@ -45,6 +45,24 @@ module Elastic
       end
       attr_accessor :tracer
 
+      def path_params(endpoint, path_templates, path)
+        return unless endpoint && path_templates
+        matching_regexp = path_regexps(endpoint, path_templates).find do |r|
+          path.match?(r)
+        end
+
+        path.match(matching_regexp)&.named_captures if matching_regexp
+      end
+
+      def process_body(body, endpoint)
+        unless @body_strategy == 'omit' || !SEARCH_ENDPOINTS.include?(endpoint)
+          if @body_strategy == 'sanitize'
+            body = Sanitizer.sanitize(body, @sanitize_keys)
+          end
+          body.to_json unless body&.is_a?(String)
+        end
+      end
+
       def path_regexps(endpoint, path_templates)
         return ENDPOINT_PATH_REGEXPS[endpoint] if ENDPOINT_PATH_REGEXPS.key?(endpoint)
 
@@ -56,15 +74,6 @@ module Elastic
           end
         end
         ENDPOINT_PATH_REGEXPS[endpoint]
-      end
-
-      def process_body(body, endpoint)
-        unless @body_strategy == 'omit' || !SEARCH_ENDPOINTS.include?(endpoint)
-          if @body_strategy == 'sanitize'
-            body = Sanitizer.sanitize(body, @sanitize_keys)
-          end
-          body.to_json unless body&.is_a?(String)
-        end
       end
 
       # Replaces values in a hash, given a set of keys to match on.
