@@ -172,6 +172,36 @@ if defined?(::OpenTelemetry)
       end
     end
 
+    context 'when the ENV variable OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_ENABLED is set' do
+      context 'to true' do
+        around do |ex|
+          original_setting = ENV[described_class::ENV_VARIABLE_ENABLED]
+          ENV[described_class::ENV_VARIABLE_ENABLED] = 'true'
+          ex.run
+          ENV[described_class::ENV_VARIABLE_ENABLED] = original_setting
+        end
+
+        it 'instruments' do
+          client.perform_request('GET', '/_search', nil, nil, nil, ["/_search", "/{index}/_search"], 'search')
+          expect(span.name).to eq('search')
+        end
+      end
+
+      context 'to false' do
+        around do |ex|
+          original_setting = ENV[described_class::ENV_VARIABLE_ENABLED]
+          ENV[described_class::ENV_VARIABLE_ENABLED] = 'false'
+          ex.run
+          ENV[described_class::ENV_VARIABLE_ENABLED] = original_setting
+        end
+
+        it 'instruments' do
+          client.perform_request('GET', '/_search', nil, nil, nil, ["/_search", "/{index}/_search"], 'search')
+          expect(span).to be_nil
+        end
+      end
+    end
+
     describe Elastic::Transport::OpenTelemetry::Sanitizer do
       let(:key_patterns) { nil }
 
