@@ -1,4 +1,5 @@
 # Elastic Transport
+[![8.1 tests](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml/badge.svg?branch=8.1)](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml)
 [![Run tests](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/elastic/elastic-transport-ruby/actions/workflows/tests.yml)
 
 This gem provides a low-level Ruby client for connecting to an [Elastic](http://elastic.co) cluster. It powers both the [Elasticsearch client](https://github.com/elasticsearch/elasticsearch-ruby/) and the [Elastic Enterprise Search](https://github.com/elastic/enterprise-search-ruby/) client.
