@@ -15,7 +15,7 @@ response = client.perform_request('GET', '_cluster/health')
 
 **Refer to [the official documentation on Elastic Transport](https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/transport.html).**
 
-**Refer to [Advanced Configuration](https://elasticsearch-ruby_1881.docs-preview.app.elstc.co/guide/en/elasticsearch/client/ruby-api/master/advanced-config.html) to read about more configuration options.**
+**Refer to [Advanced Configuration](https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/advanced-config.html) to read about more configuration options.**
 
 ## Compatibility
 
