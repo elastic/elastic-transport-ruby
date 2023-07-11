@@ -34,24 +34,18 @@ if defined?(::OpenTelemetry)
 
     context 'when path parameters' do
       before do
-        client.perform_request(
-          'DELETE', '/users', nil, nil, nil, path_templates: ["/{index}"],
-          endpoint: 'delete'
-        )
+        client.perform_request('DELETE', '/users', nil, nil, nil)
       rescue
       end
       after do
-        client.perform_request(
-          'DELETE', '/users', nil, nil, nil, path_templates: ["/{index}"],
-          endpoint: 'delete'
-        )
+        client.perform_request('DELETE', '/users', nil, nil, nil)
       rescue
       end
 
       it 'creates a span with path parameters' do
         client.perform_request(
           'POST', '/users/_create/abc', nil, { name: 'otel-test' }, nil,
-          path_templates: ["/{index}/_create/{id}"], endpoint: 'create'
+          defined_params: {'index' => 'users', 'id' => 'abc'}, endpoint: 'create'
         )
 
         span = exporter.finished_spans.find { |s| s.name == 'create' }
@@ -66,30 +60,30 @@ if defined?(::OpenTelemetry)
       end
     end
 
-    describe '#path_regexps' do
-      let(:endpoint) { 'search' }
-      let(:path_templates) { ["/_search", "/{index}/_search"] }
-
-      it 'caches the regexps' do
-        expect(described_class::ENDPOINT_PATH_REGEXPS['search']).to be_nil
-        expect(otel.path_regexps(endpoint, path_templates)).to eq([/^\/_search$/, /^\/(?<index>[^\/]+)\/_search$/])
-        expect(described_class::ENDPOINT_PATH_REGEXPS['search'][0]).to eq(/^\/_search$/)
-      end
-
-      context 'path parts' do
-        let(:endpoint) { 'nodes.info' }
-        let(:path_templates) { ["/_nodes", "/_nodes/{node_id}", "/_nodes/{metric}", "/_nodes/{node_id}/{metric}"] }
-
-        it 'extracts the path parameters' do
-          path = "/_nodes/123"
-          matching_regexp = otel.path_regexps(endpoint, path_templates).find do |r|
-            path.match?(r)
-          end
-
-          expect(path.match(matching_regexp)&.named_captures).to eq('node_id' => '123')
-        end
-      end
-    end
+    # describe '#path_regexps' do
+    #   let(:endpoint) { 'search' }
+    #   let(:path_templates) { ["/_search", "/{index}/_search"] }
+    #
+    #   it 'caches the regexps' do
+    #     expect(described_class::ENDPOINT_PATH_REGEXPS['search']).to be_nil
+    #     expect(otel.path_regexps(endpoint, path_templates)).to eq([/^\/_search$/, /^\/(?<index>[^\/]+)\/_search$/])
+    #     expect(described_class::ENDPOINT_PATH_REGEXPS['search'][0]).to eq(/^\/_search$/)
+    #   end
+    #
+    #   context 'path parts' do
+    #     let(:endpoint) { 'nodes.info' }
+    #     let(:path_templates) { ["/_nodes", "/_nodes/{node_id}", "/_nodes/{metric}", "/_nodes/{node_id}/{metric}"] }
+    #
+    #     it 'extracts the path parameters' do
+    #       path = "/_nodes/123"
+    #       matching_regexp = otel.path_regexps(endpoint, path_templates).find do |r|
+    #         path.match?(r)
+    #       end
+    #
+    #       expect(path.match(matching_regexp)&.named_captures).to eq('node_id' => '123')
+    #     end
+    #   end
+    # end
 
     context 'when a request is instrumented' do
       let(:body) do
@@ -97,8 +91,7 @@ if defined?(::OpenTelemetry)
       end
 
       it 'creates a span and omits db.statement' do
-        client.perform_request('GET', '/_search', nil, body, nil,
-                               path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
+        client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
         expect(span.name).to eql('search')
         expect(span.attributes['db.operation']).to eq('search')
@@ -122,8 +115,7 @@ if defined?(::OpenTelemetry)
           end
 
           it 'sanitizes the body' do
-            client.perform_request('GET', '/_search', nil, body, nil,
-                                   path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
+            client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
             expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
           end
@@ -152,8 +144,7 @@ if defined?(::OpenTelemetry)
           end
 
           it 'sanitizes the body' do
-            client.perform_request('GET', '/_search', nil, body, nil,
-                                   path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
+            client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
             expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
           end
@@ -167,8 +158,7 @@ if defined?(::OpenTelemetry)
 
         it 'does not capture db.statement' do
           client.perform_request(
-            'POST', '_all/_delete_by_query', nil, body, nil,
-            path_templates: ["/{index}/_delete_by_query"], endpoint: 'delete_by_query'
+            'POST', '_all/_delete_by_query', nil, body, nil, endpoint: 'delete_by_query'
           )
 
           expect(span.attributes['db.statement']).to be_nil
@@ -186,8 +176,7 @@ if defined?(::OpenTelemetry)
         end
 
         it 'instruments' do
-          client.perform_request('GET', '/_search', nil, nil, nil,
-                                 path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
+          client.perform_request('GET', '/_search', nil, nil, nil, endpoint: 'search')
           expect(span.name).to eq('search')
         end
       end
@@ -201,8 +190,7 @@ if defined?(::OpenTelemetry)
         end
 
         it 'instruments' do
-          client.perform_request('GET', '/_search', nil, nil, nil,
-                                 path_templates: ["/_search", "/{index}/_search"], endpoint: 'search')
+          client.perform_request('GET', '/_search', nil, nil, nil, endpoint: 'search')
           expect(span).to be_nil
         end
       end

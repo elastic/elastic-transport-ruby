@@ -180,15 +180,13 @@ module Elastic
           span_name = opts[:endpoint] || method
           @otel.tracer.in_span(span_name) do |span|
             span['http.request.method'] = method
-            if opts[:endpoint] && opts[:path_templates]
-              @otel.path_params(opts[:endpoint], opts[:path_templates], path)&.each do |k, v|
-                span["db.elasticsearch.path_parts.#{k}"] = v
-              end
-              if body_as_json = @otel.process_body(body, opts[:endpoint])
-                span['db.statement'] = body_as_json
-              end
-              span['db.operation'] = opts[:endpoint]
+            opts[:defined_params]&.each do |k, v|
+              span["db.elasticsearch.path_parts.#{k}"] = v
             end
+            if body_as_json = @otel.process_body(body, opts[:endpoint])
+              span['db.statement'] = body_as_json
+            end
+            span['db.operation'] = opts[:endpoint] if opts[:endpoint]
             transport.perform_request(method, path, params || {}, body, headers)
           end
         else
