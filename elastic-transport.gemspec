@@ -23,8 +23,8 @@ require 'elastic/transport/version'
 Gem::Specification.new do |s|
   s.name          = "elastic-transport"
   s.version       = Elastic::Transport::VERSION
-  s.authors       = ['Karel Minarik', 'Emily Stolfo', 'Fernando Briano']
-  s.email         = ['clients-team@elastic.co']
+  s.authors       = ['Elastic Client Library Maintainers']
+  s.email         = ['client-libs@elastic.co']
   s.summary       = 'Low level Ruby client for Elastic services.'
   s.homepage      = 'https://github.com/elastic/elastic-transport-ruby'
   s.license       = 'Apache-2.0'
