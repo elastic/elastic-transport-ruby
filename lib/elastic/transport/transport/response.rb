@@ -19,8 +19,7 @@ module Elastic
   module Transport
     module Transport
       # Wraps the response from Elasticsearch.
-      # It provides `body`, `status` and `headers` methods, but you can treat is as a hash and
-      # access the keys directly.
+      # It provides `body`, `status` and `headers` methods
       class Response
         attr_reader :status, :body, :headers
 
@@ -29,7 +28,7 @@ module Elastic
         # @param headers [Hash]    Response headers
         def initialize(status, body, headers = {})
           @status, @body, @headers = status, body, headers
-          @body = body.force_encoding('UTF-8') if body.respond_to?(:force_encoding)
+          @body = body.force_encoding('UTF-8') if body.respond_to?(:force_encoding) && !body.frozen?
         end
       end
     end
