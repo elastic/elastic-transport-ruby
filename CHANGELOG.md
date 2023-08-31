@@ -1,3 +1,9 @@
+## 8.2.3
+
+Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4
+
+- Fixes enforcing UTF-8 in Response body, causing an error when the string is frozen, particularly when using webmock. [issue #63](https://github.com/elastic/elastic-transport-ruby/issues/63)
+
 ## 8.2.2
 
 Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4
