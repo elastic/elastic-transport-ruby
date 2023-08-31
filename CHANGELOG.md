@@ -1,3 +1,9 @@
+## 8.1.2
+
+Backports the following fix from 8.2:
+
+- Fixes enforcing UTF-8 in Response body, causing an error when the string is frozen, particularly when using webmock. [issue #63](https://github.com/elastic/elastic-transport-ruby/issues/63)
+
 ## 8.1.1
 
 Backports the following updates from 8.2:
