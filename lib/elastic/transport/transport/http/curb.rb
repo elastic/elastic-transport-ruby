@@ -31,8 +31,8 @@ module Elastic
           # @see    Transport::Base#perform_request
           #
           def perform_request(method, path, params={}, body=nil, headers=nil, opts={})
-            super do |connection, _url|
-              capture_otel_span_attributes(connection, _url)
+            super do |connection, url|
+              capture_otel_span_attributes(connection, url)
               connection.connection.url = connection.full_url(path, params)
               body = body ? __convert_to_json(body) : nil
               body, headers = compress_request(body, headers)
