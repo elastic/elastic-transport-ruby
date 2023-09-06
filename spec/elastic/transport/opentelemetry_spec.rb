@@ -58,32 +58,25 @@ if defined?(::OpenTelemetry)
         expect(span.attributes['server.address']).to eq('localhost')
         expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
       end
-    end
 
-    # describe '#path_regexps' do
-    #   let(:endpoint) { 'search' }
-    #   let(:path_templates) { ["/_search", "/{index}/_search"] }
-    #
-    #   it 'caches the regexps' do
-    #     expect(described_class::ENDPOINT_PATH_REGEXPS['search']).to be_nil
-    #     expect(otel.path_regexps(endpoint, path_templates)).to eq([/^\/_search$/, /^\/(?<index>[^\/]+)\/_search$/])
-    #     expect(described_class::ENDPOINT_PATH_REGEXPS['search'][0]).to eq(/^\/_search$/)
-    #   end
-    #
-    #   context 'path parts' do
-    #     let(:endpoint) { 'nodes.info' }
-    #     let(:path_templates) { ["/_nodes", "/_nodes/{node_id}", "/_nodes/{metric}", "/_nodes/{node_id}/{metric}"] }
-    #
-    #     it 'extracts the path parameters' do
-    #       path = "/_nodes/123"
-    #       matching_regexp = otel.path_regexps(endpoint, path_templates).find do |r|
-    #         path.match?(r)
-    #       end
-    #
-    #       expect(path.match(matching_regexp)&.named_captures).to eq('node_id' => '123')
-    #     end
-    #   end
-    # end
+      context 'with list a path parameter' do
+        it 'creates a span with path parameters' do
+          client.perform_request(
+            'GET', '_cluster/state/foo,bar', {}, nil, {},
+            { defined_params: { metric: ['foo', 'bar']}, endpoint: 'cluster.state' }
+          )
+
+          span = exporter.finished_spans.find { |s| s.name == 'cluster.state' }
+          expect(span.name).to eql('cluster.state')
+          expect(span.attributes['db.elasticsearch.path_parts.metric']).to eql('foo,bar')
+          expect(span.attributes['db.operation']).to eq('cluster.state')
+          expect(span.attributes['db.statement']).to be_nil
+          expect(span.attributes['http.request.method']).to eq('GET')
+          expect(span.attributes['server.address']).to eq('localhost')
+          expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
+        end
+      end
+    end
 
     context 'when a request is instrumented' do
       let(:body) do
