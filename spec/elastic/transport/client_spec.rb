@@ -1213,22 +1213,24 @@ describe Elastic::Transport::Client do
         end
       end
 
-      context 'when Oj is used as a JSON engine' do
-        before do
-          require 'oj'
-        end
-        after do
-          # Clear unnecessary Oj
-          Object.send(:remove_const, :Oj)
-          # Clear MultiJson's adapter
-          ::MultiJson.instance_variable_set(:@adapter, nil)
-        end
+      unless defined?(JRUBY_VERSION)
+        context 'when Oj is used as a JSON engine' do
+          before do
+            require 'oj'
+          end
+          after do
+            # Clear unnecessary Oj
+            Object.send(:remove_const, :Oj)
+            # Clear MultiJson's adapter
+            ::MultiJson.instance_variable_set(:@adapter, nil)
+          end
 
-        it 'returns as a Float' do
-          response = client.perform_request('GET', '/')
-          score = response.body['score']
-          expect(score).to eq 1.11111111111111111
-          expect(score.class).to eq Float
+          it 'returns as a Float' do
+            response = client.perform_request('GET', '/')
+            score = response.body['score']
+            expect(score).to eq 1.11111111111111111
+            expect(score.class).to eq Float
+          end
         end
       end
     end
