@@ -1196,15 +1196,16 @@ describe Elastic::Transport::Client do
         Elastic::Transport::Client.new(hosts: hosts)
       end
       before do
-        # Clear MultiJson's adapter
-        ::MultiJson.instance_variable_set(:@adapter, nil)
-
         expect_any_instance_of(Faraday::Connection).to receive(:run_request) do
           Elastic::Transport::Transport::Response.new(200, "{\"score\":1.11111111111111111}", { 'content-type' => 'application/json; charset=UTF-8' })
         end
       end
 
       context 'when default JSON engine is used' do
+        after do
+          # Clear MultiJson's adapter
+          ::MultiJson.instance_variable_set(:@adapter, nil)
+        end
         it 'returns as a Float' do
           response = client.perform_request('GET', '/')
           score = response.body['score']
@@ -1219,8 +1220,6 @@ describe Elastic::Transport::Client do
             require 'oj'
           end
           after do
-            # Clear unnecessary Oj
-            Object.send(:remove_const, :Oj)
             # Clear MultiJson's adapter
             ::MultiJson.instance_variable_set(:@adapter, nil)
           end

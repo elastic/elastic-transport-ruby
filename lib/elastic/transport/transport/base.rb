@@ -353,7 +353,7 @@ module Elastic
 
             # Prevent Float value from automatically becoming BigDecimal when using Oj
             load_options = {}
-            load_options[:mode] = :compat if serializer.is_a?(Serializer::MultiJson) && defined?(::Oj)
+            load_options[:mode] = :compat if ::MultiJson.adapter.to_s == "MultiJson::Adapters::Oj"
 
             json = serializer.load(response.body, load_options)
           end
