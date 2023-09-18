@@ -26,6 +26,7 @@ group :development, :test do
   gem 'faraday-patron' unless defined? JRUBY_VERSION
   gem 'faraday-typhoeus'
   gem 'rspec'
+  gem 'oj'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
   else
