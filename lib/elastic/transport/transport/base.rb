@@ -352,10 +352,10 @@ module Elastic
             response.headers["content-type"] =~ /json/
 
             # Prevent Float value from automatically becoming BigDecimal when using Oj
-            options = {}
-            options[:mode] = :compat if serializer.is_a?(Serializer::MultiJson) && defined?(::Oj)
+            load_options = {}
+            load_options[:mode] = :compat if serializer.is_a?(Serializer::MultiJson) && defined?(::Oj)
 
-            json = serializer.load(response.body, options)
+            json = serializer.load(response.body, load_options)
           end
           took = (json['took'] ? sprintf('%.3fs', json['took'] / 1000.0) : 'n/a') rescue 'n/a'
           __log_response(method, path, params, body, url, response, json, took, duration) unless ignore.include?(response.status.to_i)
