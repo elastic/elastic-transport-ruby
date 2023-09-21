@@ -90,11 +90,10 @@ module Elastic
           def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
             super do |connection, url|
               body = body ? __convert_to_json(body) : nil
-              body, headers = compress_request(body, @request_options[:headers])
-
+              body, headers = compress_request(body, parse_headers(headers))
               params[:body] = body if body
               params[:headers] = headers if headers
-              params = params.merge @request_options
+
               case method
               when 'GET'
                 resp = connection.connection.get(url, params)
@@ -160,6 +159,12 @@ module Elastic
           end
 
           private
+
+          def parse_headers(headers)
+            request_headers = @request_options.fetch(:headers, {})
+            headers = request_headers.merge(headers || {})
+            headers.empty? ? nil : headers
+          end
 
           def apply_headers(options)
             headers = options[:headers].clone || options.dig(:transport_options, :headers).clone || {}
