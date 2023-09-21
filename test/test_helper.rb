@@ -83,4 +83,4 @@ def is_faraday_v2?
   Gem::Version.new(Faraday::VERSION) >= Gem::Version.new(2)
 end
 
-Minitest::Reporters.use! FixedMinitestSpecReporter.new
+Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new(print_failure_summary: true)
