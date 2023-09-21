@@ -53,7 +53,7 @@ if defined?(JRUBY_VERSION)
         expect(perform_request).to be_kind_of(Elastic::Transport::Transport::Response)
       end
 
-      it 'run body with preper params' do
+      it 'runs body with proper params' do
         expect(
           client.transport.connections.first.connection
         ).to receive(:post).with(
@@ -121,7 +121,7 @@ if defined?(JRUBY_VERSION)
           gzip.close.string
         end
 
-        it 'run body with preper params' do
+        it 'runs body with proper params' do
           expect(
             client.transport.connections.first.connection
           ).to receive(:post).with(*request_params).and_return(response)
@@ -139,6 +139,24 @@ if defined?(JRUBY_VERSION)
                                .and_return(response)
             client.perform_request('POST', '/', {}, nil, headers)
           end
+        end
+      end
+
+      context 'headers' do
+        it 'sends custom headers' do
+          client = Elastic::Transport::Client.new(
+            transport_class: described_class,
+            transport_options: { headers: { 'Elastic-Api-Version'=>'2023-10-31' } }
+          )
+          expect(
+            client.transport.connections.first.connection
+          ).to receive(:get).with(
+                 'http://localhost:9200/',
+                 {
+                   headers: expected_headers.merge({ 'Elastic-Api-Version'=>'2023-10-31' })
+                 }
+               ).and_return(response)
+          client.perform_request('GET', '/', {}, nil, headers)
         end
       end
     end
