@@ -157,6 +157,23 @@ if defined?(::OpenTelemetry)
           expect(span.attributes['db.statement']).to be_nil
         end
       end
+
+      context 'when no endpoint or defined params are provided' do
+        it 'creates a span with default values' do
+          client.perform_request(
+            'GET', '_cluster/state/foo,bar', {}, nil, {}
+          )
+
+          span = exporter.finished_spans.find { |s| s.name == 'GET' }
+          expect(span.name).to eql('GET')
+          expect(span.attributes['db.elasticsearch.path_parts']).to be_nil
+          expect(span.attributes['db.operation']).to be_nil
+          expect(span.attributes['db.statement']).to be_nil
+          expect(span.attributes['http.request.method']).to eq('GET')
+          expect(span.attributes['server.address']).to eq('localhost')
+          expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
+        end
+      end
     end
 
     context 'when the ENV variable OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_ENABLED is set' do
