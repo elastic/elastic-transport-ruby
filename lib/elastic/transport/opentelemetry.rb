@@ -36,8 +36,10 @@ module Elastic
       ]
       MUTEX = Mutex.new
 
-      def initialize
-        @tracer = ::OpenTelemetry.tracer_provider.tracer(OTEL_TRACER_NAME)
+      def initialize(opts)
+        @tracer = (opts[:opentelemetry_tracer_provider] || ::OpenTelemetry.tracer_provider).tracer(
+          OTEL_TRACER_NAME, Elastic::Transport::VERSION
+        )
         @body_strategy = ENV[ENV_VARIABLE_BODY_STRATEGY] || DEFAULT_BODY_STRATEGY
         @sanitize_keys = ENV[ENV_VARIABLE_BODY_SANITIZE_KEYS]&.split(',')&.collect! do |pattern|
           Regexp.new(pattern.gsub('*', '.*'))

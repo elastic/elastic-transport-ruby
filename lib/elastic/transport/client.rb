@@ -167,7 +167,7 @@ module Elastic
         end
 
         if defined?(::OpenTelemetry) && ENV[OpenTelemetry::ENV_VARIABLE_ENABLED] != 'false'
-          @otel = OpenTelemetry.new
+          @otel = OpenTelemetry.new(@arguments)
         end
       end
 
