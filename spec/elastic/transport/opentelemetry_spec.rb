@@ -213,7 +213,7 @@ if defined?(::OpenTelemetry)
           ENV[described_class::ENV_VARIABLE_ENABLED] = original_setting
         end
 
-        it 'instruments' do
+        it 'does not instrument' do
           client.perform_request('GET', '/_search', nil, nil, nil, endpoint: 'search')
           expect(span).to be_nil
         end
