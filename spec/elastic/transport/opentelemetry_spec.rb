@@ -32,6 +32,20 @@ if defined?(::OpenTelemetry)
 
     let(:otel) { described_class.new }
 
+    context 'when the client is created with a tracer provider' do
+      let(:tracer_provider) do
+        double('tracer_provider').tap do |tp|
+          expect(tp).to receive(:tracer).with(
+            Elastic::Transport::OpenTelemetry::OTEL_TRACER_NAME, Elastic::Transport::VERSION
+          )
+        end
+      end
+
+      it 'uses the tracer provider to get a tracer' do
+        Elastic::Transport::Client.new(opentelemetry_tracer_provider: tracer_provider)
+      end
+    end
+
     context 'when path parameters' do
       before do
         client.perform_request('DELETE', '/users', nil, nil, nil)
