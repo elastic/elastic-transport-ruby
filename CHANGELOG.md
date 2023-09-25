@@ -1,3 +1,10 @@
+## 8.2.4
+
+Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4
+
+- Fixes [#66](https://github.com/elastic/elastic-transport-ruby/issues/66) - Manticore transport unable to send custom headers with perform_request [Pull Request](https://github.com/elastic/elastic-transport-ruby/pull/69)
+- Fixes [#67](https://github.com/elastic/elastic-transport-ruby/issues/67) - Float with many digits automatically becomes BigDecimal when using Oj. [Pull Request](https://github.com/elastic/elastic-transport-ruby/pull/68), thank you @kyoshidajp!
+
 ## 8.2.3
 
 Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4
