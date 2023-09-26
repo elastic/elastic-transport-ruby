@@ -180,6 +180,7 @@ module Elastic
           span_name = opts[:endpoint] || method
           @otel.tracer.in_span(span_name) do |span|
             span['http.request.method'] = method
+            span['db.system'] = 'elasticsearch'
             opts[:defined_params]&.each do |k, v|
               if v.respond_to?(:join)
                 span["db.elasticsearch.path_parts.#{k}"] = v.join(',')

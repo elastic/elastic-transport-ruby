@@ -64,6 +64,7 @@ if defined?(::OpenTelemetry)
 
         span = exporter.finished_spans.find { |s| s.name == 'create' }
         expect(span.name).to eql('create')
+        expect(span.attributes['db.system']).to eql('elasticsearch')
         expect(span.attributes['db.elasticsearch.path_parts.index']).to eql('users')
         expect(span.attributes['db.elasticsearch.path_parts.id']).to eq('abc')
         expect(span.attributes['db.operation']).to eq('create')
@@ -82,6 +83,7 @@ if defined?(::OpenTelemetry)
 
           span = exporter.finished_spans.find { |s| s.name == 'cluster.state' }
           expect(span.name).to eql('cluster.state')
+          expect(span.attributes['db.system']).to eql('elasticsearch')
           expect(span.attributes['db.elasticsearch.path_parts.metric']).to eql('foo,bar')
           expect(span.attributes['db.operation']).to eq('cluster.state')
           expect(span.attributes['db.statement']).to be_nil
@@ -101,6 +103,7 @@ if defined?(::OpenTelemetry)
         client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
         expect(span.name).to eql('search')
+        expect(span.attributes['db.system']).to eql('elasticsearch')
         expect(span.attributes['db.operation']).to eq('search')
         expect(span.attributes['db.statement']).to be_nil
         expect(span.attributes['http.request.method']).to eq('GET')
@@ -180,6 +183,7 @@ if defined?(::OpenTelemetry)
 
           span = exporter.finished_spans.find { |s| s.name == 'GET' }
           expect(span.name).to eql('GET')
+          expect(span.attributes['db.system']).to eql('elasticsearch')
           expect(span.attributes['db.elasticsearch.path_parts']).to be_nil
           expect(span.attributes['db.operation']).to be_nil
           expect(span.attributes['db.statement']).to be_nil
