@@ -59,9 +59,10 @@ module Elastic
       def process_body(body, endpoint)
         unless @body_strategy == 'omit' || !SEARCH_ENDPOINTS.include?(endpoint)
           if @body_strategy == 'sanitize'
-            body = Sanitizer.sanitize(body, @sanitize_keys)
+            Sanitizer.sanitize(body, @sanitize_keys).to_json
+          elsif @body_strategy == 'raw'
+            body&.is_a?(String) ? body : body.to_json
           end
-          body.to_json unless body&.is_a?(String)
         end
       end
 

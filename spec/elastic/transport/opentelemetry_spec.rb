@@ -161,6 +161,51 @@ if defined?(::OpenTelemetry)
         end
       end
 
+      context 'when body strategy is set to raw' do
+        let(:body) do
+          { query: { match: { sensitive: { query: 'secret'} } } }
+        end
+
+        around(:example) do |ex|
+          body_strategy = ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]
+          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]  = 'raw'
+          ex.run
+          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY] = body_strategy
+        end
+
+        context 'when the body is a string' do
+          it 'includes the raw body' do
+            client.perform_request('GET', '/_search', nil, body.to_json, nil, endpoint: 'search')
+            expect(span.attributes['db.statement']).to eq(body.to_json)
+          end
+        end
+
+        context' when the body is a hash' do
+          it 'includes the raw body' do
+            client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
+            expect(span.attributes['db.statement']).to eq(body.to_json)
+          end
+        end
+      end
+
+      context 'when body strategy is set to omit' do
+        let(:body) do
+          { query: { match: { sensitive: { query: 'secret'} } } }
+        end
+
+        around(:example) do |ex|
+          body_strategy = ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]
+          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]  = 'omit'
+          ex.run
+          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY] = body_strategy
+        end
+
+        it 'does not include anything' do
+          client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
+          expect(span.attributes['db.statement']).to be_nil
+        end
+      end
+
       context 'a non-search endpoint' do
         let(:body) do
           { query: { match: { something: "test" } } }
