@@ -19,7 +19,6 @@ module Elastic
   module Transport
     class OpenTelemetry
       OTEL_TRACER_NAME = 'elasticsearch-api'
-      ENDPOINT_PATH_REGEXPS = {}
       DEFAULT_BODY_STRATEGY = 'omit'
       ENV_VARIABLE_ENABLED = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_ENABLED'
       ENV_VARIABLE_BODY_STRATEGY = 'OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'
@@ -34,7 +33,6 @@ module Elastic
         "msearch_template",
         "render_search_template",
       ]
-      MUTEX = Mutex.new
 
       def initialize(opts)
         @tracer = (opts[:opentelemetry_tracer_provider] || ::OpenTelemetry.tracer_provider).tracer(
@@ -47,15 +45,6 @@ module Elastic
       end
       attr_accessor :tracer
 
-      def path_params(endpoint, path_templates, path)
-        return unless endpoint && path_templates
-        matching_regexp = path_regexps(endpoint, path_templates).find do |r|
-          path.match?(r)
-        end
-
-        path.match(matching_regexp)&.named_captures if matching_regexp
-      end
-
       def process_body(body, endpoint)
         unless @body_strategy == 'omit' || !SEARCH_ENDPOINTS.include?(endpoint)
           if @body_strategy == 'sanitize'
@@ -64,19 +53,6 @@ module Elastic
             body&.is_a?(String) ? body : body.to_json
           end
         end
-      end
-
-      def path_regexps(endpoint, path_templates)
-        return ENDPOINT_PATH_REGEXPS[endpoint] if ENDPOINT_PATH_REGEXPS.key?(endpoint)
-
-        MUTEX.synchronize do
-          return ENDPOINT_PATH_REGEXPS[endpoint] if ENDPOINT_PATH_REGEXPS.key?(endpoint)
-
-          ENDPOINT_PATH_REGEXPS[endpoint] = path_templates.collect do |template|
-            Regexp.new('^' + template.gsub('{', '(?<').gsub('}', '>[^/]+)') + '$')
-          end
-        end
-        ENDPOINT_PATH_REGEXPS[endpoint]
       end
 
       # Replaces values in a hash, given a set of keys to match on.
