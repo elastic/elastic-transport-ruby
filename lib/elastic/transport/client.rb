@@ -26,7 +26,6 @@ module Elastic
     #
     class Client
       DEFAULT_TRANSPORT_CLASS = Transport::HTTP::Faraday
-
       include MetaHeader
 
       DEFAULT_LOGGER = lambda do
