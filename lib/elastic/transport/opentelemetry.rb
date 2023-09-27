@@ -17,6 +17,9 @@
 
 module Elastic
   module Transport
+    # Wrapper object for Open Telemetry objects, associated config and functionality.
+    #
+    # @api private
     class OpenTelemetry
       OTEL_TRACER_NAME = 'elasticsearch-api'
       DEFAULT_BODY_STRATEGY = 'omit'
