@@ -22,10 +22,20 @@ module Elastic
     # @api private
     class OpenTelemetry
       OTEL_TRACER_NAME = 'elasticsearch-api'
-      DEFAULT_BODY_STRATEGY = 'omit'
+      # Valid values for the enabled config are 'true' and 'false'. Default is 'true'.
       ENV_VARIABLE_ENABLED = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_ENABLED'
+      # Describes how to handle search queries in the request body when assigned to
+      # a span attribute.
+      # Valid values are 'raw', 'omit', 'sanitize'. Default is 'omit'.
       ENV_VARIABLE_BODY_STRATEGY = 'OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'
+      DEFAULT_BODY_STRATEGY = 'omit'
+      # A string list of keys whose values are redacted. This is only relevant if the body strategy is
+      # 'sanitize'. For example, a config 'sensitive-key,other-key' will redact the values at
+      # 'sensitive-key' and 'other-key' in addition to the default keys.
       ENV_VARIABLE_BODY_SANITIZE_KEYS = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_SEARCH_QUERY_SANITIZE_KEYS'
+
+      # A list of the Elasticsearch endpoints that qualify as "search" endpoints. The search query in
+      # the request body may be captured for these endpoints, depending on the body capture strategy.
       SEARCH_ENDPOINTS = Set[
         "search",
         "async_search.submit",
@@ -37,6 +47,8 @@ module Elastic
         "render_search_template",
       ]
 
+      # Initialize the Open Telemetry wrapper object. Takes the options originally passed to
+      # Client#initialize.
       def initialize(opts)
         @tracer = (opts[:opentelemetry_tracer_provider] || ::OpenTelemetry.tracer_provider).tracer(
           OTEL_TRACER_NAME, Elastic::Transport::VERSION
@@ -48,6 +60,11 @@ module Elastic
       end
       attr_accessor :tracer
 
+      # Process the request body. Applies the body strategy, which can be one of the following:
+      # 'omit': return nil
+      # 'sanitize': redact values at the default list of keys + any additional keys provided in
+      # the OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_SEARCH_QUERY_SANITIZE_KEYS env variable.
+      # 'raw': return the original body, unchanged
       def process_body(body, endpoint)
         unless @body_strategy == 'omit' || !SEARCH_ENDPOINTS.include?(endpoint)
           if @body_strategy == 'sanitize'
@@ -58,7 +75,7 @@ module Elastic
         end
       end
 
-      # Replaces values in a hash, given a set of keys to match on.
+      # Replaces values in a hash with 'REDACTED', given a set of keys to match on.
       class Sanitizer
         class << self
           FILTERED = 'REDACTED'
