@@ -176,6 +176,7 @@ module Elastic
         method = @send_get_body_as if 'GET' == method && body
         validate_ca_fingerprints if @ca_fingerprint
         if @otel
+          # If no endpoint is specified in the opts, use the HTTP method name
           span_name = opts[:endpoint] || method
           @otel.tracer.in_span(span_name) do |span|
             span['http.request.method'] = method
