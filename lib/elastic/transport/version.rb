@@ -17,6 +17,6 @@
 
 module Elastic
   module Transport
-    VERSION = '8.2.4'.freeze
+    VERSION = '8.3.0'.freeze
   end
 end
