@@ -1,3 +1,9 @@
+## 8.3.0
+
+Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4
+
+This release adds native support for OpenTelemetry. Documentation will be added to [the official Transport documentation](https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/transport.html). Pull Request: [#54](https://github.com/elastic/elastic-transport-ruby/pull/54).
+
 ## 8.2.4
 
 Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, JRuby 9.3 and JRuby 9.4
