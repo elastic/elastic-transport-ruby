@@ -15,8 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require 'base64'
-
 module Elastic
   module Transport
     # Methods for the Elastic meta header used by Cloud.
