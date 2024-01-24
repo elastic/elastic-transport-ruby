@@ -1,3 +1,9 @@
+## 8.1.3
+
+Tested versions of Ruby: (MRI) 2.7, 3.0, 3.1, 3.2, 3.3, JRuby 9.3 and JRuby 9.4
+
+- Removes unneccessary `require 'base64'` found thanks to warning in Ruby 3.3. So this removes the warning too if you were using Ruby 3.3.
+
 ## 8.1.2
 
 Backports the following fix from 8.2:
