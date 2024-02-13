@@ -131,6 +131,25 @@ if defined?(::OpenTelemetry)
           end
         end
 
+        context 'with deprecated ENV variable' do
+          let(:sanitized_body) do
+            { query: { match: { password: 'REDACTED' } } }
+          end
+
+          around(:example) do |ex|
+            body_strategy = ENV[described_class::ENV_VARIABLE_DEPRECATED_BODY_STRATEGY]
+            ENV[described_class::ENV_VARIABLE_DEPRECATED_BODY_STRATEGY]  = 'sanitize'
+            ex.run
+            ENV[described_class::ENV_VARIABLE_DEPRECATED_BODY_STRATEGY] = body_strategy
+          end
+
+          it 'sanitizes the body' do
+            client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
+
+            expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
+          end
+        end
+
         context 'with custom keys' do
           let(:body) do
             { query: { match: { sensitive: { query: 'secret'} } } }

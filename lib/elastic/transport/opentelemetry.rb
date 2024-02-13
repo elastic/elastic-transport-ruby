@@ -27,7 +27,8 @@ module Elastic
       # Describes how to handle search queries in the request body when assigned to
       # a span attribute.
       # Valid values are 'raw', 'omit', 'sanitize'. Default is 'omit'.
-      ENV_VARIABLE_BODY_STRATEGY = 'OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'
+      ENV_VARIABLE_BODY_STRATEGY = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'
+      ENV_VARIABLE_DEPRECATED_BODY_STRATEGY = 'OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'
       DEFAULT_BODY_STRATEGY = 'omit'
       # A string list of keys whose values are redacted. This is only relevant if the body strategy is
       # 'sanitize'. For example, a config 'sensitive-key,other-key' will redact the values at
@@ -53,7 +54,8 @@ module Elastic
         @tracer = (opts[:opentelemetry_tracer_provider] || ::OpenTelemetry.tracer_provider).tracer(
           OTEL_TRACER_NAME, Elastic::Transport::VERSION
         )
-        @body_strategy = ENV[ENV_VARIABLE_BODY_STRATEGY] || DEFAULT_BODY_STRATEGY
+        @body_strategy = ENV[ENV_VARIABLE_DEPRECATED_BODY_STRATEGY] || ENV[ENV_VARIABLE_BODY_STRATEGY] ||
+                           DEFAULT_BODY_STRATEGY
         @sanitize_keys = ENV[ENV_VARIABLE_BODY_SANITIZE_KEYS]&.split(',')&.collect! do |pattern|
           Regexp.new(pattern.gsub('*', '.*'))
         end
