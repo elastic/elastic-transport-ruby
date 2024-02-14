@@ -1,3 +1,7 @@
+## 8.3.2
+
+- OpenTelemetry: In v8.3.0 and v8.3.1, the environment variable `OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY` was available but is now deprecated in favor of `OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY`.
+
 ## 8.3.1
 
 Tested versions of Ruby: (MRI) 3.0, 3.1, 3.2, 3.3, JRuby 9.3 and JRuby 9.4
