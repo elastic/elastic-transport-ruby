@@ -91,7 +91,8 @@ module Elastic
       #
       # @option arguments [Boolean] :reload_on_failure Reload connections after failure (false by default)
       #
-      # @option arguments [Integer] :request_timeout The request timeout to be passed to transport in options
+      # @option arguments [Integer] :request_timeout The request timeout to be passed to transport in options in seconds 
+      #                                              (the default value is taken from the transport)
       #
       # @option arguments [Symbol] :adapter A specific adapter for Faraday (e.g. `:patron`)
       #
@@ -110,7 +111,7 @@ module Elastic
       #
       # @option arguments [String] :send_get_body_as Specify the HTTP method to use for GET requests with a body.
       #                                              (Default: GET)
-      # @option arguments [true, false] :compression Whether to compress requests. Gzip compression will be used.
+      # @option arguments [Boolean] :compression Whether to compress requests. Gzip compression will be used.
       #   The default is false. Responses will automatically be inflated if they are compressed.
       #   If a custom transport object is used, it must handle the request compression and response inflation.
       #
