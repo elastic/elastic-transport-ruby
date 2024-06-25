@@ -28,13 +28,13 @@ gemspec path: './'
 group :development, :test do
   gem 'httpclient'
   gem 'net-http-persistent'
-  gem 'patron' unless defined? JRUBY_VERSION
   gem 'rspec'
   gem 'typhoeus'
-  gem 'oj' unless defined? JRUBY_VERSION
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
   else
     gem 'pry-byebug'
+    gem 'oj'
+    gem 'patron'
   end
 end

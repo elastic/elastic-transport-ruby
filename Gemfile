@@ -23,16 +23,14 @@ gemspec
 group :development, :test do
   gem 'faraday-httpclient'
   gem 'faraday-net_http_persistent'
-  gem 'faraday-patron' unless defined? JRUBY_VERSION
   gem 'faraday-typhoeus'
-  gem 'rspec'
-  gem 'oj' unless defined? JRUBY_VERSION
+  gem 'opentelemetry-sdk', require: false if RUBY_VERSION >= '3.0'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
   else
+    gem 'faraday-patron'
+    gem 'oj'
     gem 'pry-byebug'
   end
-  if RUBY_VERSION >= '3.0'
-    gem 'opentelemetry-sdk', require: false
-  end
+  gem 'rspec'
 end
