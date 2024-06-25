@@ -17,10 +17,10 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ['3.3', 'jruby-9.4']
-        es_version: ['8.12-SNAPSHOT']
+        es_version: ['8.15.0-SNAPSHOT']
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Increase system limits
         run: |
           sudo swapoff -a
