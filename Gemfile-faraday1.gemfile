@@ -23,7 +23,7 @@ source 'https://rubygems.org'
 # $ BUNDLE_GEMFILE=./Gemfile-faraday1.gemfile bundle exec rake test:faraday1:unit
 
 gem 'faraday', '~> 1'
-gemspec path: './'
+gemspec
 
 group :development, :test do
   gem 'httpclient'
