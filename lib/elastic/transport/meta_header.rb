@@ -41,6 +41,8 @@ module Elastic
       def meta_header_service_version
         if enterprise_search?
           Elastic::ENTERPRISE_SERVICE_VERSION
+        elsif serverless?
+          Elastic::ES_SERVERLESS_SERVICE_VERSION
         elsif elasticsearch?
           Elastic::ELASTICSEARCH_SERVICE_VERSION
         elsif defined?(Elasticsearch::VERSION)
@@ -60,6 +62,11 @@ module Elastic
           called_from?('elasticsearch')
       end
 
+      def serverless?
+        defined?(ElasticsearchServerless::CLIENT_VERSION) &&
+          called_from?('elasticsearch-serverless')
+      end
+
       def called_from?(service)
         !caller.select { |c| c.match?(service) }.empty?
       end
@@ -70,7 +77,7 @@ module Elastic
       def client_meta_version(version)
         regexp = /^([0-9]+\.[0-9]+\.[0-9]+)(\.?[a-z0-9.-]+)?$/
         match = version.match(regexp)
-        return "#{match[1]}p" if (match[2])
+        return "#{match[1]}p" if match[2]
 
         version
       end

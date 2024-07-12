@@ -24,7 +24,7 @@ module Elastic
         module Base
           # @param transport [Object] The instance of transport which uses this serializer
           #
-          def initialize(transport=nil)
+          def initialize(transport = nil)
             @transport = transport
           end
         end
@@ -36,13 +36,13 @@ module Elastic
 
           # De-serialize a Hash from JSON string
           #
-          def load(string, options={})
+          def load(string, options = {})
             ::MultiJson.load(string, options)
           end
 
           # Serialize a Hash to JSON string
           #
-          def dump(object, options={})
+          def dump(object, options = {})
             ::MultiJson.dump(object, options)
           end
         end
