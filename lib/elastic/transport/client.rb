@@ -83,7 +83,7 @@ module Elastic
       #
       # @option arguments [Integer] :sniffer_timeout   Timeout for reloading connections in seconds (1 by default)
       #
-      # @option arguments [Boolean,Number] :retry_on_failure   Retry X times when request fails before raising and
+      # @option arguments [Boolean,Number] :retry_on_failure   Retry X times when request fails before raising an
       #                                                        exception (false by default)
       # @option arguments [Number] :delay_on_retry  Delay in milliseconds between each retry (0 by default)
       #
@@ -173,7 +173,7 @@ module Elastic
       # Performs a request through delegation to {#transport}.
       #
       def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
-        method = @send_get_body_as if 'GET' == method && body
+        method = @send_get_body_as if method == 'GET' && body
         validate_ca_fingerprints if @ca_fingerprint
         if @otel
           # If no endpoint is specified in the opts, use the HTTP method name
