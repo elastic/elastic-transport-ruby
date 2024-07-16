@@ -1,3 +1,8 @@
+## 8.3.3
+
+- Small updates in source code documentation.
+- Updates meta header for Elasticsearch Serverless.
+
 ## 8.3.2
 
 - OpenTelemetry: In v8.3.0 and v8.3.1, the environment variable `OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY` was available but is now deprecated in favor of `OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY`.
