@@ -1,3 +1,7 @@
+## 8.3.4
+
+- Fixes issue with ES_SERVERLESS_SERVICE_VERSION for backwards compatibility
+
 ## 8.3.3
 
 - Small updates in source code documentation.
