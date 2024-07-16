@@ -42,7 +42,7 @@ module Elastic
         if enterprise_search?
           Elastic::ENTERPRISE_SERVICE_VERSION
         elsif serverless?
-          Elastic::ES_SERVERLESS_SERVICE_VERSION
+          Elastic::ES_SERVERLESS_SERVICE_VERSION || Elastic::ELASTICSEARCH_SERVICE_VERSION
         elsif elasticsearch?
           Elastic::ELASTICSEARCH_SERVICE_VERSION
         elsif defined?(Elasticsearch::VERSION)
