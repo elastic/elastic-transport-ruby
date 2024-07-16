@@ -1,11 +1,12 @@
-## 8.3.4
-
-- Fixes issue with ES_SERVERLESS_SERVICE_VERSION for backwards compatibility
-
-## 8.3.3
+## 8.3.5
 
 - Small updates in source code documentation.
 - Updates meta header for Elasticsearch Serverless.
+- Fixes issues with ES_SERVERLESS_SERVICE_VERSION for backwards compatibility
+
+## 8.3.3, 8.3.4 (yanked)
+
+- Yanked due to errors.
 
 ## 8.3.2
 
