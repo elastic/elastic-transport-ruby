@@ -71,13 +71,17 @@ module Elastic
       # the OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_SEARCH_QUERY_SANITIZE_KEYS env variable.
       # 'raw': return the original body, unchanged
       def process_body(body, endpoint)
-        unless @body_strategy == 'omit' || !SEARCH_ENDPOINTS.include?(endpoint)
-          if @body_strategy == 'sanitize'
-            Sanitizer.sanitize(body, @sanitize_keys).to_json
-          elsif @body_strategy == 'raw'
-            body&.is_a?(String) ? body : body.to_json
-          end
+        return if @body_strategy == DEFAULT_BODY_STRATEGY || !search_endpoint?(endpoint)
+
+        if @body_strategy == 'sanitize'
+          Sanitizer.sanitize(body, @sanitize_keys).to_json
+        elsif @body_strategy == 'raw'
+          body.is_a?(String) ? body : body.to_json
         end
+      end
+
+      def search_endpoint?(endpoint)
+        SEARCH_ENDPOINTS.include?(endpoint)
       end
 
       # Replaces values in a hash with 'REDACTED', given a set of keys to match on.
