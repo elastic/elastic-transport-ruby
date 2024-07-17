@@ -21,49 +21,52 @@ module Elastic
     #
     # @api private
     class OpenTelemetry
-      OTEL_TRACER_NAME = 'elasticsearch-api'
+      OTEL_TRACER_NAME = 'elasticsearch-api'.freeze
       # Valid values for the enabled config are 'true' and 'false'. Default is 'true'.
-      ENV_VARIABLE_ENABLED = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_ENABLED'
+      ENV_VARIABLE_ENABLED = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_ENABLED'.freeze
       # Describes how to handle search queries in the request body when assigned to
       # a span attribute.
       # Valid values are 'raw', 'omit', 'sanitize'. Default is 'omit'.
-      ENV_VARIABLE_BODY_STRATEGY = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'
-      ENV_VARIABLE_DEPRECATED_BODY_STRATEGY = 'OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'
-      DEFAULT_BODY_STRATEGY = 'omit'
+      ENV_VARIABLE_BODY_STRATEGY = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'.freeze
+      ENV_VARIABLE_DEPRECATED_BODY_STRATEGY = 'OTEL_INSTRUMENTATION_ELASTICSEARCH_CAPTURE_SEARCH_QUERY'.freeze
+      DEFAULT_BODY_STRATEGY = 'omit'.freeze
       # A string list of keys whose values are redacted. This is only relevant if the body strategy is
       # 'sanitize'. For example, a config 'sensitive-key,other-key' will redact the values at
       # 'sensitive-key' and 'other-key' in addition to the default keys.
-      ENV_VARIABLE_BODY_SANITIZE_KEYS = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_SEARCH_QUERY_SANITIZE_KEYS'
+      ENV_VARIABLE_BODY_SANITIZE_KEYS = 'OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_SEARCH_QUERY_SANITIZE_KEYS'.freeze
 
       # A list of the Elasticsearch endpoints that qualify as "search" endpoints. The search query in
       # the request body may be captured for these endpoints, depending on the body capture strategy.
       SEARCH_ENDPOINTS = Set[
-        "search",
-        "async_search.submit",
-        "msearch",
-        "eql.search",
-        "terms_enum",
-        "search_template",
-        "msearch_template",
-        "render_search_template",
+        'search',
+        'async_search.submit',
+        'msearch',
+        'eql.search',
+        'terms_enum',
+        'search_template',
+        'msearch_template',
+        'render_search_template',
       ]
 
       # Initialize the Open Telemetry wrapper object. Takes the options originally passed to
       # Client#initialize.
       def initialize(opts)
-        @tracer = (opts[:opentelemetry_tracer_provider] || ::OpenTelemetry.tracer_provider).tracer(
-          OTEL_TRACER_NAME, Elastic::Transport::VERSION
-        )
-        @body_strategy = ENV[ENV_VARIABLE_DEPRECATED_BODY_STRATEGY] || ENV[ENV_VARIABLE_BODY_STRATEGY] ||
-                           DEFAULT_BODY_STRATEGY
+        @tracer = tracer_provider(opts).tracer(OTEL_TRACER_NAME, Elastic::Transport::VERSION)
+        @body_strategy = ENV[ENV_VARIABLE_DEPRECATED_BODY_STRATEGY] ||
+                         ENV[ENV_VARIABLE_BODY_STRATEGY] ||
+                         DEFAULT_BODY_STRATEGY
         @sanitize_keys = ENV[ENV_VARIABLE_BODY_SANITIZE_KEYS]&.split(',')&.collect! do |pattern|
           Regexp.new(pattern.gsub('*', '.*'))
         end
       end
       attr_accessor :tracer
 
+      def tracer_provider(opts)
+        opts[:opentelemetry_tracer_provider] || ::OpenTelemetry.tracer_provider
+      end
+
       # Process the request body. Applies the body strategy, which can be one of the following:
-      # 'omit': return nil
+      # 'omit' (DEFAULT_BODY_STRATEGY): return nil
       # 'sanitize': redact values at the default list of keys + any additional keys provided in
       # the OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_SEARCH_QUERY_SANITIZE_KEYS env variable.
       # 'raw': return the original body, unchanged
@@ -80,11 +83,11 @@ module Elastic
       # Replaces values in a hash with 'REDACTED', given a set of keys to match on.
       class Sanitizer
         class << self
-          FILTERED = 'REDACTED'
+          FILTERED = 'REDACTED'.freeze
           DEFAULT_KEY_PATTERNS =
             %w[password passwd pwd secret *key *token* *session* *credit* *card* *auth* set-cookie].map! do |p|
-              Regexp.new(p.gsub('*', '.*'))
-            end
+            Regexp.new(p.gsub('*', '.*'))
+          end
 
           def sanitize(body, key_patterns = [])
             patterns = DEFAULT_KEY_PATTERNS
