@@ -319,6 +319,7 @@ module Elastic
           return :typhoeus if defined?(Faraday::Adapter::Typhoeus)
           return :httpclient if defined?(Faraday::Adapter::HTTPClient)
           return :net_http_persistent if defined?(Faraday::Adapter::NetHttpPersistent)
+          return :excon if defined?(Faraday::Adapter::Excon)
         else
           return :patron if defined?(::Patron)
           return :typhoeus if defined?(::Typhoeus)
