@@ -153,7 +153,7 @@ module Elastic
         else
           @transport_class = @arguments[:transport_class] || DEFAULT_TRANSPORT_CLASS
           @transport = if @transport_class == Transport::HTTP::Faraday
-                         @arguments[:adapter] ||= __auto_detect_adapter
+                         @arguments[:adapter] ||= auto_detect_adapter
                          set_meta_header # from include MetaHeader
                          @transport_class.new(hosts: @hosts, options: @arguments) do |faraday|
                            faraday.adapter(@arguments[:adapter])
@@ -313,7 +313,7 @@ module Elastic
       #
       # @api private
       #
-      def __auto_detect_adapter
+      def auto_detect_adapter
         if Gem::Version.new(Faraday::VERSION) >= Gem::Version.new(2)
           return :patron if defined?(Faraday::Adapter::Patron)
           return :typhoeus if defined?(Faraday::Adapter::Typhoeus)
