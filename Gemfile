@@ -24,6 +24,7 @@ group :development, :test do
   gem 'faraday-httpclient'
   gem 'faraday-net_http_persistent'
   gem 'faraday-typhoeus'
+  gem 'faraday-excon'
   gem 'opentelemetry-sdk', require: false if RUBY_VERSION >= '3.0'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'

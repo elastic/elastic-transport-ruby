@@ -225,6 +225,22 @@ describe Elastic::Transport::Client do
       end
     end unless jruby?
 
+    context 'when the adapter is excon' do
+      let(:adapter) do
+        client.transport.connections.all.first.connection.builder.adapter
+      end
+
+      let(:client) do
+        require 'faraday/excon' if is_faraday_v2?
+
+        described_class.new(adapter: :excon, enable_meta_header: false)
+      end
+
+      it 'uses Faraday with the adapter' do
+        expect(adapter).to eq Faraday::Adapter::Excon
+      end
+    end
+
     context 'when the adapter is specified as a string key' do
       let(:adapter) do
         client.transport.connections.all.first.connection.builder.adapter
