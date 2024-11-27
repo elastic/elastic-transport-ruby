@@ -123,8 +123,8 @@ module Elastic
       #
       def initialize(arguments = {}, &block)
         @arguments = arguments.transform_keys(&:to_sym)
-        @arguments[:logger] ||= @arguments[:log]   ? DEFAULT_LOGGER.call() : nil
-        @arguments[:tracer] ||= @arguments[:trace] ? DEFAULT_TRACER.call() : nil
+        @arguments[:logger] ||= @arguments[:log]   ? DEFAULT_LOGGER.call : nil
+        @arguments[:tracer] ||= @arguments[:trace] ? DEFAULT_TRACER.call : nil
         @arguments[:reload_connections] ||= false
         @arguments[:retry_on_failure]   ||= false
         @arguments[:delay_on_retry]     ||= 0
@@ -134,13 +134,7 @@ module Elastic
         @arguments[:http]               ||= {}
         @arguments[:enable_meta_header] = arguments.fetch(:enable_meta_header, true)
 
-        @hosts ||= __extract_hosts(@arguments[:hosts] ||
-                                   @arguments[:host] ||
-                                   @arguments[:url] ||
-                                   @arguments[:urls] ||
-                                   ENV['ELASTICSEARCH_URL'] ||
-                                   DEFAULT_HOST)
-
+        @hosts ||= extract_hosts
         @send_get_body_as = @arguments[:send_get_body_as] || 'GET'
         @ca_fingerprint = @arguments.delete(:ca_fingerprint)
 
@@ -246,7 +240,7 @@ module Elastic
       #
       # @api private
       #
-      def __extract_hosts(hosts_config)
+      def extract_hosts
         hosts = case hosts_config
                 when String
                   hosts_config.split(',').map { |h| h.strip! || h }
@@ -257,12 +251,20 @@ module Elastic
                 else
                   Array(hosts_config)
                 end
-
-        host_list = hosts.map { |host| __parse_host(host) }
+        host_list = hosts.map { |host| parse_host(host) }
         @arguments[:randomize_hosts] ? host_list.shuffle! : host_list
       end
 
-      def __parse_host(host)
+      def hosts_config
+        @arguments[:hosts] ||
+          @arguments[:host] ||
+          @arguments[:url] ||
+          @arguments[:urls] ||
+          ENV['ELASTICSEARCH_URL'] ||
+          DEFAULT_HOST
+      end
+
+      def parse_host(host)
         host_parts = case host
                      when String
                        if host =~ /^[a-z]+\:\/\//
