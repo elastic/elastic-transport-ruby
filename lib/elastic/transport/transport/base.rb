@@ -83,7 +83,7 @@ module Elastic
         # @return [Connections::Connection]
         # @see    Connections::Collection#get_connection
         #
-        def get_connection(options={})
+        def get_connection(options = {})
           resurrect_dead_connections! if Time.now > @last_request_at + @resurrect_after
 
           @counter_mtx.synchronize { @counter += 1 }
@@ -120,7 +120,7 @@ module Elastic
         # @return [Connections::Collection]
         # @api private
         #
-        def __rebuild_connections(arguments={})
+        def __rebuild_connections(arguments = {})
           @state_mutex.synchronize do
             @hosts       = arguments[:hosts]    || []
             @options     = arguments[:options]  || {}
@@ -232,7 +232,7 @@ module Elastic
         #
         # @api private
         #
-        def __convert_to_json(o=nil, options={})
+        def __convert_to_json(o = nil, options = {})
           o.is_a?(String) ? o : serializer.dump(o, options)
         end
 
