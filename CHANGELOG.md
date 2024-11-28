@@ -1,3 +1,31 @@
+## 8.4.0
+
+- Adds support for **[Excon](https://github.com/excon/excon)** Faraday adapter. You can use the Excon adapter by setting it in when initializing an Elasticsearch client:
+
+```ruby
+require 'faraday/excon'
+
+Elasticsearch::Client.new(
+  host: host,
+  transport_options: transport_options,
+  adapter: :excon
+)
+```
+
+Excon may need some specific configuration for HTTPS/SSL. You may see certificate verification errors when trying to connect to Elastic. Excon has certificates bundled, but these can be customized:
+
+```ruby
+Excon.defaults[:ssl_ca_path] = path_to_certs
+ENV['SSL_CERT_DIR'] = path_to_certs
+Excon.defaults[:ssl_ca_file] = path_to_file
+ENV['SSL_CERT_FILE'] = path_to_file
+Excon.defaults[:ssl_verify_callback] = callback
+# (see OpenSSL::SSL::SSLContext#verify_callback)
+Excon.defaults[:ssl_verify_peer] = false` # (less secure).
+```
+
+- Minor refactors, styling fixes
+
 ## 8.3.5
 
 - Small updates in source code documentation.
