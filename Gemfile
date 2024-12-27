@@ -22,6 +22,7 @@ gemspec
 
 group :development, :test do
   gem 'faraday-httpclient'
+  gem 'mutex_m' if RUBY_VERSION >= '3.4'
   gem 'faraday-net_http_persistent'
   gem 'faraday-typhoeus'
   gem 'faraday-excon'
