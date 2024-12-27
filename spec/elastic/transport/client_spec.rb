@@ -1469,6 +1469,7 @@ describe Elastic::Transport::Client do
 
           context 'when using the HTTPClient adapter' do
             require 'faraday/httpclient'
+            require 'mutex_m' if RUBY_VERSION >= '3.4'
 
             let(:client) do
               described_class.new(hosts: ELASTICSEARCH_HOSTS, compression: true, adapter: :httpclient, enable_meta_header: false)
