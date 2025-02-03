@@ -74,13 +74,19 @@ class Elastic::Transport::ClientAdaptersUnitTest < Minitest::Test
 
     should 'use Excon Faraday adapter' do
       fork do
-        return unless is_faraday_v2?
-
         require 'faraday/excon'
         client = Elastic::Transport::Client.new
         assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Excon)
       end
-    end
+    end if is_faraday_v2?
+
+    should 'use Async HTTP Faraday adapter' do
+      fork do
+        require 'async/http/faraday'
+        client = Elastic::Transport::Client.new
+        assert_equal(client.transport.connections.first.connection.adapter, Async::HTTP::Faraday::Adapter)
+      end
+    end if is_faraday_v2?
 
     should 'use HTTPClient Faraday adapter' do
       fork do
