@@ -21,15 +21,16 @@ source 'https://rubygems.org'
 gemspec
 
 group :development, :test do
+  gem 'faraday-excon'
   gem 'faraday-httpclient'
-  gem 'mutex_m' if RUBY_VERSION >= '3.4'
   gem 'faraday-net_http_persistent'
   gem 'faraday-typhoeus'
-  gem 'faraday-excon'
+  gem 'mutex_m' if RUBY_VERSION >= '3.4'
   gem 'opentelemetry-sdk', require: false if RUBY_VERSION >= '3.0'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
   else
+    gem 'async-http-faraday'
     gem 'faraday-patron'
     gem 'oj'
     gem 'pry-byebug'

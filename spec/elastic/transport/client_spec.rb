@@ -231,7 +231,7 @@ describe Elastic::Transport::Client do
       end
 
       let(:client) do
-        require 'faraday/excon' if is_faraday_v2?
+        require 'faraday/excon'
 
         described_class.new(adapter: :excon, enable_meta_header: false)
       end
@@ -239,7 +239,23 @@ describe Elastic::Transport::Client do
       it 'uses Faraday with the adapter' do
         expect(adapter).to eq Faraday::Adapter::Excon
       end
-    end
+    end if is_faraday_v2?
+
+    context 'when the adapter is async-http' do
+      let(:adapter) do
+        client.transport.connections.all.first.connection.builder.adapter
+      end
+
+      let(:client) do
+        require 'async/http/faraday'
+
+        described_class.new(adapter: :async_http, enable_meta_header: false)
+      end
+
+      it 'uses Faraday with the adapter' do
+        expect(adapter).to eq Async::HTTP::Faraday::Adapter
+      end
+    end unless jruby? || !is_faraday_v2?
 
     context 'when the adapter is specified as a string key' do
       let(:adapter) do
