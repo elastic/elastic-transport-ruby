@@ -24,7 +24,16 @@ Excon.defaults[:ssl_verify_callback] = callback
 Excon.defaults[:ssl_verify_peer] = false` # (less secure).
 ```
 
-- Minor refactors, styling fixes
+- Adds support for **[Async::HTTP::Faraday](https://github.com/socketry/async-http-faraday)**. You can use the adapter by setting it when initializing an Elasticsearch client:
+```ruby
+require 'async-http-faraday'
+
+Elasticsearch::Client.new(
+  host: host,
+  adapter: :async_http
+)
+```
+- Minor refactors, styling fixes.
 
 ## 8.3.5
 
