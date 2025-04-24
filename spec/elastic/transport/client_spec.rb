@@ -1730,7 +1730,7 @@ describe Elastic::Transport::Client do
           client.transport.reload_connections!
           response = client.perform_request('GET', '_nodes/stats/http')
           connections_after = response.body['nodes'].values.find { |n| n['name'] == node_names.first }['http']['total_opened']
-          expect(connections_after).to be >= (connections_before)
+          expect(connections_after).to be >= connections_before
         end
       end
     end

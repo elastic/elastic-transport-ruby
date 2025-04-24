@@ -45,7 +45,7 @@ module Elastic
         'terms_enum',
         'search_template',
         'msearch_template',
-        'render_search_template',
+        'render_search_template'
       ]
 
       # Initialize the Open Telemetry wrapper object. Takes the options originally passed to
