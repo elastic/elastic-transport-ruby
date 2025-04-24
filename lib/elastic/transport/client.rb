@@ -176,13 +176,13 @@ module Elastic
             span['http.request.method'] = method
             span['db.system'] = 'elasticsearch'
             opts[:defined_params]&.each do |k, v|
-              if v.respond_to?(:join)
-                span["db.elasticsearch.path_parts.#{k}"] = v.join(',')
-              else
-                span["db.elasticsearch.path_parts.#{k}"] = v
-              end
+              span["db.elasticsearch.path_parts.#{k}"] = if v.respond_to?(:join)
+                                                           v.join(',')
+                                                         else
+                                                           v
+                                                         end
             end
-            if body_as_json = @otel.process_body(body, opts[:endpoint])
+            if (body_as_json = @otel.process_body(body, opts[:endpoint]))
               span['db.statement'] = body_as_json
             end
             span['db.operation'] = opts[:endpoint] if opts[:endpoint]
@@ -271,27 +271,28 @@ module Elastic
                          # Construct a new `URI::Generic` directly from the array returned by URI::split.
                          # This avoids `URI::HTTP` and `URI::HTTPS`, which supply default ports.
                          uri = URI::Generic.new(*URI.split(host))
-
                          default_port = uri.scheme == 'https' ? 443 : DEFAULT_PORT
-
-                         { :scheme => uri.scheme,
-                           :user => uri.user,
-                           :password => uri.password,
-                           :host => uri.host,
-                           :path => uri.path,
-                           :port => uri.port || default_port }
+                         {
+                           scheme: uri.scheme,
+                           user: uri.user,
+                           password: uri.password,
+                           host: uri.host,
+                           path: uri.path,
+                           port: uri.port || default_port
+                         }
                        else
                          host, port = host.split(':')
-                         { :host => host,
-                           :port => port }
+                         { host: host, port: port }
                        end
                      when URI
-                       { :scheme => host.scheme,
-                         :user => host.user,
-                         :password => host.password,
-                         :host => host.host,
-                         :path => host.path,
-                         :port => host.port }
+                       {
+                         scheme: host.scheme,
+                         user: host.user,
+                         password: host.password,
+                         host: host.host,
+                         path: host.path,
+                         port: host.port
+                       }
                      when Hash
                        host
                      else
