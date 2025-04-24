@@ -176,13 +176,13 @@ module Elastic
             span['http.request.method'] = method
             span['db.system'] = 'elasticsearch'
             opts[:defined_params]&.each do |k, v|
-              if v.respond_to?(:join)
-                span["db.elasticsearch.path_parts.#{k}"] = v.join(',')
-              else
-                span["db.elasticsearch.path_parts.#{k}"] = v
-              end
+              span["db.elasticsearch.path_parts.#{k}"] = if v.respond_to?(:join)
+                                                           v.join(',')
+                                                         else
+                                                           v
+                                                         end
             end
-            if body_as_json = @otel.process_body(body, opts[:endpoint])
+            if (body_as_json = @otel.process_body(body, opts[:endpoint]))
               span['db.statement'] = body_as_json
             end
             span['db.operation'] = opts[:endpoint] if opts[:endpoint]

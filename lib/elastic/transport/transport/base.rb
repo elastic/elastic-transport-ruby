@@ -232,8 +232,8 @@ module Elastic
         #
         # @api private
         #
-        def __convert_to_json(o = nil, options = {})
-          o.is_a?(String) ? o : serializer.dump(o, options)
+        def __convert_to_json(obj = nil, options = {})
+          obj.is_a?(String) ? obj : serializer.dump(obj, options)
         end
 
         # Returns a full URL based on information from host
