@@ -174,18 +174,18 @@ module Elastic
           span_name = opts[:endpoint] || method
           @otel.tracer.in_span(span_name) do |span|
             span['http.request.method'] = method
-            span['db.system'] = 'elasticsearch'
+            span['db.system.name'] = 'elasticsearch'
             opts[:defined_params]&.each do |k, v|
-              span["db.elasticsearch.path_parts.#{k}"] = if v.respond_to?(:join)
-                                                           v.join(',')
-                                                         else
-                                                           v
-                                                         end
+              span["db.operation.parameter.#{k}"] = if v.respond_to?(:join)
+                                                      v.join(',')
+                                                    else
+                                                      v
+                                                    end
             end
             if (body_as_json = @otel.process_body(body, opts[:endpoint]))
-              span['db.statement'] = body_as_json
+              span['db.query.text'] = body_as_json
             end
-            span['db.operation'] = opts[:endpoint] if opts[:endpoint]
+            span['db.operation.name'] = opts[:endpoint] if opts[:endpoint]
             transport.perform_request(method, path, params || {}, body, headers)
           end
         else

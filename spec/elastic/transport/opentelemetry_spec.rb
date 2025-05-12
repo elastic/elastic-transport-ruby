@@ -59,15 +59,15 @@ if defined?(::OpenTelemetry)
       it 'creates a span with path parameters' do
         client.perform_request(
           'POST', '/users/_create/abc', nil, { name: 'otel-test' }, nil,
-          defined_params: {'index' => 'users', 'id' => 'abc'}, endpoint: 'create'
+          defined_params: { 'index' => 'users', 'id' => 'abc' }, endpoint: 'create'
         )
 
         span = exporter.finished_spans.find { |s| s.name == 'create' }
         expect(span.name).to eql('create')
-        expect(span.attributes['db.system']).to eql('elasticsearch')
-        expect(span.attributes['db.elasticsearch.path_parts.index']).to eql('users')
-        expect(span.attributes['db.elasticsearch.path_parts.id']).to eq('abc')
-        expect(span.attributes['db.operation']).to eq('create')
+        expect(span.attributes['db.system.name']).to eql('elasticsearch')
+        expect(span.attributes['db.operation.parameter.index']).to eql('users')
+        expect(span.attributes['db.operation.parameter.id']).to eq('abc')
+        expect(span.attributes['db.operation.name']).to eq('create')
         expect(span.attributes['db.statement']).to be_nil
         expect(span.attributes['http.request.method']).to eq('POST')
         expect(span.attributes['server.address']).to eq('localhost')
@@ -83,10 +83,10 @@ if defined?(::OpenTelemetry)
 
           span = exporter.finished_spans.find { |s| s.name == 'cluster.state' }
           expect(span.name).to eql('cluster.state')
-          expect(span.attributes['db.system']).to eql('elasticsearch')
-          expect(span.attributes['db.elasticsearch.path_parts.metric']).to eql('foo,bar')
-          expect(span.attributes['db.operation']).to eq('cluster.state')
-          expect(span.attributes['db.statement']).to be_nil
+          expect(span.attributes['db.system.name']).to eql('elasticsearch')
+          expect(span.attributes['db.operation.parameter.metric']).to eql('foo,bar')
+          expect(span.attributes['db.operation.name']).to eq('cluster.state')
+          expect(span.attributes['db.query.text']).to be_nil
           expect(span.attributes['http.request.method']).to eq('GET')
           expect(span.attributes['server.address']).to eq('localhost')
           expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
@@ -99,13 +99,13 @@ if defined?(::OpenTelemetry)
         { query: { match: { password: { query: 'secret'} } } }
       end
 
-      it 'creates a span and omits db.statement' do
+      it 'creates a span and omits db.query.text' do
         client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
         expect(span.name).to eql('search')
-        expect(span.attributes['db.system']).to eql('elasticsearch')
-        expect(span.attributes['db.operation']).to eq('search')
-        expect(span.attributes['db.statement']).to be_nil
+        expect(span.attributes['db.system.name']).to eql('elasticsearch')
+        expect(span.attributes['db.operation.name']).to eq('search')
+        expect(span.attributes['db.query.text']).to be_nil
         expect(span.attributes['http.request.method']).to eq('GET')
         expect(span.attributes['server.address']).to eq('localhost')
         expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
@@ -127,7 +127,7 @@ if defined?(::OpenTelemetry)
           it 'sanitizes the body' do
             client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
-            expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
+            expect(span.attributes['db.query.text']).to eq(sanitized_body.to_json)
           end
         end
 
@@ -146,13 +146,13 @@ if defined?(::OpenTelemetry)
           it 'sanitizes the body' do
             client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
-            expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
+            expect(span.attributes['db.query.text']).to eq(sanitized_body.to_json)
           end
         end
 
         context 'with custom keys' do
           let(:body) do
-            { query: { match: { sensitive: { query: 'secret'} } } }
+            { query: { match: { sensitive: { query: 'secret' } } } }
           end
 
           let(:sanitized_body) do
@@ -175,7 +175,7 @@ if defined?(::OpenTelemetry)
           it 'sanitizes the body' do
             client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
 
-            expect(span.attributes['db.statement']).to eq(sanitized_body.to_json)
+            expect(span.attributes['db.query.text']).to eq(sanitized_body.to_json)
           end
         end
       end
@@ -195,14 +195,14 @@ if defined?(::OpenTelemetry)
         context 'when the body is a string' do
           it 'includes the raw body' do
             client.perform_request('GET', '/_search', nil, body.to_json, nil, endpoint: 'search')
-            expect(span.attributes['db.statement']).to eq(body.to_json)
+            expect(span.attributes['db.query.text']).to eq(body.to_json)
           end
         end
 
         context' when the body is a hash' do
           it 'includes the raw body' do
             client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
-            expect(span.attributes['db.statement']).to eq(body.to_json)
+            expect(span.attributes['db.query.text']).to eq(body.to_json)
           end
         end
       end
@@ -221,7 +221,7 @@ if defined?(::OpenTelemetry)
 
         it 'does not include anything' do
           client.perform_request('GET', '/_search', nil, body, nil, endpoint: 'search')
-          expect(span.attributes['db.statement']).to be_nil
+          expect(span.attributes['db.query.text']).to be_nil
         end
       end
 
@@ -230,12 +230,12 @@ if defined?(::OpenTelemetry)
           { query: { match: { something: "test" } } }
         end
 
-        it 'does not capture db.statement' do
+        it 'does not capture db.query.text' do
           client.perform_request(
             'POST', '_all/_delete_by_query', nil, body, nil, endpoint: 'delete_by_query'
           )
 
-          expect(span.attributes['db.statement']).to be_nil
+          expect(span.attributes['db.query.text']).to be_nil
         end
       end
 
@@ -247,10 +247,10 @@ if defined?(::OpenTelemetry)
 
           span = exporter.finished_spans.find { |s| s.name == 'GET' }
           expect(span.name).to eql('GET')
-          expect(span.attributes['db.system']).to eql('elasticsearch')
-          expect(span.attributes['db.elasticsearch.path_parts']).to be_nil
+          expect(span.attributes['db.system.name']).to eql('elasticsearch')
+          expect(span.attributes['db.operation.parameter']).to be_nil
           expect(span.attributes['db.operation']).to be_nil
-          expect(span.attributes['db.statement']).to be_nil
+          expect(span.attributes['db.query.text']).to be_nil
           expect(span.attributes['http.request.method']).to eq('GET')
           expect(span.attributes['server.address']).to eq('localhost')
           expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
