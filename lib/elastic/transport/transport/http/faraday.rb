@@ -40,7 +40,6 @@ module Elastic
               body, headers = compress_request(body, headers)
 
               response = connection.connection.run_request(method.downcase.to_sym, url, body, headers)
-
               Response.new(response.status, decompress_response(response.body), response.headers)
             end
           end
