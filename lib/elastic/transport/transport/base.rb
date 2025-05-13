@@ -225,7 +225,9 @@ module Elastic
         #
         def __raise_transport_error(response)
           error = ERRORS[response.status] || ServerError
-          raise error.new "[#{response.status}] #{response.body}"
+          message = "[#{response.status}] #{response.body}"
+          capture_otel_error_attributes(message)
+          raise error.new message
         end
 
         # Converts any non-String object to JSON
@@ -275,9 +277,7 @@ module Elastic
           tries = 0
           reload_on_failure = opts.fetch(:reload_on_failure, @options[:reload_on_failure])
           delay_on_retry = opts.fetch(:delay_on_retry, @options[:delay_on_retry])
-
           max_retries = max_retries(opts) || max_retries(options)
-
           params = params.clone
           # Transforms ignore status codes to Integer
           ignore = Array(params.delete(:ignore)).compact.map(&:to_i)
@@ -306,7 +306,9 @@ module Elastic
             if tries <= (max_retries || DEFAULT_MAX_RETRIES)
               retry
             else
-              log_fatal "[#{e.class}] Cannot get response from #{url} after #{tries} tries"
+              message = "[#{e.class}] Cannot get response from #{url} after #{tries} tries"
+              log_fatal(message)
+              capture_otel_error_attributes(message)
               raise e
             end
           rescue *host_unreachable_exceptions => e
@@ -321,17 +323,24 @@ module Elastic
 
             exception = Elastic::Transport::Transport::Error.new(e.message)
 
-            raise exception unless max_retries
+            unless max_retries
+              capture_otel_error_attributes(exception.message)
+              raise exception
+            end
 
             log_warn "[#{e.class}] Attempt #{tries} connecting to #{connection.host.inspect}"
             if tries <= max_retries
               retry
             else
-              log_fatal "[#{e.class}] Cannot connect to #{connection.host.inspect} after #{tries} tries"
+              message = "[#{e.class}] Cannot connect to #{connection.host.inspect} after #{tries} tries"
+              log_fatal(message)
+              capture_otel_error_attributes(message)
               raise exception
             end
           rescue Exception => e
-            log_fatal "[#{e.class}] #{e.message} (#{connection.host.inspect if connection})"
+            message = "[#{e.class}] #{e.message} (#{connection.host.inspect if connection})"
+            log_fatal message
+            capture_otel_error_attributes(message)
             raise e
           end #/begin
 
@@ -472,11 +481,21 @@ module Elastic
           end
         end
 
+        def opentelemetry?
+          defined?(::OpenTelemetry)
+        end
+
         def capture_otel_span_attributes(connection, url)
-          if defined?(::OpenTelemetry)
+          if opentelemetry?
             ::OpenTelemetry::Trace.current_span&.set_attribute('url.full', url)
             ::OpenTelemetry::Trace.current_span&.set_attribute('server.address', connection.host[:host])
             ::OpenTelemetry::Trace.current_span&.set_attribute('server.port', connection.host[:port].to_i)
+          end
+        end
+
+        def capture_otel_error_attributes(error)
+          if opentelemetry?
+            ::OpenTelemetry::Trace.current_span&.set_attribute('error.type', error)
           end
         end
       end

@@ -258,6 +258,16 @@ if defined?(::OpenTelemetry)
       end
     end
 
+    context 'when there is an error' do
+      it 'it sets error.type' do
+        expect do
+          client.perform_request('GET', '/_wrongendpoint', nil, nil, nil, endpoint: 'wrong')
+        end.to raise_error
+
+        expect(span.attributes['error.type']).to match(/error/)
+      end
+    end
+
     context 'when the ENV variable OTEL_RUBY_INSTRUMENTATION_ELASTICSEARCH_ENABLED is set' do
       context 'to true' do
         around do |ex|
