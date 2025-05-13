@@ -21,7 +21,7 @@ Excon.defaults[:ssl_ca_file] = path_to_file
 ENV['SSL_CERT_FILE'] = path_to_file
 Excon.defaults[:ssl_verify_callback] = callback
 # (see OpenSSL::SSL::SSLContext#verify_callback)
-Excon.defaults[:ssl_verify_peer] = false` # (less secure).
+Excon.defaults[:ssl_verify_peer] = false # (less secure).
 ```
 
 - Adds support for **[Async::HTTP::Faraday](https://github.com/socketry/async-http-faraday)**. You can use the adapter by setting it when initializing an Elasticsearch client:
