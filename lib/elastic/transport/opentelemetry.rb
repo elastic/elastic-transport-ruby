@@ -42,6 +42,8 @@ module Elastic
         'async_search.submit',
         'msearch',
         'eql.search',
+        'esql.async_query',
+        'esql.query',
         'terms_enum',
         'search_template',
         'msearch_template',
