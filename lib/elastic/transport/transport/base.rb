@@ -379,11 +379,11 @@ module Elastic
         private
 
         USER_AGENT_STR = 'User-Agent'.freeze
-        USER_AGENT_REGEX = /user-?_?agent/
+        USER_AGENT_REGEX = /user-?_?agent/.freeze
         ACCEPT_ENCODING = 'Accept-Encoding'.freeze
         CONTENT_ENCODING = 'Content-Encoding'.freeze
         CONTENT_TYPE_STR = 'Content-Type'.freeze
-        CONTENT_TYPE_REGEX = /content-?_?type/
+        CONTENT_TYPE_REGEX = /content-?_?type/.freeze
         DEFAULT_CONTENT_TYPE = 'application/json'.freeze
         GZIP = 'gzip'.freeze
         GZIP_FIRST_TWO_BYTES = '1f8b'.freeze
