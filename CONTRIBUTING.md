@@ -41,13 +41,24 @@ E.g.:
 $ rake docker:start[8.0.0-alpha1]
 ```
 
-You can find the available version in [Docker @ Elastic](https://www.docker.elastic.co/r/elasticsearch). You can also run Elasticsearch and Kibana locally with Docker with `start-local`:
+You can find the available version in [Docker @ Elastic](https://www.docker.elastic.co/r/elasticsearch).
+
+You can also run Elasticsearch and Kibana locally with Docker with `start-local`:
 
 ```bash
 curl -fsSL https://elastic.co/start-local | sh
 ```
 
 This will run Elasticsearch in http://localhost:9200 and Kibana in http://localhost:5601. More information is available [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearch-locally.html).
+
+## Faraday 1 tests
+
+You can run the tests for Faraday v1 with the following commands:
+
+```bash
+BUNDLE_GEMFILE=Gemfile-faraday1.gemfile bundle install
+BUNDLE_GEMFILE=Gemfile-faraday1.gemfile rake test:all
+```
 
 # Contributing
 
