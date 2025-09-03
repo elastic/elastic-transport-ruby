@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'timeout'
+
 module Elastic
   module Transport
     module Transport
