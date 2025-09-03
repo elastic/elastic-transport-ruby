@@ -18,7 +18,6 @@
 require 'faraday'
 require 'multi_json'
 require 'time'
-require 'timeout'
 require 'uri'
 require 'zlib'
 
