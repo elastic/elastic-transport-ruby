@@ -195,7 +195,7 @@ module Elastic
         #
         def __log_response(method, path, params, body, url, response, json, took, duration)
           if logger
-            sanitized_url = url.to_s.gsub(/\/\/(.+):(.+)@/, '//' + '\1:' + SANITIZED_PASSWORD + '@')
+            sanitized_url = sanitize_url(url.to_s)
             log_info "#{method.to_s.upcase} #{sanitized_url} " +
                          "[status:#{response.status}, request:#{sprintf('%.3fs', duration)}, query:#{took}]"
             log_debug "> #{__convert_to_json(body)}" if body
@@ -472,9 +472,13 @@ module Elastic
           end
         end
 
+        def sanitize_url(url)
+          url.to_s.gsub(/\/\/(.+):(.+)@/, '//' + '\1:' + SANITIZED_PASSWORD + '@')
+        end
+
         def capture_otel_span_attributes(connection, url)
           if defined?(::OpenTelemetry)
-            ::OpenTelemetry::Trace.current_span&.set_attribute('url.full', url)
+            ::OpenTelemetry::Trace.current_span&.set_attribute('url.full', sanitize_url(url))
             ::OpenTelemetry::Trace.current_span&.set_attribute('server.address', connection.host[:host])
             ::OpenTelemetry::Trace.current_span&.set_attribute('server.port', connection.host[:port].to_i)
           end
