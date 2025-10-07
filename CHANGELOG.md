@@ -1,3 +1,8 @@
+## 8.3.6
+
+- Moves `require 'timeout'` to the classes that use it. Closed [#79](https://github.com/elastic/elastic-transport-ruby/issues/79).
+- Sanitize url on OTEL spans, thanks @steve21168. Pull Request: [#98](https://github.com/elastic/elastic-transport-ruby/pull/98)
+
 ## 8.3.5
 
 - Small updates in source code documentation.
