@@ -25,8 +25,8 @@ if defined?(::OpenTelemetry)
     let(:span) { exporter.finished_spans[0] }
 
     let(:client) do
-      Elastic::Transport::Client.new(hosts: ELASTICSEARCH_HOSTS).tap do |_client|
-        allow(_client).to receive(:__build_connections)
+      Elastic::Transport::Client.new(hosts: ELASTICSEARCH_HOSTS).tap do |client|
+        allow(client).to receive(:__build_connections)
       end
     end
 
@@ -36,7 +36,8 @@ if defined?(::OpenTelemetry)
       let(:tracer_provider) do
         double('tracer_provider').tap do |tp|
           expect(tp).to receive(:tracer).with(
-            Elastic::Transport::OpenTelemetry::OTEL_TRACER_NAME, Elastic::Transport::VERSION
+            Elastic::Transport::OpenTelemetry::OTEL_TRACER_NAME,
+            Elastic::Transport::VERSION
           )
         end
       end
@@ -59,7 +60,7 @@ if defined?(::OpenTelemetry)
       it 'creates a span with path parameters' do
         client.perform_request(
           'POST', '/users/_create/abc', nil, { name: 'otel-test' }, nil,
-          defined_params: {'index' => 'users', 'id' => 'abc'}, endpoint: 'create'
+          defined_params: { 'index' => 'users', 'id' => 'abc' }, endpoint: 'create'
         )
 
         span = exporter.finished_spans.find { |s| s.name == 'create' }
@@ -96,7 +97,7 @@ if defined?(::OpenTelemetry)
 
     context 'when a request is instrumented' do
       let(:body) do
-        { query: { match: { password: { query: 'secret'} } } }
+        { query: { match: { password: { query: 'secret' } } } }
       end
 
       it 'creates a span and omits db.statement' do
@@ -214,9 +215,9 @@ if defined?(::OpenTelemetry)
 
         around(:example) do |ex|
           body_strategy = ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]
-          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]  = 'omit'
+          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY] = 'omit'
           ex.run
-          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY] = body_strategy
+          ENV[described_class::ENV_VARIABLE_BODY_STRATEGY]= body_strategy
         end
 
         it 'does not include anything' do
@@ -308,11 +309,11 @@ if defined?(::OpenTelemetry)
           let(:key_patterns) { [/something/] }
 
           let(:body) do
-            { query: { match: { something: "test" } } }
+            { query: { match: { something: 'test' } } }
           end
 
           let(:expected_body) do
-            { query: { match: { something: "REDACTED" } } }
+            { query: { match: { something: 'REDACTED' } } }
           end
 
           it 'redacts sensitive values' do

@@ -155,7 +155,6 @@ module Elastic
             "<#{self.class.name} host: #{host} (#{dead? ? 'dead since ' + dead_since.to_s : 'alive'})>"
           end
         end
-
       end
     end
   end
