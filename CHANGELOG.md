@@ -1,3 +1,8 @@
+## 8.4.1
+
+- Moves `require 'timeout'` to the classes that use it. Closed [#79](https://github.com/elastic/elastic-transport-ruby/issues/79).
+- Sanitize url on OTEL spans, thanks @steve21168. Pull Request: [#98](https://github.com/elastic/elastic-transport-ruby/pull/98)
+
 ## 8.4.0
 
 - Adds support for **[Excon](https://github.com/excon/excon)** Faraday adapter. You can use the Excon adapter by setting it in when initializing an Elasticsearch client:
