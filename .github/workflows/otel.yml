@@ -16,8 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.4', 'jruby-9.4']
-        es_version: ['9.2.0-SNAPSHOT']
+        ruby: ['4.0', 'jruby-9.4']
+        es_version: ['9.3.0-SNAPSHOT']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
