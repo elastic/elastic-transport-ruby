@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Licensed to Elasticsearch B.V. under one or more contributor
 # license agreements. See the NOTICE file distributed with
 # this work for additional information regarding copyright
@@ -59,78 +61,78 @@ if JRUBY
 
               should 'perform the request' do
                 @transport.connections.first.connection.expects(:get).returns(stub_everything)
-                response = @transport.perform_request('GET', '/')
+                @transport.perform_request('GET', '/')
               end
 
               should 'set body for GET request' do
                 @transport.connections.first.connection.expects(:get)
-                  .with(
-                    'http://127.0.0.1:8080/',
-                    {
-                      body: '{"foo":"bar"}',
-                      headers: common_headers
-                    }
-                  ).returns(stub_everything)
+                          .with(
+                            'http://127.0.0.1:8080/',
+                            {
+                              body: '{"foo":"bar"}',
+                              headers: common_headers
+                            }
+                          ).returns(stub_everything)
                 @transport.perform_request 'GET', '/', {}, '{"foo":"bar"}'
               end
 
               should 'set body for PUT request' do
                 @transport.connections.first.connection.expects(:put)
-                  .with(
-                    'http://127.0.0.1:8080/',
-                    {
-                      body: '{"foo":"bar"}',
-                      headers: {
-                        'Content-Type' => 'application/json',
-                        'User-Agent' => @transport.send(:user_agent_header)
-                      }
-                    }
-                  ).returns(stub_everything)
+                          .with(
+                            'http://127.0.0.1:8080/',
+                            {
+                              body: '{"foo":"bar"}',
+                              headers: {
+                                'Content-Type' => 'application/json',
+                                'User-Agent' => @transport.send(:user_agent_header)
+                              }
+                            }
+                          ).returns(stub_everything)
                 @transport.perform_request 'PUT', '/', {}, { foo: 'bar' }
               end
 
               should 'serialize the request body' do
                 @transport.connections.first.connection.expects(:post)
-                  .with(
-                    'http://127.0.0.1:8080/',
-                    {
-                      body: '{"foo":"bar"}',
-                      headers: {
-                        'Content-Type' => 'application/json',
-                        'User-Agent' => @transport.send(:user_agent_header)
-                      }
-                    }
-                  ).returns(stub_everything)
+                          .with(
+                            'http://127.0.0.1:8080/',
+                            {
+                              body: '{"foo":"bar"}',
+                              headers: {
+                                'Content-Type' => 'application/json',
+                                'User-Agent' => @transport.send(:user_agent_header)
+                              }
+                            }
+                          ).returns(stub_everything)
                 @transport.perform_request 'POST', '/', {}, { 'foo' => 'bar' }
               end
 
               should 'set custom headers for PUT request' do
                 @transport.connections.first.connection.expects(:put)
-                  .with(
-                    'http://127.0.0.1:8080/',
-                    {
-                      body: '{"foo":"bar"}',
-                      headers: {
-                        'Content-Type' => 'application/x-ndjson',
-                        'User-Agent' => @transport.send(:user_agent_header)
-                      }
-                    }
-                  ).returns(stub_everything)
+                          .with(
+                            'http://127.0.0.1:8080/',
+                            {
+                              body: '{"foo":"bar"}',
+                              headers: {
+                                'Content-Type' => 'application/x-ndjson',
+                                'User-Agent' => @transport.send(:user_agent_header)
+                              }
+                            }
+                          ).returns(stub_everything)
                 @transport.perform_request 'PUT', '/', {}, '{"foo":"bar"}', { 'Content-Type' => 'application/x-ndjson' }
               end
 
               should 'not serialize a String request body' do
                 @transport.connections.first.connection.expects(:post)
-                  .with(
-                    'http://127.0.0.1:8080/',
-                    {
-                      body: '{"foo":"bar"}',
-                      headers: {
-                        'Content-Type' => 'application/json',
-                        'User-Agent' => @transport.send(:user_agent_header)
-                      }
-                    }
-                  ).returns(stub_everything)
+                          .with(
+                            'http://127.0.0.1:8080/',
+                            {
+                              body: '{"foo":"bar"}',
+                              headers: {
+                                'Content-Type' => 'application/json',
+                                'User-Agent' => @transport.send(:user_agent_header)
+                              }
+                            }
+                          ).returns(stub_everything)
                 @transport.serializer.expects(:dump).never
                 @transport.perform_request 'POST', '/', {}, '{"foo":"bar"}'
               end
@@ -171,11 +173,22 @@ if JRUBY
               end
 
               should 'handle HTTP methods' do
-                @transport.connections.first.connection.expects(:delete).with('http://127.0.0.1:8080/', { headers: common_headers }).returns(stub_everything)
-                @transport.connections.first.connection.expects(:head).with('http://127.0.0.1:8080/', { headers: common_headers }).returns(stub_everything)
-                @transport.connections.first.connection.expects(:get).with('http://127.0.0.1:8080/', { headers: common_headers }).returns(stub_everything)
-                @transport.connections.first.connection.expects(:put).with('http://127.0.0.1:8080/', { headers: common_headers }).returns(stub_everything)
-                @transport.connections.first.connection.expects(:post).with('http://127.0.0.1:8080/', { headers: common_headers }).returns(stub_everything)
+                @transport.connections.first.connection.expects(:delete).with(
+                  'http://127.0.0.1:8080/', { headers: common_headers }
+                ).returns(stub_everything)
+                @transport.connections.first.connection.expects(:head).with(
+                  'http://127.0.0.1:8080/', { headers: common_headers }
+                ).returns(stub_everything)
+                @transport.connections.first.connection.expects(:get).with(
+                  'http://127.0.0.1:8080/', { headers: common_headers }
+                ).returns(stub_everything)
+                @transport.connections.first.connection.expects(:put).with(
+                  'http://127.0.0.1:8080/', { headers: common_headers }
+                ).returns(stub_everything)
+                @transport.connections.first.connection.expects(:post).with(
+                  'http://127.0.0.1:8080/',
+                  { headers: common_headers }
+                ).returns(stub_everything)
 
                 %w[HEAD GET PUT POST DELETE].each { |method| @transport.perform_request method, '/' }
 
@@ -185,13 +198,11 @@ if JRUBY
               should 'allow to set options for Manticore' do
                 options = { headers: { 'User-Agent' => 'myapp-0.0' } }
                 transport = Manticore.new(hosts: [{ host: 'foobar', port: 1234 }], options: options)
-                transport.connections.first.connection
-                  .expects(:get)
-                  .with do |_host, _options|
-                  assert_equal 'myapp-0.0', _options[:headers]['User-Agent']
+                connection = transport.connections.first.connection
+                connection.expects(:get).with do |_host, inoptions|
+                  assert_equal 'myapp-0.0', inoptions[:headers]['User-Agent']
                   true
-                end
-                  .returns(stub_everything)
+                end.returns(stub_everything)
 
                 transport.perform_request 'GET', '/', {}
               end
@@ -206,7 +217,7 @@ if JRUBY
                 }
 
                 ::Manticore::Client.expects(:new).with(options)
-                transport = Manticore.new hosts: [{ host: 'foobar', port: 1234 }], options: options
+                Manticore.new(hosts: [{ host: 'foobar', port: 1234 }], options: options)
               end
 
               should 'pass :transport_options to Manticore::Client' do

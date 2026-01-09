@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Licensed to Elasticsearch B.V. under one or more contributor
 # license agreements. See the NOTICE file distributed with
 # this work for additional information regarding copyright
@@ -17,88 +19,96 @@
 
 require 'test_helper'
 
-class Elastic::Transport::ClientAdaptersUnitTest < Minitest::Test
-  context 'Adapters' do
-    setup do
-      begin
-        Object.send(:remove_const, :Patron)
-      rescue NameError
-      end
-    end
+module Elastic
+  module Transport
+    class ClientAdaptersUnitTest < Minitest::Test
+      unless jruby?
+        context 'Adapters' do
+          setup do
+            Object.send(:remove_const, :Patron)
+          rescue NameError
+          end
 
-    should 'use the default Faraday adapter' do
-      fork do
-        client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::NetHttp)
-      end
-    end
+          should 'use the default Faraday adapter' do
+            fork do
+              client = Elastic::Transport::Client.new
+              assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::NetHttp)
+            end
+          end
 
-    should 'use Patron Faraday adapter' do
-      fork do
-        if is_faraday_v2?
-          require 'faraday/patron'
-        else
-          require 'patron'
+          should 'use Patron Faraday adapter' do
+            fork do
+              if is_faraday_v2?
+                require 'faraday/patron'
+              else
+                require 'patron'
+              end
+
+              client = Elastic::Transport::Client.new
+              assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Patron)
+            end
+          end
+
+          should 'use Typhoeus Faraday adapter' do
+            fork do
+              if is_faraday_v2?
+                require 'faraday/typhoeus'
+              else
+                require 'typhoeus'
+              end
+
+              client = Elastic::Transport::Client.new
+              assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Typhoeus)
+            end
+          end
+
+          should 'use NetHttpPersistent Faraday adapter' do
+            fork do
+              if is_faraday_v2?
+                require 'faraday/net_http_persistent'
+              else
+                require 'net/http/persistent'
+              end
+
+              client = Elastic::Transport::Client.new
+              assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::NetHttpPersistent)
+            end
+          end
+
+          if is_faraday_v2?
+            should 'use Excon Faraday adapter' do
+              fork do
+                require 'faraday/excon'
+                client = Elastic::Transport::Client.new
+                assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Excon)
+              end
+            end
+          end
+
+          if is_faraday_v2?
+            should 'use Async HTTP Faraday adapter' do
+              fork do
+                require 'async/http/faraday'
+                client = Elastic::Transport::Client.new
+                assert_equal(client.transport.connections.first.connection.adapter, Async::HTTP::Faraday::Adapter)
+              end
+            end
+          end
+
+          should 'use HTTPClient Faraday adapter' do
+            fork do
+              if is_faraday_v2?
+                require 'faraday/httpclient'
+              else
+                require 'httpclient'
+              end
+
+              client = Elastic::Transport::Client.new
+              assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::HTTPClient)
+            end
+          end
         end
-
-        client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Patron)
       end
     end
-
-    should 'use Typhoeus Faraday adapter' do
-      fork do
-        if is_faraday_v2?
-          require 'faraday/typhoeus'
-        else
-          require 'typhoeus'
-        end
-
-        client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Typhoeus)
-      end
-    end
-
-    should 'use NetHttpPersistent Faraday adapter' do
-      fork do
-        if is_faraday_v2?
-          require 'faraday/net_http_persistent'
-        else
-          require 'net/http/persistent'
-        end
-
-        client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::NetHttpPersistent)
-      end
-    end
-
-    should 'use Excon Faraday adapter' do
-      fork do
-        require 'faraday/excon'
-        client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::Excon)
-      end
-    end if is_faraday_v2?
-
-    should 'use Async HTTP Faraday adapter' do
-      fork do
-        require 'async/http/faraday'
-        client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Async::HTTP::Faraday::Adapter)
-      end
-    end if is_faraday_v2?
-
-    should 'use HTTPClient Faraday adapter' do
-      fork do
-        if is_faraday_v2?
-          require 'faraday/httpclient'
-        else
-          require 'httpclient'
-        end
-
-        client = Elastic::Transport::Client.new
-        assert_equal(client.transport.connections.first.connection.adapter, Faraday::Adapter::HTTPClient)
-      end
-    end
-  end unless jruby?
+  end
 end
