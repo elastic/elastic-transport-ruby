@@ -33,7 +33,7 @@ group :development, :test do
     gem 'async-http-faraday'
     gem 'faraday-patron'
     gem 'oj'
-    gem 'pry-byebug'
+    gem 'debug'
   end
   gem 'rspec'
 end
