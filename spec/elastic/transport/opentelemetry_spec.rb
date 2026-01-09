@@ -324,7 +324,7 @@ if defined?(::OpenTelemetry)
 
       context 'sanitize in URL' do
         let(:client) {
-          Elastic::Transport::Client.new(host: 'http://elastic:changeme@localhost:9250')
+          Elastic::Transport::Client.new(host: "http://elastic:changeme@#{ELASTICSEARCH_HOSTS.first}")
         }
 
         it 'sanitizes URL' do
@@ -334,7 +334,7 @@ if defined?(::OpenTelemetry)
 
           span = exporter.finished_spans.find { |s| s.name == 'GET' }
           expect(span.name).to eql('GET')
-          expect(span.attributes['url.full']).to match(/http:\/\/elastic:\*+@localhost:9250/)
+          expect(span.attributes['url.full']).to match(/http:\/\/elastic:\*+@localhost:/)
         end
       end
     end
