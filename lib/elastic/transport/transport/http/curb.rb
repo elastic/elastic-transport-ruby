@@ -44,13 +44,7 @@ module Elastic
                 connection.connection.set :nobody, false
                 connection.connection.put_data = body if body
 
-                if headers
-                  if connection.connection.headers
-                    connection.connection.headers.merge!(headers)
-                  else
-                    connection.connection.headers = headers
-                  end
-                end
+                parse_headers!(headers, connection)
               else raise ArgumentError, "Unsupported HTTP method: #{method}"
               end
 
@@ -65,6 +59,18 @@ module Elastic
                 decompress_response(connection.connection.body_str),
                 response_headers
               )
+            end
+          end
+
+          # Merges headers already present in the connection and the ones passed in to perform_request
+          #
+          def parse_headers!(headers, connection)
+            return unless headers
+
+            if connection.connection.headers
+              connection.connection.headers.merge!(headers)
+            else
+              connection.connection.headers = headers
             end
           end
 
