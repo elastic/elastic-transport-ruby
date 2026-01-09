@@ -69,7 +69,7 @@ class Elastic::Transport::Transport::Connections::ConnectionTest < Minitest::Tes
 
     should 'not be dead by default' do
       c = Connection.new
-      assert ! c.dead?
+      assert !c.dead?
     end
 
     should 'be dead when marked' do
@@ -86,7 +86,7 @@ class Elastic::Transport::Transport::Connections::ConnectionTest < Minitest::Tes
       assert_in_delta c.dead_since, Time.now, 1
 
       c.alive!
-      assert ! c.dead?
+      assert !c.dead?
       assert_equal 1, c.failures
     end
 
@@ -97,7 +97,7 @@ class Elastic::Transport::Transport::Connections::ConnectionTest < Minitest::Tes
       assert_in_delta c.dead_since, Time.now, 1
 
       c.healthy!
-      assert ! c.dead?
+      assert !c.dead?
       assert_equal 0, c.failures
     end
 
@@ -117,8 +117,8 @@ class Elastic::Transport::Transport::Connections::ConnectionTest < Minitest::Tes
       now = Time.now + 60 * 2
       Time.stubs(:now).returns(now)
 
-      assert   c.resurrect!, c.inspect
-      assert ! c.dead?,      c.inspect
+      assert c.resurrect!, c.inspect
+      assert !c.dead?, c.inspect
     end
 
     should 'implement the equality operator' do
