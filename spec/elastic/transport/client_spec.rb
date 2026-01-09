@@ -134,7 +134,6 @@ describe Elastic::Transport::Client do
     end
 
     context 'when a User-Agent header is specified as a client option' do
-
       let(:client) do
         described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'User-Agent' => 'testing' } })
@@ -1619,7 +1618,7 @@ describe Elastic::Transport::Client do
       context 'when an invalid url is specified' do
         it 'raises an exception' do
           expect {
-            client.perform_request('GET', 'myindex/_doc/1?routing=FOOBARBAZ')
+            client.perform_request('GET', 'myindex/_doc/42?routing=FOOBARBAZ')
           }.to raise_exception(Elastic::Transport::Transport::Errors::NotFound)
         end
       end

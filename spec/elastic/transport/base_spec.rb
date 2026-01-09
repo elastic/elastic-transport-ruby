@@ -137,7 +137,7 @@ describe Elastic::Transport::Transport::Base do
 
       it 'retries on 404 status the specified number of max_retries' do
         expect do
-          client.transport.perform_request('GET', 'myindex/_doc/1?routing=FOOBARBAZ', {}, nil, nil, retry_on_failure: 5)
+          client.transport.perform_request('GET', 'myindex/_doc/42?routing=FOOBARBAZ', {}, nil, nil, retry_on_failure: 5)
         end.to raise_exception(Elastic::Transport::Transport::Errors::NotFound)
       end
     end
