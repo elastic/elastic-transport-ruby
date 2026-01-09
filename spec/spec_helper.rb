@@ -26,7 +26,6 @@ if defined?(JRUBY_VERSION)
   require 'elastic/transport/transport/http/manticore'
   require 'pry-nav'
 else
-  require 'pry-byebug'
   require 'elastic/transport/transport/http/curb'
   require 'curb'
 end

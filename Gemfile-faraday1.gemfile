@@ -33,7 +33,7 @@ group :development, :test do
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
   else
-    gem 'pry-byebug'
+    gem 'debug'
     gem 'oj'
     gem 'patron'
   end
