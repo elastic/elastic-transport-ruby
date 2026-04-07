@@ -74,6 +74,7 @@ if defined?(::OpenTelemetry)
         expect(span.attributes['server.address']).to eq('localhost')
         expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
         expect(span.attributes['kind']).to eq('CLIENT')
+        expect(span.attributes['db.response.status_code']).to eq(201)
       end
 
       context 'with list a path parameter' do
@@ -93,6 +94,7 @@ if defined?(::OpenTelemetry)
           expect(span.attributes['server.address']).to eq('localhost')
           expect(span.attributes['server.port']).to eq(TEST_PORT.to_i)
           expect(span.attributes['kind']).to eq('CLIENT')
+          expect(span.attributes['db.response.status_code']).to eq(200)
         end
       end
     end
