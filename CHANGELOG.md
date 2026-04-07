@@ -1,3 +1,13 @@
+## 8.5.0
+
+* OpenTelemetry:
+  * Updates OpenTelemetry conventions
+  * Updates code to capture `error.type` and `status_code` in OpenTelemetry.
+  * Captures ES|QL queries as SEARCH endpoints.
+* Tested Ruby versions for elastic-transport `8.5.0`:
+  * MRI: `3.2`, `3.3`, `3.4`, `4.0`.
+  * JRuby: `9.3`, `9.4`, `10.0`.
+
 ## 8.4.1
 
 - Moves `require 'timeout'` to the classes that use it. Closed [#79](https://github.com/elastic/elastic-transport-ruby/issues/79).
