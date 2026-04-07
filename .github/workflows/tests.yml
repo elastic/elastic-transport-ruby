@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ['3.2', '3.3', '3.4', '4.0', 'jruby-9.3', 'jruby-9.4', 'jruby-10.0']
-        es_version: ['8.18.8-SNAPSHOT', '8.19.10-SNAPSHOT', '9.1.10-SNAPSHOT', '9.2.4-SNAPSHOT', '9.3.0-SNAPSHOT']
+        es_version: ['8.19.14-SNAPSHOT', '9.2.8-SNAPSHOT', '9.3.3-SNAPSHOT', '9.4.0-SNAPSHOT']
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -55,7 +55,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ['3.0', '3.1', '3.2', '3.3', 'jruby-9.3']
-        es_version: ['8.19.5-SNAPSHOT']
+        es_version: ['8.19.14-SNAPSHOT']
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
