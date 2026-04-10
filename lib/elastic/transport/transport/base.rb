@@ -371,7 +371,7 @@ module Elastic
           __trace(method, path, params, connection_headers(connection), body, url, response, nil, 'N/A', duration) if tracer
           log_warn(response.headers['warning']) if response.headers&.[]('warning')
 
-          if opentelemetry?
+          if opentelemetry? && response.status
             ::OpenTelemetry::Trace.current_span&.set_attribute('db.response.status_code', response.status)
           end
 
