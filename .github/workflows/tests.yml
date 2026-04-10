@@ -1,11 +1,11 @@
-name: main tests
+name: 8.5 tests
 on:
   push:
     branches:
-      - main
+      - 8.5
   pull_request:
     branches:
-      - main
+      - 8.5
   workflow_dispatch:
 jobs:
   test:
