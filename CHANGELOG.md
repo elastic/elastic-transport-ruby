@@ -1,3 +1,7 @@
+## 8.5.1
+
+- Fixes setting OpenTelemetry response status code only if available.
+
 ## 8.5.0
 
 * OpenTelemetry:
