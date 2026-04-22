@@ -63,7 +63,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'shoulda-context'
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'test-unit', '~> 2'
-  s.add_development_dependency 'yard'
+  s.add_development_dependency 'yard', '> 0.9.42'
 
   s.description = <<-DESC.gsub(/^    /, '')
     Low level Ruby client for Elastic. See the `elasticsearch` or `elastic-enterprise-search` gems for full integration.
