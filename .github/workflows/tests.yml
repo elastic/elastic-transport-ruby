@@ -1,11 +1,11 @@
-name: main tests
+name: 8.4 tests
 on:
   push:
     branches:
-      - main
+      - 8.4
   pull_request:
     branches:
-      - main
+      - 8.4
   workflow_dispatch:
 jobs:
   test:
@@ -16,8 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.2', '3.3', '3.4', 'jruby-9.3', 'jruby-9.4', 'jruby-10.0']
-        es_version: ['8.18.8-SNAPSHOT', '8.19.5-SNAPSHOT', '9.0.8-SNAPSHOT', '9.1.5-SNAPSHOT', '9.2.0-SNAPSHOT']
+        ruby: ['3.2', '3.3', '3.4', '4.0', 'jruby-9.3', 'jruby-9.4', 'jruby-10.0']
+        es_version: ['8.19.14-SNAPSHOT', '9.2.9-SNAPSHOT', '9.3.4-SNAPSHOT', '9.4.0-SNAPSHOT', '9.5.0-SNAPSHOT']
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
