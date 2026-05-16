@@ -37,13 +37,27 @@ module Elastic
           # De-serialize a Hash from JSON string
           #
           def load(string, options = {})
-            ::MultiJson.load(string, options)
+            if deprecated_gem_version_loaded?
+              ::MultiJson.load(string, options)
+            else
+              ::MultiJSON.parse(string, options)
+            end
           end
 
           # Serialize a Hash to JSON string
           #
           def dump(object, options = {})
-            ::MultiJson.dump(object, options)
+            if deprecated_gem_version_loaded?
+              ::MultiJson.dump(object, options)
+            else
+              ::MultiJSON.generate(object, options)
+            end
+          end
+
+          private
+
+          def deprecated_gem_version_loaded?
+            Gem.loaded_specs['multi_json'].version < Gem::Version.create('1.21.0')
           end
         end
       end
