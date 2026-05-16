@@ -21,9 +21,15 @@ class Elastic::Transport::Transport::SerializerTest < Minitest::Test
 
   context "Serializer" do
 
-    should "use MultiJson by default" do
-      ::MultiJson.expects(:load)
-      ::MultiJson.expects(:dump)
+    should "use MultiJSON by default" do
+      if Gem.loaded_specs['multi_json'].version < Gem::Version.create('1.21.0')
+        ::MultiJson.expects(:load)
+        ::MultiJson.expects(:dump)
+      else
+        ::MultiJSON.expects(:parse)
+        ::MultiJSON.expects(:generate)
+      end
+
       Elastic::Transport::Transport::Serializer::MultiJson.new.load('{}')
       Elastic::Transport::Transport::Serializer::MultiJson.new.dump({})
     end
