@@ -20,7 +20,7 @@ jobs:
         es_version: ['8.19.14-SNAPSHOT', '9.2.9-SNAPSHOT', '9.3.4-SNAPSHOT', '9.4.0-SNAPSHOT', '9.5.0-SNAPSHOT']
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Increase system limits
       run: |
         sudo swapoff -a
