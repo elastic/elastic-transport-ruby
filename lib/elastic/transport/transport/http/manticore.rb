@@ -64,11 +64,10 @@ module Elastic
 
           def initialize(arguments = {}, &block)
             @request_options = {
-              headers: (
+              headers:
                 arguments.dig(:transport_options, :headers) ||
                 arguments.dig(:options, :transport_options, :headers) ||
                 {}
-              )
             }
             @manticore = build_client(arguments[:options] || {})
             super(arguments, &block)
@@ -78,7 +77,6 @@ module Elastic
           def build_client(options = {})
             client_options = options[:transport_options] || {}
             client_options[:ssl] = options[:ssl] || {}
-
             @manticore = ::Manticore::Client.new(client_options)
           end
 
@@ -169,7 +167,12 @@ module Elastic
 
           def apply_headers(options)
             headers = options[:headers].clone || options.dig(:transport_options, :headers).clone || {}
-            headers[CONTENT_TYPE_STR] = find_value(headers, CONTENT_TYPE_REGEX) || DEFAULT_CONTENT_TYPE
+            if (value = find_value(headers, CONTENT_TYPE_REGEX))
+              @request_options[:headers].reject! { |k, _| k.match? CONTENT_TYPE_REGEX }
+              headers[CONTENT_TYPE_STR] = value
+            else
+              headers[CONTENT_TYPE_STR] = DEFAULT_CONTENT_TYPE
+            end
             headers[USER_AGENT_STR] = find_value(headers, USER_AGENT_REGEX) || find_value(@request_options[:headers], USER_AGENT_REGEX) || user_agent_header
             headers[ACCEPT_ENCODING] = GZIP if use_compression?
             @request_options[:headers].merge!(headers)
