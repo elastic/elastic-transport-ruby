@@ -396,7 +396,7 @@ module Elastic
         ACCEPT_ENCODING = 'Accept-Encoding'.freeze
         CONTENT_ENCODING = 'Content-Encoding'.freeze
         CONTENT_TYPE_STR = 'Content-Type'.freeze
-        CONTENT_TYPE_REGEX = /content-?_?type/.freeze
+        CONTENT_TYPE_REGEX = /content-?_?type/i.freeze
         DEFAULT_CONTENT_TYPE = 'application/json'.freeze
         GZIP = 'gzip'.freeze
         GZIP_FIRST_TWO_BYTES = '1f8b'.freeze
