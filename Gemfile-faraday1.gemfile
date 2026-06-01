@@ -31,10 +31,13 @@ group :development, :test do
   gem 'rspec'
   gem 'typhoeus'
   if defined?(JRUBY_VERSION)
+    gem 'manticore', platform: :jruby
     gem 'pry-nav'
   else
-    gem 'pry-byebug'
+    gem 'curb'
+    gem 'debug'
     gem 'oj'
     gem 'patron'
+    gem 'pry-byebug'
   end
 end
