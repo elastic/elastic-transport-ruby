@@ -118,7 +118,6 @@ module Elastic
           #
           def __build_connections
             apply_headers(options)
-
             Connections::Collection.new(
               connections: hosts.map do |host|
                 host[:protocol] = host[:scheme] || DEFAULT_PROTOCOL
