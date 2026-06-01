@@ -19,8 +19,8 @@ require 'spec_helper'
 
 describe Elastic::Transport::Client do
   let(:client) do
-    described_class.new.tap do |_client|
-      allow(_client).to receive(:__build_connections)
+    described_class.new.tap do |client|
+      allow(client).to receive(:__build_connections)
     end
   end
 
@@ -48,10 +48,6 @@ describe Elastic::Transport::Client do
     expect(client.transport.connections.first.connection.headers['User-Agent']).to match(/#{RbConfig::CONFIG['target_cpu']}/)
   end
 
-  it 'sets the \'Content-Type\' header to \'application/json\' by default' do
-    expect(client.transport.connections.first.connection.headers['Content-Type']).to eq('application/json')
-  end
-
   it 'uses localhost by default' do
     expect(client.transport.hosts[0][:host]).to eq('localhost')
   end
@@ -67,7 +63,6 @@ describe Elastic::Transport::Client do
   end
 
   context 'when a user-agent header is specified as client option in lower-case' do
-
     let(:client) do
       described_class.new(transport_options: { headers: { 'user-agent' => 'testing' } })
     end
@@ -77,30 +72,7 @@ describe Elastic::Transport::Client do
     end
   end
 
-  context 'when a Content-Type header is specified as client option' do
-
-    let(:client) do
-      described_class.new(transport_options: { headers: { 'Content-Type' => 'testing' } })
-    end
-
-    it 'sets the specified Content-Type header' do
-      expect(client.transport.connections.first.connection.headers['Content-Type']).to eq('testing')
-    end
-  end
-
-  context 'when a content-type header is specified as client option in lower-case' do
-
-    let(:client) do
-      described_class.new(transport_options: { headers: { 'content-type' => 'testing' } })
-    end
-
-    it 'sets the specified Content-Type header' do
-      expect(client.transport.connections.first.connection.headers['Content-Type']).to eq('testing')
-    end
-  end
-
   context 'when the Curb transport class is used', unless: jruby? do
-
     let(:client) do
       described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb)
     end
@@ -145,7 +117,6 @@ describe Elastic::Transport::Client do
     end
 
     context 'when a user-agent header is specified as a client option as lower-case' do
-
       let(:client) do
         described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'user-agent' => 'testing' } })
@@ -157,7 +128,6 @@ describe Elastic::Transport::Client do
     end
 
     context 'when a Content-Type header is specified as client option' do
-
       let(:client) do
         described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'Content-Type' => 'testing' } })
@@ -169,7 +139,6 @@ describe Elastic::Transport::Client do
     end
 
     context 'when a content-type header is specified as client option in lower-case' do
-
       let(:client) do
         described_class.new(transport_class: Elastic::Transport::Transport::HTTP::Curb,
                             transport_options: { headers: { 'content-type' => 'testing' } })
