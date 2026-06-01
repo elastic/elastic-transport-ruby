@@ -27,10 +27,14 @@ group :development, :test do
   gem 'faraday-typhoeus'
   gem 'mutex_m' if RUBY_VERSION >= '3.4'
   gem 'opentelemetry-sdk', require: false if RUBY_VERSION >= '3.0'
+  gem 'ostruct'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
+    gem 'manticore', platform: :jruby
+    gem 'base64'
   else
     gem 'async-http-faraday'
+    gem 'curb'
     gem 'faraday-patron'
     gem 'oj'
     gem 'debug'
