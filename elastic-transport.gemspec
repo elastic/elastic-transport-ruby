@@ -45,13 +45,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'faraday', '< 3'
   s.add_dependency 'multi_json'
-
-  # Faraday Adapters
-  if defined? JRUBY_VERSION
-    s.add_development_dependency 'manticore'
-    s.add_development_dependency 'base64'
-  end
-  s.add_development_dependency 'curb' unless defined? JRUBY_VERSION
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'cane'
   s.add_development_dependency 'hashie'
