@@ -1,3 +1,11 @@
+## 8.4.2
+
+- Minor refactor to `curb` implementation.
+- Updated `yard` development dependency to `> 0.9.42`.
+- Fix `multi_json` deprecation warnings. Some deprecations [were introduced in `multi_json` 1.21.0](https://github.com/sferik/multi_json/blob/main/CHANGELOG.md#1210). Pull Request: [#112](https://github.com/elastic/elastic-transport-ruby/pull/112).
+- Reduced gem size. Pull Request: [#114](https://github.com/elastic/elastic-transport-ruby/pull/114).
+- Addresses duplicate `content-type` header in Manticore. Pull Request: [#115](https://github.com/elastic/elastic-transport-ruby/pull/115).
+
 ## 8.4.1
 
 - Moves `require 'timeout'` to the classes that use it. Closed [#79](https://github.com/elastic/elastic-transport-ruby/issues/79).
