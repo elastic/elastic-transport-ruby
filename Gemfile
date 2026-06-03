@@ -25,9 +25,13 @@ group :development, :test do
   gem 'faraday-net_http_persistent'
   gem 'faraday-typhoeus'
   gem 'opentelemetry-sdk', require: false if RUBY_VERSION >= '3.0'
+  gem 'ostruct'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
+    gem 'manticore', platform: :jruby
+    gem 'base64'
   else
+    gem 'curb'
     gem 'faraday-patron'
     gem 'oj'
     gem 'pry-byebug'
