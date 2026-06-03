@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 jobs:
   test:
-    name: 'Main tests'
+    name: '8.5 tests'
     env:
       TEST_ES_SERVER: http://localhost:9250
       PORT: 9250
