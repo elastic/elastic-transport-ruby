@@ -356,15 +356,10 @@ module Elastic
           end
 
           if response.body &&
-            !response.body.empty? &&
-            response.headers &&
-            response.headers["content-type"] =~ /json/
-
-            # Prevent Float value from automatically becoming BigDecimal when using Oj
-            load_options = {}
-            load_options[:mode] = :compat if ::MultiJson.adapter.to_s == "MultiJson::Adapters::Oj"
-
-            json = serializer.load(response.body, load_options)
+             !response.body.empty? &&
+             response.headers &&
+             response.headers['content-type'] =~ /json/
+            json = serializer.load(response.body)
           end
           took = (json['took'] ? sprintf('%.3fs', json['took'] / 1000.0) : 'n/a') rescue 'n/a'
           __log_response(method, path, params, body, url, response, json, took, duration) unless ignore.include?(response.status.to_i)
