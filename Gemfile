@@ -36,7 +36,7 @@ group :development, :test do
     gem 'async-http-faraday'
     gem 'curb'
     gem 'faraday-patron'
-    gem 'oj'
+    gem 'oj', '>= 3.17.3', '< 4'
     gem 'debug'
   end
   gem 'rspec'
