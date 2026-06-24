@@ -169,7 +169,7 @@ module Elastic
       def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
         method = @send_get_body_as if method == 'GET' && body
         validate_ca_fingerprints if @ca_fingerprint
-        if @otel
+        if defined?(@otel) && !@otel.nil?
           # If no endpoint is specified in the opts, use the HTTP method name
           span_name = opts[:endpoint] || method
           @otel.tracer.in_span(span_name) do |span|
