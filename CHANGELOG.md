@@ -1,3 +1,9 @@
+## 8.5.3
+
+- Locks oj development dependency to >= 3.17.3 due to CVE
+- Checks if @otel is defined
+- Removes outdated Oj code
+
 ## 8.5.2
 
 - Minor refactor to `curb` implementation.
