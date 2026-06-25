@@ -33,6 +33,7 @@ group :development, :test do
   if defined?(JRUBY_VERSION)
     gem 'manticore', platform: :jruby
     gem 'pry-nav'
+    gem 'base64'
   else
     gem 'curb'
     gem 'debug'
