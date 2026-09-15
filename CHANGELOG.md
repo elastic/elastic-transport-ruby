@@ -1,3 +1,34 @@
+## Unreleased
+
+- Network failures now raise a specific subclass of `Elastic::Transport::Transport::Error` instead of
+  the generic class, so a timeout can be told apart from a refused connection, a DNS failure or a TLS
+  error without matching on the message:
+
+```
+Elastic::Transport::Transport::Error
+└── Errors::NetworkError
+    ├── Errors::ConnectionError
+    │   ├── Errors::HostResolutionError
+    │   └── Errors::SSLError
+    └── Errors::ConnectionTimeout
+```
+
+  The names and their positions follow [elastic-transport-python](https://github.com/elastic/elastic-transport-python):
+  `ConnectionError`, `ConnectionTimeout` as its sibling rather than its subclass, and TLS failures
+  nested under `ConnectionError` (Python calls that one `TlsError`; `SSLError` matches Ruby
+  convention). `NetworkError` has no Python counterpart — Python keeps HTTP status errors in a
+  separate `ApiError` tree, whereas here they share `Transport::Error`, so an intermediate class is
+  what keeps "any network failure" a single rescue.
+
+  `HostResolutionError` is only reported by the Curb and Manticore transports; Faraday surfaces DNS
+  failures as a plain `ConnectionError`. Since it is a subclass, rescuing `ConnectionError` behaves
+  the same on every adapter.
+
+  Existing `rescue Elastic::Transport::Transport::Error` blocks keep catching all of them. The wrapped
+  adapter exception is available through `#original_exception` (and `#cause`), and its backtrace is
+  preserved. Transports map their own exceptions through the new `host_unreachable_exception_map`;
+  `host_unreachable_exceptions` still works and unmapped exceptions fall back to `Errors::NetworkError`.
+
 ## 8.5.1
 
 - Fixes setting OpenTelemetry response status code only if available.

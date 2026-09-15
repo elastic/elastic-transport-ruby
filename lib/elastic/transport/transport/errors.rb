@@ -22,7 +22,16 @@ module Elastic
     module Transport
       # Generic client error
       #
-      class Error < StandardError; end
+      class Error < StandardError
+        # The adapter-level exception this error was built from, when the client
+        # wraps one (see {Errors::NetworkError}). `nil` otherwise.
+        attr_reader :original_exception
+
+        def initialize(message = nil, original_exception = nil)
+          @original_exception = original_exception
+          super(message)
+        end
+      end
 
       # Reloading connections timeout (1 sec by default)
       #
@@ -32,7 +41,22 @@ module Elastic
       #
       class ServerError < Error; end
 
-      module Errors; end
+      module Errors
+        # Raised when the request never produced an HTTP response.
+        class NetworkError < Error; end
+
+        # Error raised by the HTTP connection.
+        class ConnectionError < NetworkError; end
+
+        # DNS lookup for the host failed. Faraday reports it as a ConnectionError.
+        class HostResolutionError < ConnectionError; end
+
+        # Error raised during the TLS handshake.
+        class SSLError < ConnectionError; end
+
+        # The connection timed out during an operation.
+        class ConnectionTimeout < NetworkError; end
+      end
 
       HTTP_STATUSES = {
         300 => 'MultipleChoices',

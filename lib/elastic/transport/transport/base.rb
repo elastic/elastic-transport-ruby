@@ -321,7 +321,7 @@ module Elastic
               reload_connections! and retry
             end
 
-            exception = Elastic::Transport::Transport::Error.new(e.message)
+            exception = __host_unreachable_error(e)
 
             unless max_retries
               capture_otel_error_attributes(exception.message)
@@ -381,10 +381,34 @@ module Elastic
         # @return [Array]
         #
         def host_unreachable_exceptions
-          [Errno::ECONNREFUSED]
+          host_unreachable_exception_map.keys
+        end
+
+        # @abstract Maps the adapter's connection errors to the client's own
+        #           {Errors::NetworkError} hierarchy, so callers can tell a
+        #           timeout from a refused connection without matching on the
+        #           message. Unmapped errors fall back to {Errors::NetworkError}.
+        #
+        # @return [Hash{Class => Class}]
+        #
+        def host_unreachable_exception_map
+          { Errno::ECONNREFUSED => Errors::ConnectionError }
         end
 
         private
+
+        # Wraps an adapter exception in the matching {Errors::NetworkError}
+        # subclass, keeping the original exception and its backtrace.
+        #
+        # @api private
+        #
+        def __host_unreachable_error(exception)
+          map = host_unreachable_exception_map
+          match = exception.class.ancestors.find { |klass| map.key?(klass) }
+          error = (map[match] || Errors::NetworkError).new(exception.message, exception)
+          error.set_backtrace(exception.backtrace) if exception.backtrace
+          error
+        end
 
         USER_AGENT_STR = 'User-Agent'.freeze
         USER_AGENT_REGEX = /user-?_?agent/.freeze

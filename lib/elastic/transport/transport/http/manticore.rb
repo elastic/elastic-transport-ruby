@@ -147,13 +147,14 @@ module Elastic
           #
           # @return [Array]
           #
-          def host_unreachable_exceptions
-            [
-              ::Manticore::Timeout,
-              ::Manticore::SocketException,
-              ::Manticore::ClientProtocolException,
-              ::Manticore::ResolutionFailure
-            ]
+          def host_unreachable_exception_map
+            {
+              ::Manticore::Timeout => Errors::ConnectionTimeout,
+              ::Manticore::SocketException => Errors::ConnectionError,
+              # Covers TLS handshake failures and plain protocol violations alike.
+              ::Manticore::ClientProtocolException => Errors::ConnectionError,
+              ::Manticore::ResolutionFailure => Errors::HostResolutionError
+            }
           end
 
           private

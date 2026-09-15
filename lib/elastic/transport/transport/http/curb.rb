@@ -99,15 +99,15 @@ module Elastic
           #
           # @return [Array]
           #
-          def host_unreachable_exceptions
-            [
-              ::Curl::Err::HostResolutionError,
-              ::Curl::Err::ConnectionFailedError,
-              ::Curl::Err::GotNothingError,
-              ::Curl::Err::RecvError,
-              ::Curl::Err::SendError,
-              ::Curl::Err::TimeoutError
-            ]
+          def host_unreachable_exception_map
+            {
+              ::Curl::Err::HostResolutionError => Errors::HostResolutionError,
+              ::Curl::Err::ConnectionFailedError => Errors::ConnectionError,
+              ::Curl::Err::GotNothingError => Errors::ConnectionError,
+              ::Curl::Err::RecvError => Errors::ConnectionError,
+              ::Curl::Err::SendError => Errors::ConnectionError,
+              ::Curl::Err::TimeoutError => Errors::ConnectionTimeout
+            }
           end
 
           private

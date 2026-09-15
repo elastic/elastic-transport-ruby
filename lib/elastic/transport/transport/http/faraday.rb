@@ -72,13 +72,15 @@ module Elastic
           #
           # @return [Array]
           #
-          def host_unreachable_exceptions
-            [
-              ::Faraday::ConnectionFailed,
-              ::Faraday::TimeoutError,
-              ::Faraday.const_defined?(:ServerError) ? ::Faraday::ServerError : nil,
-              ::Faraday::SSLError
-            ].compact
+          def host_unreachable_exception_map
+            {
+              ::Faraday::ConnectionFailed => Errors::ConnectionError,
+              ::Faraday::TimeoutError => Errors::ConnectionTimeout,
+              ::Faraday::SSLError => Errors::SSLError,
+              # Mapped only so the rescue still covers it: a 5xx is not a network fault.
+              (::Faraday.const_defined?(:ServerError) ? ::Faraday::ServerError : nil) =>
+                Errors::NetworkError
+            }.reject { |adapter_error, _| adapter_error.nil? }
           end
 
           private
