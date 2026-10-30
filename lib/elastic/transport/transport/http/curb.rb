@@ -83,6 +83,11 @@ module Elastic
 
             apply_headers(client, options)
             client.url = __full_url(host)
+            client.cacert = options.dig(:ssl, :ca_file) if options.dig(:ssl, :ca_file)
+            if options.dig(:ssl, :verify) == false
+              client.ssl_verify_peer = false
+              client.ssl_verify_host = 0
+            end
 
             if host[:user]
               client.http_auth_types = host[:auth_type] || :basic

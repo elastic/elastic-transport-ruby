@@ -16,6 +16,7 @@
 # under the License.
 
 require 'elastic/transport/meta_header'
+require 'tempfile'
 
 module Elastic
   module Transport
@@ -117,7 +118,11 @@ module Elastic
       #
       # @option enable_meta_header [Boolean] :enable_meta_header Enable sending the meta data header to Cloud.
       #                                                          (Default: true)
-      # @option ca_fingerprint [String] :ca_fingerprint provide this value to only trust certificates that are signed by a specific CA certificate
+      # @option arguments [String] :ca_fingerprint SHA256 fingerprint of a certificate in the server's chain (usually
+      #   the CA). Before the first request, the matching certificate is fetched from the server and becomes the only
+      #   trusted certificate for every connection. Chain, expiry and host name are still verified unless
+      #   verification is explicitly disabled (e.g. `transport_options: { ssl: { verify: false } }`). Requires https
+      #   hosts and the client-built transport (can't be combined with `:transport`).
       #
       # @yield [faraday] Access and configure the `Faraday::Connection` instance directly with a block
       #
@@ -137,26 +142,20 @@ module Elastic
         @hosts ||= extract_hosts
         @send_get_body_as = @arguments[:send_get_body_as] || 'GET'
         @ca_fingerprint = @arguments.delete(:ca_fingerprint)
+        @ca_pin_mutex = Mutex.new
+        @block = block
 
         if @arguments[:request_timeout]
           @arguments[:transport_options][:request] = { timeout: @arguments[:request_timeout] }
         end
 
         if @arguments[:transport]
+          raise ArgumentError, 'ca_fingerprint can\'t be used with a custom :transport instance' if @ca_fingerprint
+
           @transport = @arguments[:transport]
         else
           @transport_class = @arguments[:transport_class] || DEFAULT_TRANSPORT_CLASS
-          @transport = if @transport_class == Transport::HTTP::Faraday
-                         @arguments[:adapter] ||= auto_detect_adapter
-                         set_meta_header # from include MetaHeader
-                         @transport_class.new(hosts: @hosts, options: @arguments) do |faraday|
-                           faraday.adapter(@arguments[:adapter])
-                           block&.call faraday
-                         end
-                       else
-                         set_meta_header # from include MetaHeader
-                         @transport_class.new(hosts: @hosts, options: @arguments)
-                       end
+          @transport = build_transport
         end
 
         if defined?(::OpenTelemetry) && ENV[OpenTelemetry::ENV_VARIABLE_ENABLED] != 'false'
@@ -168,7 +167,7 @@ module Elastic
       #
       def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
         method = @send_get_body_as if method == 'GET' && body
-        validate_ca_fingerprints if @ca_fingerprint
+        pin_ca_certificate if @ca_fingerprint
         if defined?(@otel) && !@otel.nil?
           # If no endpoint is specified in the opts, use the HTTP method name
           span_name = opts[:endpoint] || method
@@ -196,29 +195,69 @@ module Elastic
 
       private
 
-      def validate_ca_fingerprints
-        transport.connections.connections.each do |connection|
-          unless connection.host[:scheme] == 'https'
+      def build_transport
+        if @transport_class == Transport::HTTP::Faraday
+          @arguments[:adapter] ||= auto_detect_adapter
+          set_meta_header # from include MetaHeader
+          @transport_class.new(hosts: @hosts, options: @arguments) do |faraday|
+            faraday.adapter(@arguments[:adapter])
+            @block&.call faraday
+          end
+        else
+          set_meta_header # from include MetaHeader
+          @transport_class.new(hosts: @hosts, options: @arguments)
+        end
+      end
+
+      # Fetches the certificate matching `ca_fingerprint` from the server's chain and rebuilds the transport with
+      # it as the only trust anchor, so TLS verification on every connection checks the chain, expiry and host
+      # name against the pinned certificate.
+      def pin_ca_certificate
+        @ca_pin_mutex.synchronize do
+          return if @ca_file
+
+          hosts = transport.connections.all.map(&:host)
+          unless hosts.all? { |host| host[:scheme] == 'https' }
             raise Elastic::Transport::Transport::Error, 'CA fingerprinting can\'t be configured over http'
           end
 
-          next if connection.verified
-
-          ctx = OpenSSL::SSL::SSLContext.new
-          socket = TCPSocket.new(connection.host[:host], connection.host[:port])
-          ssl = OpenSSL::SSL::SSLSocket.new(socket, ctx)
-          ssl.connect
-          cert_store = ssl.peer_cert_chain
-          matching_certs = cert_store.select do |cert|
-            OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == @ca_fingerprint.gsub(':', '').upcase
+          fingerprint = @ca_fingerprint.delete(':').upcase
+          ca = peer_cert_chain(hosts.first).find do |cert|
+            OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == fingerprint
           end
-          if matching_certs.empty?
+          unless ca
             raise Elastic::Transport::Transport::Error,
                   'Server certificate CA fingerprint does not match the value configured in ca_fingerprint'
           end
 
-          connection.verified = true
+          store = OpenSSL::X509::Store.new
+          store.flags = OpenSSL::X509::V_FLAG_PARTIAL_CHAIN # the pinned certificate may be an intermediate
+          store.add_cert(ca)
+          # Curb, Manticore and libcurl-based Faraday adapters only accept a CA file
+          ca_file = Tempfile.new(['ca_fingerprint', '.pem'])
+          ca_file.write(ca.to_pem)
+          ca_file.flush
+          @arguments[:transport_options][:ssl] =
+            (@arguments[:transport_options][:ssl] || {}).merge(cert_store: store, ca_file: ca_file.path)
+          @arguments[:ssl] = (@arguments[:ssl] || {}).merge(ca_file: ca_file.path) # Manticore reads top-level :ssl
+          @transport = build_transport
+          @ca_file = ca_file
         end
+      end
+
+      # Reads the server's certificate chain without verifying it, trust comes from the fingerprint match and the
+      # verification done by the rebuilt transport.
+      def peer_cert_chain(host)
+        context = OpenSSL::SSL::SSLContext.new
+        context.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        socket = TCPSocket.new(host[:host], host[:port])
+        ssl = OpenSSL::SSL::SSLSocket.new(socket, context)
+        ssl.hostname = host[:host]
+        ssl.connect
+        ssl.peer_cert_chain
+      ensure
+        ssl&.close
+        socket&.close
       end
 
       def add_header(header)
