@@ -22,6 +22,7 @@ module Elastic
       #
       module Base
         include Loggable
+        include CaFingerprint
 
         DEFAULT_PORT             = 9200
         DEFAULT_PROTOCOL         = 'http'.freeze
@@ -48,6 +49,7 @@ module Elastic
         #
         def initialize(arguments = {}, &block)
           @state_mutex = Mutex.new
+          @ca_pin_mutex = Mutex.new
 
           @hosts       = arguments[:hosts]   || []
           @options     = arguments[:options] || {}
@@ -273,6 +275,7 @@ module Elastic
         def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {}, &block)
           raise NoMethodError, 'Implement this method in your transport class' unless block_given?
 
+          pin_ca_certificate! if options[:ca_fingerprint]
           start = Time.now
           tries = 0
           reload_on_failure = opts.fetch(:reload_on_failure, @options[:reload_on_failure])

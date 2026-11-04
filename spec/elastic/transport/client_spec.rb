@@ -1787,6 +1787,12 @@ describe Elastic::Transport::Client do
             expect(client.perform_request('GET', '/').body).to eq('ok' => true)
           end
 
+          it 'pins the existing transport instead of replacing it' do
+            transport = client.transport
+            client.perform_request('GET', '/')
+            expect(client.transport).to be(transport)
+          end
+
           context 'when the server appends the genuine CA to a leaf it signed itself' do
             let(:attacker_key) { OpenSSL::PKey::EC.generate('prime256v1') }
             let(:server_key) { attacker_key }
