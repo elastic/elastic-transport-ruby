@@ -1823,10 +1823,10 @@ describe Elastic::Transport::Client do
               expect { client.perform_request('GET', '/') }.to raise_error(/does not match the server certificate|no alternative certificate subject name matches/)
             end
 
-            context 'when the user explicitly disables verification' do
-              let(:transport_options) { { ssl: { verify: false } } }
+            context 'when the user turns off host name verification' do
+              let(:transport_options) { { ssl: { verify_hostname: false } } }
 
-              it 'connects' do
+              it 'connects', unless: name == 'Curb' || !::Faraday::SSLOptions.members.include?(:verify_hostname) do
                 expect(client.perform_request('GET', '/').body).to eq('ok' => true)
               end
             end
@@ -1855,6 +1855,24 @@ describe Elastic::Transport::Client do
           expect(ssl.cert_store.verify(leaf)).to be(true)
           expect(ssl.cert_store.verify(build_cert('Other', ca_key))).to be(false)
           expect(File.read(ssl.ca_file)).to eq(ca.to_pem)
+        end
+      end
+    end
+
+    context 'when combined with other trust settings' do
+      [
+        { transport_options: { ssl: { verify: false } } },
+        { transport_options: { ssl: { ca_file: 'ca.pem' } } },
+        { transport_options: { ssl: { ca_path: '/etc/ssl/certs' } } },
+        { transport_options: { ssl: { cert_store: OpenSSL::X509::Store.new } } },
+        { ssl: { verify: :disable } },
+        { ssl: { ca_file: 'ca.pem' } },
+        { ssl: { truststore: 'truststore.jks' } }
+      ].each do |arguments|
+        it "raises an error for #{arguments}" do
+          expect do
+            described_class.new({ host: 'https://localhost:9200', ca_fingerprint: 'test' }.merge(arguments))
+          end.to raise_error(ArgumentError, /ca_fingerprint can't be combined/)
         end
       end
     end

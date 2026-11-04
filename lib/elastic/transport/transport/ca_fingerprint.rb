@@ -30,7 +30,21 @@ module Elastic
       # expiry and host name on every connection.
       #
       module CaFingerprint
+        TRUST_SETTINGS = %i[ca_file ca_path cert_store truststore].freeze
+        VERIFY_OFF = [false, :none, :disable].freeze
+
         private
+
+        # The pinned certificate must be the only trust anchor. Other trust settings would be trusted next to it,
+        # or silently replaced by it, and turning verification off would turn the pin off too.
+        def validate_ca_fingerprint_options!
+          [options[:ssl], options.dig(:transport_options, :ssl)].compact.each do |ssl|
+            if VERIFY_OFF.include?(ssl[:verify]) || TRUST_SETTINGS.any? { |key| ssl.key?(key) }
+              raise ArgumentError,
+                    "ca_fingerprint can't be combined with :verify off or with #{TRUST_SETTINGS.join(', ')}"
+            end
+          end
+        end
 
         def pin_ca_certificate!
           return if @ca_file

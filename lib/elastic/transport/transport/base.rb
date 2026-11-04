@@ -57,6 +57,7 @@ module Elastic
           @options[:retry_on_status] ||= []
           @options[:delay_on_retry]  ||= 0
 
+          validate_ca_fingerprint_options! if @options[:ca_fingerprint]
           @block       = block
           @compression = !!@options[:compression]
           @connections = __build_connections
