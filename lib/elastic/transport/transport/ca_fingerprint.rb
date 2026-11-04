@@ -86,10 +86,19 @@ module Elastic
           end
 
           fingerprint = options[:ca_fingerprint].delete(':').upcase
-          ca = peer_cert_chain(hosts.first).find do |cert|
-            OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == fingerprint
-          end
+          chain = reachable_peer_cert_chain
+          ca = chain.find { |cert| OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == fingerprint }
           ca or raise Error, 'Server certificate CA fingerprint does not match the value configured in ca_fingerprint'
+        end
+
+        # Takes the chain of the first host that answers. Every other host must chain to the same certificate, or
+        # its connections fail verification.
+        def reachable_peer_cert_chain
+          hosts.each_with_index do |host, index|
+            return peer_cert_chain(host)
+          rescue SystemCallError, SocketError, IOError, OpenSSL::SSL::SSLError
+            raise if index == hosts.size - 1
+          end
         end
 
         def peer_cert_chain(host)

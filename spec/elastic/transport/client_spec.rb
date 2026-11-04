@@ -1792,6 +1792,20 @@ describe Elastic::Transport::Client do
             expect(transport_options).not_to have_key(:ssl)
           end
 
+          context 'when the first host is unreachable' do
+            let(:closed_port) { TCPServer.new('127.0.0.1', 0).then { |s| s.addr[1].tap { s.close } } }
+            let(:client) do
+              described_class.new(
+                { hosts: ["https://127.0.0.1:#{closed_port}", url], ca_fingerprint: ca_fingerprint,
+                  retry_on_failure: 1 }.merge(transport_arguments)
+              )
+            end
+
+            it 'fetches the certificate from the next host' do
+              expect(client.perform_request('GET', '/').body).to eq('ok' => true)
+            end
+          end
+
           context 'when the server appends the genuine CA to a leaf that names the CA as its issuer' do
             let(:server_key) { OpenSSL::PKey::EC.generate('prime256v1') }
             let(:server_cert) { build_cert('127.0.0.1', server_key, issuer: ca, issuer_key: server_key, sans: 'IP:127.0.0.1') }
