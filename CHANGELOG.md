@@ -1,7 +1,7 @@
 ## Unreleased
 
 - Fixes `ca_fingerprint` so it secures the connections used for requests. The certificate matching the fingerprint is fetched from the server's chain and used as the only trusted certificate on every connection, with chain, expiry and host name verification left on. Previously the fingerprint was checked on a separate socket and matched any certificate the server sent, without checking that the server's certificate was signed by it.
-  - Don't set `ssl: { verify: false }` together with `ca_fingerprint` anymore: it now turns off all verification, including the pinned certificate. Only set it when you deliberately want to skip TLS checks.
+  - `ca_fingerprint` raises an `ArgumentError` when combined with `verify: false` (or Manticore's `:none`/`:disable`), `ca_file`, `ca_path`, `cert_store` or `truststore`, in `transport_options[:ssl]` or `:ssl`. Remove `verify: false` if you followed the previous docs. If the host name isn't in the certificate, set `verify_hostname: false` (Faraday 2) instead.
   - The Curb transport now reads `ca_file` and `verify: false` from `transport_options[:ssl]`.
   - `ca_fingerprint` raises an `ArgumentError` when combined with a custom `:transport` instance.
   - Removes `Connection#verified`.
