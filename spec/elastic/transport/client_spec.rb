@@ -1792,6 +1792,15 @@ describe Elastic::Transport::Client do
             expect(transport_options).not_to have_key(:ssl)
           end
 
+          context 'when the server appends the genuine CA to a leaf that names the CA as its issuer' do
+            let(:server_key) { OpenSSL::PKey::EC.generate('prime256v1') }
+            let(:server_cert) { build_cert('127.0.0.1', server_key, issuer: ca, issuer_key: server_key, sans: 'IP:127.0.0.1') }
+
+            it 'rejects the connection' do
+              expect { client.perform_request('GET', '/') }.to raise_error(/certificate signature failure/)
+            end
+          end
+
           it 'pins the existing transport instead of replacing it' do
             transport = client.transport
             client.perform_request('GET', '/')
