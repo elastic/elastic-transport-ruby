@@ -61,8 +61,11 @@ module Elastic
             ca_file.write(ca.to_pem)
             ca_file.flush
 
-            transport_options = (options[:transport_options] ||= {})
-            transport_options[:ssl] = (transport_options[:ssl] || {}).merge(cert_store: store, ca_file: ca_file.path)
+            # New hashes, so the caller's option hashes aren't changed
+            transport_options = options[:transport_options] || {}
+            options[:transport_options] = transport_options.merge(
+              ssl: (transport_options[:ssl] || {}).merge(cert_store: store, ca_file: ca_file.path)
+            )
             options[:ssl] = (options[:ssl] || {}).merge(ca_file: ca_file.path) # Manticore reads top-level :ssl
             __rebuild_pinned_connections
             @ca_file = ca_file

@@ -1787,6 +1787,11 @@ describe Elastic::Transport::Client do
             expect(client.perform_request('GET', '/').body).to eq('ok' => true)
           end
 
+          it 'doesn\'t add the pin to the caller\'s options' do
+            client.perform_request('GET', '/')
+            expect(transport_options).not_to have_key(:ssl)
+          end
+
           it 'pins the existing transport instead of replacing it' do
             transport = client.transport
             client.perform_request('GET', '/')
