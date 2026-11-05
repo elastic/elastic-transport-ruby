@@ -1771,11 +1771,13 @@ describe Elastic::Transport::Client do
       let(:url) { "https://127.0.0.1:#{server.addr[1]}" }
       let(:transport_options) { {} }
 
+      # Lambdas, because Curb isn't loaded on JRuby
       {
-        'Faraday (net_http)' => { adapter: :net_http },
-        'Curb' => { transport_class: Elastic::Transport::Transport::HTTP::Curb }
-      }.each do |name, transport_arguments|
+        'Faraday (net_http)' => -> { { adapter: :net_http } },
+        'Curb' => -> { { transport_class: Elastic::Transport::Transport::HTTP::Curb } }
+      }.each do |name, arguments|
         context "with #{name}", unless: name == 'Curb' && jruby? do
+          let(:transport_arguments) { arguments.call }
           let(:client) do
             described_class.new(
               { host: url, ca_fingerprint: ca_fingerprint, transport_options: transport_options }
