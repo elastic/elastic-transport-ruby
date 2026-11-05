@@ -1725,9 +1725,9 @@ describe Elastic::Transport::Client do
         OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase.scan(/../).join(':')
       end
 
-      let(:ca_key) { OpenSSL::PKey::EC.generate('prime256v1') }
+      let(:ca_key) { OpenSSL::PKey::RSA.new(2048) }
       let(:ca) { build_cert('Test CA', ca_key, ca: true) }
-      let(:leaf_key) { OpenSSL::PKey::EC.generate('prime256v1') }
+      let(:leaf_key) { OpenSSL::PKey::RSA.new(2048) }
       let(:leaf) { build_cert('127.0.0.1', leaf_key, issuer: ca, issuer_key: ca_key, sans: 'IP:127.0.0.1') }
       let(:server_cert) { leaf }
       let(:server_key) { leaf_key }
@@ -1809,7 +1809,7 @@ describe Elastic::Transport::Client do
           end
 
           context 'when the server appends the genuine CA to a leaf that names the CA as its issuer' do
-            let(:server_key) { OpenSSL::PKey::EC.generate('prime256v1') }
+            let(:server_key) { OpenSSL::PKey::RSA.new(2048) }
             let(:server_cert) { build_cert('127.0.0.1', server_key, issuer: ca, issuer_key: server_key, sans: 'IP:127.0.0.1') }
 
             it 'rejects the connection' do
@@ -1825,7 +1825,7 @@ describe Elastic::Transport::Client do
           end
 
           context 'when the server appends the genuine CA to a leaf it signed itself' do
-            let(:attacker_key) { OpenSSL::PKey::EC.generate('prime256v1') }
+            let(:attacker_key) { OpenSSL::PKey::RSA.new(2048) }
             let(:server_key) { attacker_key }
             let(:server_cert) { build_cert('127.0.0.1', attacker_key, sans: 'IP:127.0.0.1') }
 
