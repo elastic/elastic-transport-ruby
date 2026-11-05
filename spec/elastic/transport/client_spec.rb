@@ -1708,7 +1708,7 @@ describe Elastic::Transport::Client do
     # On JRuby 9.3, jruby-openssl fails every handshake with this server, including the valid chain ("Invalid ECDH
     # ServerKeyExchange signature").
     context 'when setting a ca_fingerprint against a local TLS server',
-            unless: defined?(JRUBY_VERSION) && JRUBY_VERSION.start_with?('9.3.') do
+            if: !(defined?(JRUBY_VERSION) && JRUBY_VERSION.start_with?('9.3.')) do # `if`, the nested `unless` overrides `unless`
       def build_cert(cn, key, issuer: nil, issuer_key: key, ca: false, sans: nil, not_after: Time.now + 3600)
         cert = OpenSSL::X509::Certificate.new
         cert.version = 2
