@@ -1739,8 +1739,11 @@ describe Elastic::Transport::Client do
           context.cert = server_cert
           context.key = server_key
           context.extra_chain_cert = server_chain
+          # jruby-openssl on JRuby 9.3 fails TLS 1.3 handshakes with itself
+          context.max_version = OpenSSL::SSL::TLS1_2_VERSION if jruby?
         end
       end
+      let(:requests) { [] }
       let!(:server) { TCPServer.new('127.0.0.1', 0) }
 
       let!(:server_thread) do
@@ -1749,6 +1752,8 @@ describe Elastic::Transport::Client do
             Thread.new(server.accept) do |tcp|
               socket = OpenSSL::SSL::SSLSocket.new(tcp, ssl_context)
               socket.accept
+              request_line = socket.gets or next # the certificate fetch closes without a request
+              requests << request_line
               while (line = socket.gets) && line != "\r\n"; end
               socket.write(
                 "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 11\r\n" \
@@ -1766,6 +1771,13 @@ describe Elastic::Transport::Client do
       after do
         server_thread.kill
         server.close
+      end
+
+      # The error and its message depend on the adapter, the platform and the OpenSSL version, so this checks that
+      # no request got through instead. The "trusts a server" example is the control.
+      def expect_rejected(client)
+        expect { client.perform_request('GET', '/') }.to raise_error(StandardError)
+        expect(requests).to be_empty
       end
 
       let(:url) { "https://127.0.0.1:#{server.addr[1]}" }
@@ -1813,8 +1825,7 @@ describe Elastic::Transport::Client do
             let(:server_cert) { build_cert('127.0.0.1', server_key, issuer: ca, issuer_key: server_key, sans: 'IP:127.0.0.1') }
 
             it 'rejects the connection' do
-              # libcurl with OpenSSL 3.0 reports the failed signature check as "EVP lib"
-              expect { client.perform_request('GET', '/') }.to raise_error(/certificate signature failure|EVP lib/)
+              expect_rejected(client)
             end
           end
 
@@ -1830,7 +1841,7 @@ describe Elastic::Transport::Client do
             let(:server_cert) { build_cert('127.0.0.1', attacker_key, sans: 'IP:127.0.0.1') }
 
             it 'rejects the connection' do
-              expect { client.perform_request('GET', '/') }.to raise_error(/self.signed certificate/)
+              expect_rejected(client)
             end
           end
 
@@ -1841,7 +1852,7 @@ describe Elastic::Transport::Client do
             end
 
             it 'rejects the connection' do
-              expect { client.perform_request('GET', '/') }.to raise_error(/certificate has expired/)
+              expect_rejected(client)
             end
           end
 
@@ -1851,7 +1862,7 @@ describe Elastic::Transport::Client do
             end
 
             it 'rejects the connection' do
-              expect { client.perform_request('GET', '/') }.to raise_error(/does not match the server certificate|no alternative certificate subject name matches/)
+              expect_rejected(client)
             end
 
             context 'when the user turns off host name verification' do
