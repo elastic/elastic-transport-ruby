@@ -1935,12 +1935,11 @@ describe Elastic::Transport::Client do
         )
       end
 
-      it 'has unvalidated connections' do
-        allow(client).to receive(:validate_ca_fingerprints) { nil }
+      it 'does not pin a certificate' do
+        expect(client.transport).to_not receive(:pin_ca_certificate!)
         allow(client.transport).to receive(:perform_request) { nil }
 
         client.perform_request('GET', '/')
-        expect(client).to_not have_received(:validate_ca_fingerprints)
       end
     end
   end
