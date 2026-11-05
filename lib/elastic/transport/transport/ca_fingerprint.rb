@@ -54,7 +54,8 @@ module Elastic
 
             ca = fetch_pinned_certificate
             store = OpenSSL::X509::Store.new
-            store.flags = OpenSSL::X509::V_FLAG_PARTIAL_CHAIN # the pinned certificate may be an intermediate
+            # Lets an intermediate be pinned. ponytail: jruby-openssl lacks the flag, so JRuby can only pin a root.
+            store.flags = OpenSSL::X509::V_FLAG_PARTIAL_CHAIN if defined?(OpenSSL::X509::V_FLAG_PARTIAL_CHAIN)
             store.add_cert(ca)
             # Curb, Manticore and libcurl-based Faraday adapters only accept a CA file
             ca_file = Tempfile.new(['ca_fingerprint', '.pem'])
