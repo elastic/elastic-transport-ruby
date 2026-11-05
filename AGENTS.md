@@ -7,6 +7,9 @@
 - Faraday 1 is still supported: `BUNDLE_GEMFILE=Gemfile-faraday1.gemfile bundle exec rake test:faraday1:spec`. Options added in Faraday 2 (for example `ssl: { verify_hostname: }`) raise `NoMethodError` on `Faraday::SSLOptions` in Faraday 1. Run both Gemfiles when you touch Faraday options.
 - CI runs MRI 3.3 to 4.0 and JRuby 9.3 to 10.0. Manticore and its specs only run on JRuby, and Curb doesn't run on JRuby. If you can't run JRuby, say that Manticore is untested.
 - Test TLS behaviour against an in-process `OpenSSL::SSL::SSLServer` with certificates generated in the spec (see "CA Fingerprinting" in `spec/elastic/transport/client_spec.rb`). Don't stub sockets, and don't write certificate files into the working directory.
+- Curb isn't loaded on JRuby. A `HTTP::Curb` reference that runs while a spec file loads (outside `let`/`it`) breaks the whole file there, even when the context is skipped with `unless: jruby?`.
+- TLS error messages depend on the OpenSSL version. CI runs OpenSSL 3.0 (Ubuntu 24.04), and libcurl there reports a bad certificate signature as `EVP lib`, not `certificate signature failure`. Match on more than one message, or check that the request failed rather than the exact text.
+- On `main`, the `jruby-9.4` unit tests already fail with json 3.x + multi_json 1.19 (`ArgumentError` in `JSON.parse`). That failure isn't caused by your change.
 - RSpec output has ANSI colours. Strip them (`sed 's/\x1b\[[0-9;]*m//g'`) before you grep for `^rspec`.
 
 ## Architecture
