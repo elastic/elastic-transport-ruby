@@ -30,6 +30,7 @@ group :development, :test do
   gem 'ostruct'
   if defined?(JRUBY_VERSION)
     gem 'pry-nav'
+    gem 'json', '< 3' if JRUBY_VERSION.start_with?('9.4.')
     gem 'manticore', platform: :jruby
     gem 'base64'
   else
