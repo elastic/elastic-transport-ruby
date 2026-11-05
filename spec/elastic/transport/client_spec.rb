@@ -1705,7 +1705,10 @@ describe Elastic::Transport::Client do
   end
 
   context 'CA Fingerprinting' do
-    context 'when setting a ca_fingerprint against a local TLS server' do
+    # On JRuby 9.3, jruby-openssl fails every handshake with this server, including the valid chain ("Invalid ECDH
+    # ServerKeyExchange signature").
+    context 'when setting a ca_fingerprint against a local TLS server',
+            unless: defined?(JRUBY_VERSION) && JRUBY_VERSION.start_with?('9.3.') do
       def build_cert(cn, key, issuer: nil, issuer_key: key, ca: false, sans: nil, not_after: Time.now + 3600)
         cert = OpenSSL::X509::Certificate.new
         cert.version = 2
@@ -1739,8 +1742,6 @@ describe Elastic::Transport::Client do
           context.cert = server_cert
           context.key = server_key
           context.extra_chain_cert = server_chain
-          # jruby-openssl on JRuby 9.3 fails TLS 1.3 handshakes with itself
-          context.max_version = OpenSSL::SSL::TLS1_2_VERSION if jruby?
         end
       end
       let(:requests) { [] }
