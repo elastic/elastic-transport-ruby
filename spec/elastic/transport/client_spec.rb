@@ -1813,7 +1813,8 @@ describe Elastic::Transport::Client do
             let(:server_cert) { build_cert('127.0.0.1', server_key, issuer: ca, issuer_key: server_key, sans: 'IP:127.0.0.1') }
 
             it 'rejects the connection' do
-              expect { client.perform_request('GET', '/') }.to raise_error(/certificate signature failure/)
+              # libcurl with OpenSSL 3.0 reports the failed signature check as "EVP lib"
+              expect { client.perform_request('GET', '/') }.to raise_error(/certificate signature failure|EVP lib/)
             end
           end
 
