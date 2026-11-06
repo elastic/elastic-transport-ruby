@@ -119,7 +119,8 @@ module Elastic
       #                                                          (Default: true)
       # @option arguments [String] :ca_fingerprint SHA256 fingerprint of a certificate in the server's chain (usually
       #   the CA). Before the first request, the matching certificate is fetched from the server and becomes the only
-      #   trusted certificate for every connection. Chain, expiry and host name are still verified. Requires https
+      #   trusted certificate for every connection. Chain and expiry are verified, host names aren't (except on
+      #   Faraday 1 and Manticore). Requires https
       #   hosts and the client-built transport (can't be combined with `:transport`).
       #
       # @yield [faraday] Access and configure the `Faraday::Connection` instance directly with a block

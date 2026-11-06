@@ -26,8 +26,8 @@ module Elastic
       #
       # Before the first request, the server's certificate chain is fetched once without verification. Only the
       # certificate whose fingerprint matches is kept, so the fetch itself needs no trust. The connections are then
-      # rebuilt with that certificate as their only trusted certificate, and the HTTP library verifies the chain,
-      # expiry and host name on every connection.
+      # rebuilt with that certificate as their only trusted certificate, and the HTTP library verifies the chain and
+      # expiry on every connection. Host names aren't checked where the adapter allows that.
       #
       module CaFingerprint
         TRUST_SETTINGS = %i[ca_file ca_path cert_store truststore].freeze
@@ -62,11 +62,14 @@ module Elastic
             ca_file.write(ca.to_pem)
             ca_file.flush
 
+            pin = { cert_store: store, ca_file: ca_file.path }
+            # The pin is the trust decision, host names add nothing (elastic/security#6842), and clusters reached by
+            # a container service name or IP must work. ponytail: Faraday 1 and Manticore have no host-name-only
+            # switch, so they still check host names.
+            pin[:verify_hostname] = false if !is_a?(HTTP::Faraday) || ::Faraday::SSLOptions.members.include?(:verify_hostname)
             # New hashes, so the caller's option hashes aren't changed
             transport_options = options[:transport_options] || {}
-            options[:transport_options] = transport_options.merge(
-              ssl: (transport_options[:ssl] || {}).merge(cert_store: store, ca_file: ca_file.path)
-            )
+            options[:transport_options] = transport_options.merge(ssl: (transport_options[:ssl] || {}).merge(pin))
             options[:ssl] = (options[:ssl] || {}).merge(ca_file: ca_file.path) # Manticore reads top-level :ssl
             __rebuild_pinned_connections
             @ca_file = ca_file

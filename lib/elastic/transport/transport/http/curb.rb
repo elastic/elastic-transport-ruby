@@ -88,6 +88,7 @@ module Elastic
               client.ssl_verify_peer = false
               client.ssl_verify_host = 0
             end
+            client.ssl_verify_host = 0 if options.dig(:ssl, :verify_hostname) == false
 
             if host[:user]
               client.http_auth_types = host[:auth_type] || :basic

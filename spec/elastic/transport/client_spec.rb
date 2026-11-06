@@ -1857,21 +1857,16 @@ describe Elastic::Transport::Client do
             end
           end
 
+          # Security (elastic/security#6842): the pin is what's trusted, host names add nothing. Connecting by a
+          # container service name or IP that isn't in the certificate's SANs must work.
           context 'when the server certificate does not match the host name' do
             let(:server_cert) do
               build_cert('example.com', leaf_key, issuer: ca, issuer_key: ca_key, sans: 'DNS:example.com')
             end
 
-            it 'rejects the connection' do
-              expect_rejected(client)
-            end
-
-            context 'when the user turns off host name verification' do
-              let(:transport_options) { { ssl: { verify_hostname: false } } }
-
-              it 'connects', unless: name == 'Curb' || !::Faraday::SSLOptions.members.include?(:verify_hostname) do
-                expect(client.perform_request('GET', '/').body).to eq('ok' => true)
-              end
+            it 'connects, because the pin doesn\'t check host names',
+               if: name == 'Curb' || ::Faraday::SSLOptions.members.include?(:verify_hostname) do
+              expect(client.perform_request('GET', '/').body).to eq('ok' => true)
             end
           end
 
