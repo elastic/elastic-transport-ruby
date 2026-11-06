@@ -1705,37 +1705,221 @@ describe Elastic::Transport::Client do
   end
 
   context 'CA Fingerprinting' do
-    context 'when setting a ca_fingerprint' do
-      let(:certificate) do
-        system(
-          'openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=BE/O=Test/CN=Test"' \
-          ' -keyout certificate.key -out certificate.crt',
-          err: File::NULL
-        )
-        OpenSSL::X509::Certificate.new File.read('./certificate.crt')
+    # On JRuby 9.x, jruby-openssl fails every handshake with this server, including the valid chain ("Invalid
+    # CertificateVerify signature", "Invalid ECDH ServerKeyExchange signature"). JRuby 10 passes.
+    context 'when setting a ca_fingerprint against a local TLS server',
+            if: !(defined?(JRUBY_VERSION) && JRUBY_VERSION.start_with?('9.')) do # `if`, the nested `unless` overrides `unless`
+      def build_cert(cn, key, issuer: nil, issuer_key: key, ca: false, sans: nil, not_after: Time.now + 3600)
+        cert = OpenSSL::X509::Certificate.new
+        cert.version = 2
+        cert.serial = rand(2**64)
+        cert.subject = OpenSSL::X509::Name.parse("/CN=#{cn}")
+        cert.issuer = issuer ? issuer.subject : cert.subject
+        cert.public_key = key
+        cert.not_before = Time.now - 7200
+        cert.not_after = not_after
+        extensions = OpenSSL::X509::ExtensionFactory.new
+        cert.add_extension(extensions.create_extension('basicConstraints', ca ? 'CA:TRUE' : 'CA:FALSE', true))
+        cert.add_extension(extensions.create_extension('subjectAltName', sans)) if sans
+        cert.sign(issuer_key, OpenSSL::Digest.new('SHA256'))
       end
 
-      let(:client) do
-        Elastic::Transport::Client.new(
-          host: 'https://elastic:changeme@localhost:9200',
-          ca_fingerprint: OpenSSL::Digest::SHA256.hexdigest(certificate.to_der)
-        )
+      def fingerprint(cert)
+        OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase.scan(/../).join(':')
       end
 
-      it 'validates CA fingerprints on perform request' do
-        expect(client.transport.connections.connections.map(&:verified).uniq).to eq [false]
-        allow(client.transport).to receive(:perform_request) { 'Hello' }
+      let(:ca_key) { OpenSSL::PKey::RSA.new(2048) }
+      let(:ca) { build_cert('Test CA', ca_key, ca: true) }
+      let(:leaf_key) { OpenSSL::PKey::RSA.new(2048) }
+      let(:leaf) { build_cert('127.0.0.1', leaf_key, issuer: ca, issuer_key: ca_key, sans: 'IP:127.0.0.1') }
+      let(:server_cert) { leaf }
+      let(:server_key) { leaf_key }
+      let(:server_chain) { [ca] }
+      let(:ca_fingerprint) { fingerprint(ca) }
 
-        server = double('server').as_null_object
-        allow(TCPSocket).to receive(:new) { server }
-        socket = double('socket')
-        allow(OpenSSL::SSL::SSLSocket).to receive(:new) { socket }
-        allow(socket).to receive(:connect) { nil }
-        allow(socket).to receive(:peer_cert_chain) { [certificate] }
+      let(:ssl_context) do
+        OpenSSL::SSL::SSLContext.new.tap do |context|
+          context.cert = server_cert
+          context.key = server_key
+          context.extra_chain_cert = server_chain
+        end
+      end
+      let(:requests) { [] }
+      let!(:server) { TCPServer.new('127.0.0.1', 0) }
 
-        response = client.perform_request('GET', '/')
-        expect(client.transport.connections.connections.map(&:verified).uniq).to eq [true]
-        expect(response).to eq 'Hello'
+      let!(:server_thread) do
+        Thread.new do
+          loop do
+            Thread.new(server.accept) do |tcp|
+              socket = OpenSSL::SSL::SSLSocket.new(tcp, ssl_context)
+              socket.accept
+              request_line = socket.gets or next # the certificate fetch closes without a request
+              requests << request_line
+              while (line = socket.gets) && line != "\r\n"; end
+              socket.write(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 11\r\n" \
+                "Connection: close\r\n\r\n{\"ok\":true}"
+              )
+            rescue OpenSSL::SSL::SSLError, SystemCallError, IOError
+              # Handshakes rejected by the client end up here
+            ensure
+              tcp.close
+            end
+          end
+        end
+      end
+
+      after do
+        server_thread.kill
+        server.close
+      end
+
+      # The error and its message depend on the adapter, the platform and the OpenSSL version, so this checks that
+      # no request got through instead. The "trusts a server" example is the control.
+      def expect_rejected(client)
+        expect { client.perform_request('GET', '/') }.to raise_error(StandardError)
+        expect(requests).to be_empty
+      end
+
+      let(:url) { "https://127.0.0.1:#{server.addr[1]}" }
+      let(:transport_options) { {} }
+
+      # Lambdas, because Curb isn't loaded on JRuby
+      {
+        'Faraday (net_http)' => -> { { adapter: :net_http } },
+        'Curb' => -> { { transport_class: Elastic::Transport::Transport::HTTP::Curb } }
+      }.each do |name, arguments|
+        context "with #{name}", unless: name == 'Curb' && jruby? do
+          let(:transport_arguments) { arguments.call }
+          let(:client) do
+            described_class.new(
+              { host: url, ca_fingerprint: ca_fingerprint, transport_options: transport_options }
+                .merge(transport_arguments)
+            )
+          end
+
+          it 'trusts a server whose certificate chains to the pinned certificate' do
+            expect(client.perform_request('GET', '/').body).to eq('ok' => true)
+          end
+
+          it 'doesn\'t add the pin to the caller\'s options' do
+            client.perform_request('GET', '/')
+            expect(transport_options).not_to have_key(:ssl)
+          end
+
+          context 'when the first host is unreachable' do
+            let(:closed_port) { TCPServer.new('127.0.0.1', 0).then { |s| s.addr[1].tap { s.close } } }
+            let(:client) do
+              described_class.new(
+                { hosts: ["https://127.0.0.1:#{closed_port}", url], ca_fingerprint: ca_fingerprint,
+                  retry_on_failure: 1 }.merge(transport_arguments)
+              )
+            end
+
+            it 'fetches the certificate from the next host' do
+              expect(client.perform_request('GET', '/').body).to eq('ok' => true)
+            end
+          end
+
+          context 'when the server appends the genuine CA to a leaf that names the CA as its issuer' do
+            let(:server_key) { OpenSSL::PKey::RSA.new(2048) }
+            let(:server_cert) { build_cert('127.0.0.1', server_key, issuer: ca, issuer_key: server_key, sans: 'IP:127.0.0.1') }
+
+            it 'rejects the connection' do
+              expect_rejected(client)
+            end
+          end
+
+          it 'pins the existing transport instead of replacing it' do
+            transport = client.transport
+            client.perform_request('GET', '/')
+            expect(client.transport).to be(transport)
+          end
+
+          context 'when the server appends the genuine CA to a leaf it signed itself' do
+            let(:attacker_key) { OpenSSL::PKey::RSA.new(2048) }
+            let(:server_key) { attacker_key }
+            let(:server_cert) { build_cert('127.0.0.1', attacker_key, sans: 'IP:127.0.0.1') }
+
+            it 'rejects the connection' do
+              expect_rejected(client)
+            end
+          end
+
+          context 'when the server certificate is expired' do
+            let(:server_cert) do
+              build_cert('127.0.0.1', leaf_key, issuer: ca, issuer_key: ca_key, sans: 'IP:127.0.0.1',
+                                                not_after: Time.now - 3600)
+            end
+
+            it 'rejects the connection' do
+              expect_rejected(client)
+            end
+          end
+
+          # Security (elastic/security#6842): the pin is what's trusted, host names add nothing. Connecting by a
+          # container service name or IP that isn't in the certificate's SANs must work.
+          context 'when the server certificate does not match the host name' do
+            let(:server_cert) do
+              build_cert('example.com', leaf_key, issuer: ca, issuer_key: ca_key, sans: 'DNS:example.com')
+            end
+
+            it 'connects, because the pin doesn\'t check host names',
+               if: name == 'Curb' || ::Faraday::SSLOptions.members.include?(:verify_hostname) do
+              expect(client.perform_request('GET', '/').body).to eq('ok' => true)
+            end
+          end
+
+          context 'when the fingerprint does not match any certificate in the chain' do
+            let(:ca_fingerprint) { fingerprint(build_cert('Other CA', ca_key, ca: true)) }
+
+            it 'raises an error' do
+              expect { client.perform_request('GET', '/') }.to raise_error(
+                Elastic::Transport::Transport::Error,
+                /does not match the value configured in ca_fingerprint/
+              )
+            end
+          end
+        end
+      end
+
+      context 'with Faraday' do
+        let(:client) { described_class.new(host: url, ca_fingerprint: ca_fingerprint, adapter: :net_http) }
+
+        it 'passes the pinned certificate as the only trust anchor to the data connection' do
+          client.perform_request('GET', '/')
+          ssl = client.transport.connections.first.connection.ssl
+          expect(ssl.verify?).to be(true)
+          expect(ssl.cert_store.verify(leaf)).to be(true)
+          expect(ssl.cert_store.verify(build_cert('Other', ca_key))).to be(false)
+          expect(File.read(ssl.ca_file)).to eq(ca.to_pem)
+        end
+      end
+    end
+
+    context 'when combined with other trust settings' do
+      [
+        { transport_options: { ssl: { verify: false } } },
+        { transport_options: { ssl: { ca_file: 'ca.pem' } } },
+        { transport_options: { ssl: { ca_path: '/etc/ssl/certs' } } },
+        { transport_options: { ssl: { cert_store: OpenSSL::X509::Store.new } } },
+        { ssl: { verify: :disable } },
+        { ssl: { ca_file: 'ca.pem' } },
+        { ssl: { truststore: 'truststore.jks' } }
+      ].each do |arguments|
+        it "raises an error for #{arguments}" do
+          expect do
+            described_class.new({ host: 'https://localhost:9200', ca_fingerprint: 'test' }.merge(arguments))
+          end.to raise_error(ArgumentError, /ca_fingerprint can't be combined/)
+        end
+      end
+    end
+
+    context 'when passing a custom transport instance' do
+      it 'raises an error because the pinned certificate cannot be applied to it' do
+        expect do
+          Elastic::Transport::Client.new(ca_fingerprint: 'test', transport: double('transport'))
+        end.to raise_error(ArgumentError, /custom :transport/)
       end
     end
 
@@ -1761,12 +1945,11 @@ describe Elastic::Transport::Client do
         )
       end
 
-      it 'has unvalidated connections' do
-        allow(client).to receive(:validate_ca_fingerprints) { nil }
+      it 'does not pin a certificate' do
+        expect(client.transport).to_not receive(:pin_ca_certificate!)
         allow(client.transport).to receive(:perform_request) { nil }
 
         client.perform_request('GET', '/')
-        expect(client).to_not have_received(:validate_ca_fingerprints)
       end
     end
   end

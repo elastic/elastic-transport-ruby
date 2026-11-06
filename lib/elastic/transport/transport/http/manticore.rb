@@ -158,6 +158,12 @@ module Elastic
 
           private
 
+          # The pinned CA file is read when the Manticore::Client is built, so it has to be built again
+          def __rebuild_pinned_connections
+            build_client(options)
+            super
+          end
+
           def parse_headers(headers)
             request_headers = @request_options.fetch(:headers, {})
             headers = request_headers.merge(headers || {})
