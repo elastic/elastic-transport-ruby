@@ -1949,7 +1949,8 @@ describe Elastic::Transport::Client do
 
       it 'does not pin a certificate' do
         expect(client.transport).to_not receive(:pin_ca_certificate!)
-        allow(client.transport).to receive(:perform_request) { nil }
+        allow(client.transport.connections.first.connection).to receive(:run_request)
+          .and_return(double(status: 200, body: '{}', headers: {}))
 
         client.perform_request('GET', '/')
       end

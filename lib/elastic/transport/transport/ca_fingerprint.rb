@@ -18,6 +18,7 @@
 require 'openssl'
 require 'socket'
 require 'tempfile'
+require 'timeout'
 
 module Elastic
   module Transport
@@ -32,6 +33,7 @@ module Elastic
       module CaFingerprint
         TRUST_SETTINGS = %i[ca_file ca_path cert_store truststore].freeze
         VERIFY_OFF = [false, :none, :disable].freeze
+        FETCH_TIMEOUT = 10
 
         private
 
@@ -39,7 +41,8 @@ module Elastic
         # or silently replaced by it, and turning verification off would turn the pin off too.
         def validate_ca_fingerprint_options!
           [options[:ssl], options.dig(:transport_options, :ssl)].compact.each do |ssl|
-            if VERIFY_OFF.include?(ssl[:verify]) || TRUST_SETTINGS.any? { |key| ssl.key?(key) }
+            ssl = ssl.to_h
+            if VERIFY_OFF.include?(ssl[:verify]) || TRUST_SETTINGS.any? { |key| ssl[key] }
               raise ArgumentError,
                     "ca_fingerprint can't be combined with :verify off or with #{TRUST_SETTINGS.join(', ')}"
             end
@@ -57,6 +60,7 @@ module Elastic
             # Lets an intermediate be pinned. ponytail: jruby-openssl lacks the flag, so JRuby can only pin a root.
             store.flags = OpenSSL::X509::V_FLAG_PARTIAL_CHAIN if defined?(OpenSSL::X509::V_FLAG_PARTIAL_CHAIN)
             store.add_cert(ca)
+            # The Tempfile is deleted when garbage collected, so @ca_file keeps a reference to it.
             # Curb, Manticore and libcurl-based Faraday adapters only accept a CA file
             ca_file = Tempfile.new(['ca_fingerprint', '.pem'])
             ca_file.write(ca.to_pem)
@@ -98,20 +102,22 @@ module Elastic
         # Takes the chain of the first host that answers. Every other host must chain to the same certificate, or
         # its connections fail verification.
         def reachable_peer_cert_chain
-          hosts.each_with_index do |host, index|
+          error = nil
+          hosts.each do |host|
             return peer_cert_chain(host)
-          rescue SystemCallError, SocketError, IOError, OpenSSL::SSL::SSLError
-            raise if index == hosts.size - 1
+          rescue SystemCallError, SocketError, IOError, OpenSSL::SSL::SSLError, Timeout::Error => e
+            error = e
           end
+          raise Error, "Couldn't fetch the server certificate for ca_fingerprint: #{error.message}"
         end
 
         def peer_cert_chain(host)
           context = OpenSSL::SSL::SSLContext.new
           context.verify_mode = OpenSSL::SSL::VERIFY_NONE
-          socket = TCPSocket.new(host[:host], host[:port])
+          socket = Socket.tcp(host[:host], host[:port], connect_timeout: FETCH_TIMEOUT)
           ssl = OpenSSL::SSL::SSLSocket.new(socket, context)
           ssl.hostname = host[:host]
-          ssl.connect
+          Timeout.timeout(FETCH_TIMEOUT) { ssl.connect }
           ssl.peer_cert_chain
         ensure
           ssl&.close

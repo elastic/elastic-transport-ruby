@@ -169,6 +169,9 @@ module Elastic
               host[:password] ||= options[:password] || options[:http][:password]
             end
 
+            # Hosts added after the pin (reload, sniffing) would otherwise get no protection
+            raise Error, 'CA fingerprinting can\'t be configured over http' if @ca_file && host[:protocol] != 'https'
+
             __build_connection(host, (options[:transport_options] || {}), @block)
           end
         end

@@ -160,6 +160,7 @@ module Elastic
 
           # The pinned CA file is read when the Manticore::Client is built, so it has to be built again
           def __rebuild_pinned_connections
+            @manticore.close if @manticore.respond_to?(:close)
             build_client(options)
             super
           end

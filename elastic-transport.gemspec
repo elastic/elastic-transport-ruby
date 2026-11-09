@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
     'source_code_uri' => 'https://github.com/elastic/elastic-transport-ruby',
     'bug_tracker_uri' => 'https://github.com/elastic/elastic-transport-ruby/issues'
   }
-  s.files         = Dir['lib/**/*', '*.md', 'LICENSE']
+  s.files         = Dir['lib/**/*', '*.md', 'LICENSE'] - ['AGENTS.md']
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.require_paths = ['lib']
 
