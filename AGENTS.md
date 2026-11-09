@@ -12,6 +12,7 @@
 - jruby-openssl differs from MRI's openssl: no `OpenSSL::X509::V_FLAG_PARTIAL_CHAIN`, no `OpenSSL::PKey::EC.generate` on JRuby 9.3, and on JRuby 9.3 and 9.4 it can't complete a handshake with an in-process `SSLServer` (JRuby 10 can). Use RSA keys in specs and guard optional constants with `defined?`.
 - On `main`, the `jruby-9.4` unit tests already fail with json 3.x + multi_json 1.19 (`ArgumentError` in `JSON.parse`). That failure isn't caused by your change.
 - `spec/elastic/transport/http/faraday_spec.rb` ("when compression enabled") compares gzip output, which contains a timestamp, so it fails now and then when the clock crosses a second. Rerun before you investigate.
+- RSpec `if:`/`unless:` metadata on a nested context or example replaces the same key on an outer context, it doesn't combine with it. Repeat the outer condition, or use the other key.
 - RSpec output has ANSI colours. Strip them (`sed 's/\x1b\[[0-9;]*m//g'`) before you grep for `^rspec`.
 
 ## Architecture
