@@ -1,0 +1,131 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+require 'openssl'
+require 'socket'
+require 'tempfile'
+require 'timeout'
+
+module Elastic
+  module Transport
+    module Transport
+      # Makes the certificate matching the `ca_fingerprint` option the only trust anchor of every connection.
+      #
+      # Before the first request, the server's certificate chain is fetched once without verification. Only the
+      # certificate whose fingerprint matches is kept, so the fetch itself needs no trust. The connections are then
+      # rebuilt with that certificate as their only trusted certificate, and the HTTP library verifies the chain and
+      # expiry on every connection. Host names aren't checked where the adapter allows that.
+      #
+      module CaFingerprint
+        TRUST_SETTINGS = %i[ca_file ca_path cert_store truststore].freeze
+        VERIFY_OFF = [false, :none, :disable].freeze
+        FETCH_TIMEOUT = 10
+
+        private
+
+        # The pinned certificate must be the only trust anchor. Other trust settings would be trusted next to it,
+        # or silently replaced by it, and turning verification off would turn the pin off too.
+        def validate_ca_fingerprint_options!
+          [options[:ssl], options.dig(:transport_options, :ssl)].compact.each do |ssl|
+            ssl = ssl.to_h
+            if VERIFY_OFF.include?(ssl[:verify]) || TRUST_SETTINGS.any? { |key| ssl[key] }
+              raise ArgumentError,
+                    "ca_fingerprint can't be combined with :verify off or with #{TRUST_SETTINGS.join(', ')}"
+            end
+          end
+        end
+
+        def pin_ca_certificate!
+          return if @ca_file
+
+          @ca_pin_mutex.synchronize do
+            return if @ca_file
+
+            ca = fetch_pinned_certificate
+            store = OpenSSL::X509::Store.new
+            # Without PARTIAL_CHAIN, OpenSSL only trusts a chain that ends in a self-signed root in the store. With it,
+            # the pinned certificate is a trust anchor even when it is an intermediate. ponytail: jruby-openssl lacks
+            # the flag, so on JRuby the fingerprint has to be the root CA's.
+            store.flags = OpenSSL::X509::V_FLAG_PARTIAL_CHAIN if defined?(OpenSSL::X509::V_FLAG_PARTIAL_CHAIN)
+            store.add_cert(ca)
+            # The Tempfile is deleted when garbage collected, so @ca_file keeps a reference to it.
+            # Curb, Manticore and libcurl-based Faraday adapters only accept a CA file
+            ca_file = Tempfile.new(['ca_fingerprint', '.pem'])
+            ca_file.write(ca.to_pem)
+            ca_file.flush
+
+            pin = { cert_store: store, ca_file: ca_file.path }
+            # The pin is the trust decision, host names add nothing (elastic/security#6842), and clusters reached by
+            # a container service name or IP must work. ponytail: Faraday 1 and Manticore have no host-name-only
+            # switch, so they still check host names.
+            pin[:verify_hostname] = false if !is_a?(HTTP::Faraday) || ::Faraday::SSLOptions.members.include?(:verify_hostname)
+            # New hashes, so the caller's option hashes aren't changed
+            transport_options = options[:transport_options] || {}
+            options[:transport_options] = transport_options.merge(ssl: (transport_options[:ssl] || {}).merge(pin))
+            options[:ssl] = (options[:ssl] || {}).merge(ca_file: ca_file.path) # Manticore reads top-level :ssl
+            __rebuild_pinned_connections
+            @ca_file = ca_file
+          end
+        end
+
+        # Replaces every connection, so none built before the pin stays in use.
+        def __rebuild_pinned_connections
+          @state_mutex.synchronize do
+            __close_connections
+            @connections = __build_connections
+          end
+        end
+
+        def fetch_pinned_certificate
+          unless hosts.all? { |host| host[:protocol] == 'https' }
+            raise Error, 'CA fingerprinting can\'t be configured over http'
+          end
+
+          fingerprint = options[:ca_fingerprint].delete(':').upcase
+          chain = reachable_peer_cert_chain
+          ca = chain.find { |cert| OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == fingerprint }
+          ca or raise Error, 'Server certificate CA fingerprint does not match the value configured in ca_fingerprint'
+        end
+
+        # Takes the chain of the first host that answers. Every other host must chain to the same certificate, or
+        # its connections fail verification.
+        def reachable_peer_cert_chain
+          error = nil
+          hosts.each do |host|
+            return peer_cert_chain(host)
+          rescue SystemCallError, SocketError, IOError, OpenSSL::SSL::SSLError, Timeout::Error => e
+            error = e
+          end
+          raise Error, "Couldn't fetch the server certificate for ca_fingerprint: #{error.message}"
+        end
+
+        def peer_cert_chain(host)
+          context = OpenSSL::SSL::SSLContext.new
+          context.verify_mode = OpenSSL::SSL::VERIFY_NONE
+          socket = Socket.tcp(host[:host], host[:port], connect_timeout: FETCH_TIMEOUT)
+          ssl = OpenSSL::SSL::SSLSocket.new(socket, context)
+          ssl.hostname = host[:host]
+          Timeout.timeout(FETCH_TIMEOUT) { ssl.connect }
+          ssl.peer_cert_chain
+        ensure
+          ssl&.close
+          socket&.close
+        end
+      end
+    end
+  end
+end

@@ -117,7 +117,11 @@ module Elastic
       #
       # @option enable_meta_header [Boolean] :enable_meta_header Enable sending the meta data header to Cloud.
       #                                                          (Default: true)
-      # @option ca_fingerprint [String] :ca_fingerprint provide this value to only trust certificates that are signed by a specific CA certificate
+      # @option arguments [String] :ca_fingerprint SHA256 fingerprint of a certificate in the server's chain (usually
+      #   the CA). Before the first request, the matching certificate is fetched from the server and becomes the only
+      #   trusted certificate for every connection. Chain and expiry are verified, host names aren't (except on
+      #   Faraday 1 and Manticore). Requires https
+      #   hosts and the client-built transport (can't be combined with `:transport`).
       #
       # @yield [faraday] Access and configure the `Faraday::Connection` instance directly with a block
       #
@@ -136,13 +140,14 @@ module Elastic
 
         @hosts ||= extract_hosts
         @send_get_body_as = @arguments[:send_get_body_as] || 'GET'
-        @ca_fingerprint = @arguments.delete(:ca_fingerprint)
 
         if @arguments[:request_timeout]
           @arguments[:transport_options][:request] = { timeout: @arguments[:request_timeout] }
         end
 
         if @arguments[:transport]
+          raise ArgumentError, 'ca_fingerprint can\'t be used with a custom :transport instance' if @arguments[:ca_fingerprint]
+
           @transport = @arguments[:transport]
         else
           @transport_class = @arguments[:transport_class] || DEFAULT_TRANSPORT_CLASS
@@ -168,7 +173,6 @@ module Elastic
       #
       def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {})
         method = @send_get_body_as if method == 'GET' && body
-        validate_ca_fingerprints if @ca_fingerprint
         if defined?(@otel) && !@otel.nil?
           # If no endpoint is specified in the opts, use the HTTP method name
           span_name = opts[:endpoint] || method
@@ -195,31 +199,6 @@ module Elastic
       end
 
       private
-
-      def validate_ca_fingerprints
-        transport.connections.connections.each do |connection|
-          unless connection.host[:scheme] == 'https'
-            raise Elastic::Transport::Transport::Error, 'CA fingerprinting can\'t be configured over http'
-          end
-
-          next if connection.verified
-
-          ctx = OpenSSL::SSL::SSLContext.new
-          socket = TCPSocket.new(connection.host[:host], connection.host[:port])
-          ssl = OpenSSL::SSL::SSLSocket.new(socket, ctx)
-          ssl.connect
-          cert_store = ssl.peer_cert_chain
-          matching_certs = cert_store.select do |cert|
-            OpenSSL::Digest::SHA256.hexdigest(cert.to_der).upcase == @ca_fingerprint.gsub(':', '').upcase
-          end
-          if matching_certs.empty?
-            raise Elastic::Transport::Transport::Error,
-                  'Server certificate CA fingerprint does not match the value configured in ca_fingerprint'
-          end
-
-          connection.verified = true
-        end
-      end
 
       def add_header(header)
         headers = @arguments[:transport_options]&.[](:headers) || {}

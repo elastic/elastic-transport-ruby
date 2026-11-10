@@ -22,6 +22,7 @@ module Elastic
       #
       module Base
         include Loggable
+        include CaFingerprint
 
         DEFAULT_PORT             = 9200
         DEFAULT_PROTOCOL         = 'http'.freeze
@@ -48,6 +49,7 @@ module Elastic
         #
         def initialize(arguments = {}, &block)
           @state_mutex = Mutex.new
+          @ca_pin_mutex = Mutex.new
 
           @hosts       = arguments[:hosts]   || []
           @options     = arguments[:options] || {}
@@ -55,6 +57,7 @@ module Elastic
           @options[:retry_on_status] ||= []
           @options[:delay_on_retry]  ||= 0
 
+          validate_ca_fingerprint_options! if @options[:ca_fingerprint]
           @block       = block
           @compression = !!@options[:compression]
           @connections = __build_connections
@@ -166,6 +169,9 @@ module Elastic
               host[:password] ||= options[:password] || options[:http][:password]
             end
 
+            # Hosts added after the pin (reload, sniffing) would otherwise get no protection
+            raise Error, 'CA fingerprinting can\'t be configured over http' if @ca_file && host[:protocol] != 'https'
+
             __build_connection(host, (options[:transport_options] || {}), @block)
           end
         end
@@ -273,6 +279,7 @@ module Elastic
         def perform_request(method, path, params = {}, body = nil, headers = nil, opts = {}, &block)
           raise NoMethodError, 'Implement this method in your transport class' unless block_given?
 
+          pin_ca_certificate! if options[:ca_fingerprint]
           start = Time.now
           tries = 0
           reload_on_failure = opts.fetch(:reload_on_failure, @options[:reload_on_failure])

@@ -158,6 +158,14 @@ module Elastic
 
           private
 
+          # Faraday and Curb read the pinned CA when a connection is built, so rebuilding connections is enough.
+          # Manticore reads it once, when the Manticore::Client is built in initialize, so the client is built again.
+          def __rebuild_pinned_connections
+            @manticore.close
+            build_client(options)
+            super
+          end
+
           def parse_headers(headers)
             request_headers = @request_options.fetch(:headers, {})
             headers = request_headers.merge(headers || {})
