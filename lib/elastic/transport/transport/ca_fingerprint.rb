@@ -57,7 +57,9 @@ module Elastic
 
             ca = fetch_pinned_certificate
             store = OpenSSL::X509::Store.new
-            # Lets an intermediate be pinned. ponytail: jruby-openssl lacks the flag, so JRuby can only pin a root.
+            # Without PARTIAL_CHAIN, OpenSSL only trusts a chain that ends in a self-signed root in the store. With it,
+            # the pinned certificate is a trust anchor even when it is an intermediate. ponytail: jruby-openssl lacks
+            # the flag, so on JRuby the fingerprint has to be the root CA's.
             store.flags = OpenSSL::X509::V_FLAG_PARTIAL_CHAIN if defined?(OpenSSL::X509::V_FLAG_PARTIAL_CHAIN)
             store.add_cert(ca)
             # The Tempfile is deleted when garbage collected, so @ca_file keeps a reference to it.
