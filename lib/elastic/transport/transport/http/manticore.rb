@@ -161,7 +161,7 @@ module Elastic
           # Faraday and Curb read the pinned CA when a connection is built, so rebuilding connections is enough.
           # Manticore reads it once, when the Manticore::Client is built in initialize, so the client is built again.
           def __rebuild_pinned_connections
-            @manticore.close if @manticore.respond_to?(:close)
+            @manticore.close
             build_client(options)
             super
           end
