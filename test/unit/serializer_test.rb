@@ -22,16 +22,25 @@ class Elastic::Transport::Transport::SerializerTest < Minitest::Test
   context "Serializer" do
 
     should "use MultiJSON by default" do
-      if Gem.loaded_specs['multi_json'].version < Gem::Version.create('1.21.0')
-        ::MultiJson.expects(:load)
-        ::MultiJson.expects(:dump)
-      else
+      if defined?(::MultiJSON)
         ::MultiJSON.expects(:parse)
         ::MultiJSON.expects(:generate)
+      else
+        ::MultiJson.expects(:load)
+        ::MultiJson.expects(:dump)
       end
 
       Elastic::Transport::Transport::Serializer::MultiJson.new.load('{}')
       Elastic::Transport::Transport::Serializer::MultiJson.new.dump({})
+    end
+
+    should "work when multi_json is loaded without RubyGems activation" do
+      # When gems are loaded from a plain $LOAD_PATH (e.g. a `bundle install --standalone`
+      # bundle or a vendored load path), they are not registered in Gem.loaded_specs.
+      Gem.stubs(:loaded_specs).returns({})
+
+      assert_equal({ 'foo' => 'bar' }, Elastic::Transport::Transport::Serializer::MultiJson.new.load('{"foo":"bar"}'))
+      assert_equal('{"foo":"bar"}', Elastic::Transport::Transport::Serializer::MultiJson.new.dump({ 'foo' => 'bar' }))
     end
 
   end

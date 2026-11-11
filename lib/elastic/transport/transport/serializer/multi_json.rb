@@ -56,8 +56,14 @@ module Elastic
 
           private
 
+          # multi_json 1.21.0 renamed the top-level constant to `MultiJSON` (keeping a
+          # deprecated `MultiJson` alias), so the constant's absence indicates a deprecated
+          # version. Checking the constant rather than `Gem.loaded_specs` also works when
+          # the gem is loaded without RubyGems activation (e.g. from a `bundle install
+          # --standalone` bundle or a vendored load path), where `Gem.loaded_specs` is
+          # empty and the version lookup would raise a `NoMethodError` on `nil`.
           def deprecated_gem_version_loaded?
-            Gem.loaded_specs['multi_json'].version < Gem::Version.create('1.21.0')
+            !defined?(::MultiJSON)
           end
         end
       end
