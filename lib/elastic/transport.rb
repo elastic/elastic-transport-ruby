@@ -23,6 +23,7 @@ require 'zlib'
 
 require 'elastic/transport/transport/loggable'
 require 'elastic/transport/transport/serializer/multi_json'
+require 'elastic/transport/transport/serializer/json'
 require 'elastic/transport/transport/sniffer'
 require 'elastic/transport/transport/response'
 require 'elastic/transport/transport/errors'
