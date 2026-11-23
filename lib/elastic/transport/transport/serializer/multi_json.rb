@@ -19,16 +19,6 @@ module Elastic
   module Transport
     module Transport
       module Serializer
-        # An abstract class for implementing serializer implementations
-        #
-        module Base
-          # @param transport [Object] The instance of transport which uses this serializer
-          #
-          def initialize(transport = nil)
-            @transport = transport
-          end
-        end
-
         # A default JSON serializer (using [MultiJSON](http://rubygems.org/gems/multi_json))
         #
         class MultiJson

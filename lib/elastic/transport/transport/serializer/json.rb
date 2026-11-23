@@ -25,11 +25,6 @@ module Elastic
           # De-serialize a Hash from JSON string
           #
           def load(string, options = {})
-            if string.encoding != Encoding::UTF_8
-              string = string.dup.force_encoding(Encoding::UTF_8)
-              raise ::JSON::ParserError, "Invalid UTF-8 byte sequence in JSON input" unless string.valid_encoding?
-            end
-
             ::JSON.parse(string, **options)
           end
 
@@ -38,26 +33,13 @@ module Elastic
           def dump(object, options = {})
             json_object = object.respond_to?(:as_json) ? object.as_json : object
             return ::JSON.dump(json_object) if options.empty?
-            return ::JSON.generate(json_object, options) unless options.key?(:pretty)
 
-            # ``:pretty`` is MultiJSON's own option, not one the JSON gem's
-            # generator understands, so it's stripped rather than passed
-            # through. A falsy value asks for compact output, which is what
-            # the generator produces with no pretty state at all.
-            rest = options.except(:pretty)
-            return generate_compact(json_object, rest) unless options[:pretty]
-
-            # Common case: ``pretty: true`` is the only option, so the merge
-            # would just produce a copy of PRETTY_STATE_PROTOTYPE.
-            return ::JSON.pretty_generate(json_object, PRETTY_STATE_PROTOTYPE) if rest.empty?
-
-            ::JSON.pretty_generate(json_object, PRETTY_STATE_PROTOTYPE.merge(rest))
-          end
-
-          private
-
-          def deprecated_gem_version_loaded?
-            Gem.loaded_specs['multi_json'].version < Gem::Version.create('1.21.0')
+            rest = options.reject { |k, _| k == :pretty }
+            if options[:pretty]
+              ::JSON.pretty_generate(json_object, rest)
+            else
+              ::JSON.generate(json_object, rest)
+            end
           end
         end
       end

@@ -16,12 +16,14 @@
 # under the License.
 
 require 'faraday'
+require 'json'
 require 'multi_json'
 require 'time'
 require 'uri'
 require 'zlib'
 
 require 'elastic/transport/transport/loggable'
+require 'elastic/transport/transport/serializer/base'
 require 'elastic/transport/transport/serializer/multi_json'
 require 'elastic/transport/transport/serializer/json'
 require 'elastic/transport/transport/sniffer'
