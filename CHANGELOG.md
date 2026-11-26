@@ -1,3 +1,7 @@
+## Unreleased
+
+- Fixes `ca_fingerprint` with Faraday 2.16. The check for the `verify_hostname` SSL option now uses `Faraday::SSLOptions.method_defined?` instead of `Faraday::SSLOptions.members`, which comes from `Struct`. Faraday 2.16 no longer builds its options classes on `Struct`.
+
 ## 8.6.0
 
 - **Breaking:** fixes `ca_fingerprint` so it secures the connections used for requests. The certificate matching the fingerprint is fetched from the server's chain and used as the only trusted certificate on every connection, with chain and expiry verification left on. Host names aren't checked (a pinned intermediate can't be used on JRuby, and the certificate is fetched without a proxy), so a cluster reached by a name or IP that isn't in its certificate works (Faraday 1 and Manticore still check them). Previously the fingerprint was checked on a separate socket and matched any certificate the server sent, without checking that the server's certificate was signed by it.
