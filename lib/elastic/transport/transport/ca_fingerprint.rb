@@ -72,7 +72,7 @@ module Elastic
             # The pin is the trust decision, host names add nothing (elastic/security#6842), and clusters reached by
             # a container service name or IP must work. ponytail: Faraday 1 and Manticore have no host-name-only
             # switch, so they still check host names.
-            pin[:verify_hostname] = false if !is_a?(HTTP::Faraday) || ::Faraday::SSLOptions.members.include?(:verify_hostname)
+            pin[:verify_hostname] = false if !is_a?(HTTP::Faraday) || ::Faraday::SSLOptions.method_defined?(:verify_hostname)
             # New hashes, so the caller's option hashes aren't changed
             transport_options = options[:transport_options] || {}
             options[:transport_options] = transport_options.merge(ssl: (transport_options[:ssl] || {}).merge(pin))

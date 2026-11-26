@@ -1866,7 +1866,7 @@ describe Elastic::Transport::Client do
 
             it 'connects, because the pin doesn\'t check host names',
                # Repeats the JRuby 9 skip, because this `if` replaces the outer one
-               if: (name == 'Curb' || ::Faraday::SSLOptions.members.include?(:verify_hostname)) &&
+               if: (name == 'Curb' || ::Faraday::SSLOptions.method_defined?(:verify_hostname)) &&
                    !(defined?(JRUBY_VERSION) && JRUBY_VERSION.start_with?('9.')) do
               expect(client.perform_request('GET', '/').body).to eq('ok' => true)
             end
